@@ -10,6 +10,8 @@ from codecarbon import track_emissions
 
 @track_emissions
 def loading_dataset():
+    ## funzione che carica il dataset in un dataframe, effettua un encoding delle feature tramite OneShot per le varibili sensibili e Ordinal per le rimanenti feature
+    
     # Creazione etichette del dataset
     col_names = [
         'Status of exisiting checking account',
@@ -108,4 +110,5 @@ def loading_dataset():
     check = ['Sex_0','Sex_1','Sex_2','Sex_3']
     print(dataset[check])
 
+# Chiamata funzione per caricare il dataset e organizzare le features per poter essere utilizzate in fase di training
 loading_dataset()
