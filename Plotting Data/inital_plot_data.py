@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from codecarbon import track_emissions
 
-@track_emissions
+@track_emissions(offline=True, country_iso_code="ITA")
 def loading_dataset():
     ## funzione che carica il dataset in un dataframe, effettua un encoding delle feature tramite OneShot per le varibili sensibili e Ordinal per le rimanenti feature
     
