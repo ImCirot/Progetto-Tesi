@@ -104,6 +104,4 @@ while i < 4:
     i = i + 1
 
 check = ['Sex_0','Sex_1','Sex_2','Sex_3']
-sex3 = dataset.loc[dataset['Sex_3'] == 1.0]
-print(sex3['Sex_3'])
 print(dataset[check])
