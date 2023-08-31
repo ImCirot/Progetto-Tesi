@@ -4,6 +4,8 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import *
 from sklearn.linear_model import LogisticRegression
 from codecarbon import track_emissions
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 
 @track_emissions(offline=True, country_iso_code="ITA")
 def traning_and_testing_model():
@@ -62,7 +64,7 @@ def traning_and_testing_model():
 
     # inizializziamo il modello LogisticRegressor
 
-    ml_model = LogisticRegression()
+    # ml_model = LogisticRegression(max_iter=10)
 
     # Strategia KFold
     for train_index, test_index in kf.split(df_array):
@@ -71,11 +73,19 @@ def traning_and_testing_model():
         X_train, X_test = X.loc[train_index], X.loc[test_index]
         y_train, y_test = y.loc[train_index], y.loc[test_index]
 
-        # Addestriamo il modello
-        ml_model.fit(X_train,y_train)
+        
+        # Creiamo una pipeline che effettua delle ulteriori operazioni di scaling dei dati per addestriare il modello
+        pipe = make_pipeline(StandardScaler(), LogisticRegression())
+        pipe.fit(X_train,y_train.values.ravel())
 
         # Stampiamo metriche di valutazione
-        validate(ml_model, i, X_test, y_test)
+        validate(pipe, i, X_test,y_test.values.ravel())
+
+    # Test di predizione del modello
+    prediction = pd.read_csv('./prediction.csv')
+    prediction.drop('ID', inplace=True, axis=1)
+    print(f"My prediction: {pipe.predict(prediction)}")
+
 
 
 def validate(ml_model, index, X_test, y_test):
