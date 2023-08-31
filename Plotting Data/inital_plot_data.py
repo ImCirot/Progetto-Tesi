@@ -110,7 +110,7 @@ def loading_dataset():
     check = ['Sex_0','Sex_1','Sex_2','Sex_3']
 
     # Stampiamo in output il dataset ottenuto e modificato
-    ouput = dataset.to_csv('./Dataset/dataset_modificato.csv', index_label="ID")
+    ouptut = dataset.to_csv('./Dataset/dataset_modificato.csv', index_label="ID")
 
 # Chiamata funzione per caricare il dataset e organizzare le features per poter essere utilizzate in fase di training
 loading_dataset()
