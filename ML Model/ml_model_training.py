@@ -23,49 +23,14 @@ def traning_and_testing_model():
     # pd.options.display.max_columns = 2
     # print(df.head())
 
-    # Setting delle feature e del target
-    features = [
-        'Status of exisiting checking account',
-        'Duration in month',
-        'Credit history',
-        'Purpose',
-        'Credit amount',
-        'Savings account/bonds',
-        'Present employment since',
-        'Installment rate in percentage of disposable income',
-        'Sex_0',
-        'Sex_1',
-        'Sex_2',
-        'Sex_3',
-        'Other debtors / guarantors',
-        'Present residence since',
-        'Property',
-        'Age in years',
-        'Other installment plans',
-        'Housing',
-        'Number of existing credits at this bank',
-        'Job',
-        'Number of people being liable to provide maintenance for',
-        'Telephone',
-        'foreign worker',
-    ]
+    features = df.columns.tolist()
+    features.remove('Target')
 
     target = ['Target']
 
     X = df[features]
 
     y = df[target]
-
-    g = {'Sex_0','Sex_1','Sex_2','Sex_3'}
-
-    dataset = StandardDataset(
-        df=df,
-        label_name='Target',
-        protected_attribute_names=g
-    )
-    
-    # Testiamo la fairness dei gruppi appena ottenuti
-    test_fairness(dataset)
 
     # Si crea un array del dataframe utile per la KFold
     df_array = np.array(df)
@@ -83,18 +48,25 @@ def traning_and_testing_model():
     for train_index, test_index in kf.split(df_array):
         i = i+1
 
-        X_train, X_test = X.loc[train_index], X.loc[test_index]
-        y_train, y_test = y.loc[train_index], y.loc[test_index]
+        split_dataset_train = df.loc[train_index]
 
-        # # Fit dei dati sul nostro modello tramite il gruppo di training attuale
-        # pipe.fit(X_train,y_train.values.ravel())
+        fair_dataset = test_fairness(split_dataset_train)
 
-        # # Stampiamo metriche di valutazione
-        # validate(pipe, i, X_test,y_test.values.ravel())
+        X_train = fair_dataset[features]
+
+        y_train = fair_dataset[target]
+
+        X_test = X.loc[test_index]
+        y_test = y.loc[test_index]
+
+        # Fit dei dati sul nostro modello tramite il gruppo di training attuale
+        pipe.fit(X_train,y_train.values.ravel())
+
+        # Stampiamo metriche di valutazione
+        validate(pipe, i, X_test,y_test.values.ravel())
 
     # # Test di predizione del modello
     # prediction = pd.read_csv('./prediction.csv')
-    # prediction.drop('ID', inplace=True, axis=1)
     # print(f"My prediction: {pipe.predict(prediction)}")
 
 
@@ -131,10 +103,37 @@ def test_fairness(dataset):
     ## Funzione che presenta alcune metriche di fairness sul dataset utilizzato e applica processi per ridurre/azzerrare il bias
 
     # Attributi sensibili
-    g = {'Sex_0','Sex_1','Sex_2', 'Sex_3'}
+    protected_attribute_names = [
+        'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
+    ]
 
-    metric_original_set = BinaryLabelDatasetMetric(dataset, unprivileged_groups=[{'Sex_1': 0}], privileged_groups=[{'Sex_1':1}])
-    print(metric_original_set)
+    dataset_origin_train = StandardDataset(
+        df=dataset,
+        label_name='Target',
+        favorable_classes=[1],
+        protected_attribute_names=protected_attribute_names,
+        privileged_classes=[lambda x: x == 1]
+    )
+
+    privileged_groups = [{'sex_A91': 1}]
+    unprivileged_groups = [{'sex_A91': 0}]
+
+    metric_original_train = BinaryLabelDatasetMetric(dataset=dataset_origin_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)    
+    
+    print(f'Differenze di output fra gruppo privilegiato e non privilegiato nel database originale: {metric_original_train.mean_difference()}')
+
+    if(metric_original_train.mean_difference() != 0.0):
+        RW = Reweighing(privileged_groups=privileged_groups, unprivileged_groups=unprivileged_groups)
+
+        dataset_transformed_train = RW.fit_transform(dataset_origin_train)
+
+        metric_transformed_train = BinaryLabelDatasetMetric(dataset=dataset_transformed_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
+
+        print(f'Differenze di output fra gruppo privilegiato e non privilegiato nel database pesato: {metric_transformed_train.mean_difference()}')
+
+    (fair_dataset,dist) = dataset_transformed_train.convert_to_dataframe()
+
+    return fair_dataset
     
 
 # Chiamata funzione inizale di training e testing
