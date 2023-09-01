@@ -47,38 +47,52 @@ def fairness_dataset():
         'foreign worker'
     ]
 
+    numerical_features = [
+        'Duration in month',
+        'Credit amount',
+        'Installment rate in percentage of disposable income',
+        'Present residence since',
+        'Age in years',
+        'Number of existing credits at this bank',
+        'Number of people being liable to provide maintenance for',
+        'Target'
+    ]
+
     protected_attribute_names = ['sex']
 
     df = pd.read_csv('./Dataset/German-Dataset.csv', names=col_names, index_col=False, header=None)
+
+
+    one_hot = pd.get_dummies(df[categorical_features], dtype=int)
+    df = df.drop(categorical_features, axis=1)
+    df = df.join(one_hot)
+    print(df.head)
+
+    protected_attribute_names = [
+        'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
+    ]
 
     dataset = StandardDataset(
         df=df,
         label_name='Target',
         favorable_classes=[1],
-        categorical_features=categorical_features,
-        protected_attribute_names=['Age in years'],
-        privileged_classes=[lambda x: x<=25],
-
+        protected_attribute_names=protected_attribute_names,
+        privileged_classes=[lambda x: x == 1]
     )
-
-    print(dataset)
+    
+    privileged_groups = [{'sex_A91': 1}]
+    unprivileged_groups = [{'sex_A91': 0}]
 
     dataset_orig_train, dataset_orig_test = dataset.split([0.7], shuffle=True)
 
-    privileged_groups = [{'Age in years': 0}]
-    unprivileged_groups = [{'Age in years': 1}]
+    metric_original_train = BinaryLabelDatasetMetric(dataset=dataset_orig_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
+    print(f'Metrica: {metric_original_train.mean_difference()}')
 
-    metric_original_train = BinaryLabelDatasetMetric(dataset=dataset_orig_train, unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+    rw = Reweighing(unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
+    dataset_transf_train = rw.fit_transform(dataset_orig_train)
+
+    metric_transf_train = BinaryLabelDatasetMetric(dataset=dataset_transf_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
+
+    print(f'Metrica: {metric_transf_train.mean_difference()}')
     
-    print(f'- {metric_original_train.mean_difference()}')
-
-    RW = Reweighing(unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
-    dataset_transf_train = RW.fit_transform(dataset_orig_train)
-
-    metric_transf_train = BinaryLabelDatasetMetric(dataset=dataset_transf_train, unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
-
-    print(f'- {metric_transf_train.mean_difference()}')
-
-
-
 fairness_dataset()
