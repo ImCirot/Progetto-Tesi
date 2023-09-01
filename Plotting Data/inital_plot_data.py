@@ -10,7 +10,8 @@ from codecarbon import track_emissions
 
 @track_emissions(offline=True, country_iso_code="ITA")
 def loading_dataset():
-    ## funzione che carica il dataset in un dataframe, effettua un encoding delle feature tramite OneShot per le varibili sensibili e Ordinal per le rimanenti feature
+    ## funzione che carica il dataset in un dataframe, effettua un encoding delle feature tramite OneShot per le varibili categoriche 
+    ## e salva il nuovo dataframe pronto per essere utilizzato dal modello
     
     # Creazione etichette del dataset
     col_names = [
@@ -22,7 +23,7 @@ def loading_dataset():
         'Savings account/bonds',
         'Present employment since',
         'Installment rate in percentage of disposable income',
-        'Personal status and sex',
+        'sex',
         'Other debtors / guarantors',
         'Present residence since',
         'Property',
@@ -36,81 +37,56 @@ def loading_dataset():
         'foreign worker',
         'Target'
     ]
-
-    # Creazione di un dataframe del dataset fornito di etichette
-    dataset = pd.read_csv('./Dataset/German-Dataset.csv', index_col=False, header=None, names=col_names)
-
-    data = dataset.values
-
-    features = ['Status of exisiting checking account',
-        'Duration in month',
+    
+    # Etichette del dataset contenenti dati di tipo categorico
+    # Questa lista viene utilizzata per indicare quali tipi di dati andranno codificati tramite OneShot Encoding
+    categorical_features = [
+        'Status of exisiting checking account',
         'Credit history',
         'Purpose',
-        'Credit amount',
         'Savings account/bonds',
         'Present employment since',
-        'Installment rate in percentage of disposable income',
+        'sex',
         'Other debtors / guarantors',
-        'Present residence since',
         'Property',
-        'Age in years',
         'Other installment plans',
         'Housing',
-        'Number of existing credits at this bank',
         'Job',
-        'Number of people being liable to provide maintenance for',
         'Telephone',
-        'foreign worker',
-        ]
+        'foreign worker'
+    ]
 
-    X = dataset[features]
-    y = dataset['Target']
-    g = dataset['Personal status and sex']
+    # Feature numeriche del dataset che non richiedono alcuna conversione
+    numerical_features = [
+        'Duration in month',
+        'Credit amount',
+        'Installment rate in percentage of disposable income',
+        'Present residence since',
+        'Age in years',
+        'Number of existing credits at this bank',
+        'Number of people being liable to provide maintenance for',
+        'Target'
+    ]
 
-    # OrdinalEncoding delle variabili categoriche e della nostra variabile da predire
-    encoder = OrdinalEncoder()
-    label_encoder = LabelEncoder()
-    encoder.fit(X)
-    label_encoder.fit(y)
-    X = encoder.transform(X)
-    y = label_encoder.transform(y)
+    # Lettura del dataset da file memorizzato nel DataFrame df
+    df = pd.read_csv('./Dataset/German-Dataset.csv', names=col_names, index_col=False, header=None)
 
-    # OneShotEncoding della variabile protetta
-    # la nuova varibile g conterrà quattro nuove colonne, una per ogni possibile valore della varibile originale.
-    # È da notare come, nella descrizione del dataset, i valori possibili siano 5 e l'output che otteniamo dell'encoding sia 4.
-    # Questo avviene poichè il valore A95, ovvero donna single, non appare mai nelle 1000 entrate del dataset e dunque non viene considerato.
-    ohe_encoder = OneHotEncoder(sparse_output=False)
+    # Tramite la funzione 'get_dummies()' possiamo indicare features del dataset di tipo categorico da trasormare in numerico, la funzione
+    # ci restituisce un dataframe contenente le feature indicate codificate in maniera numerica espandendo il numero di colonne per ogni possibile valore
+    # Es. una variabile categorica che può assumere 4 diversi valori verrà espansa in 4 colonne ognuna con valore 0/1 in base al valore categorico 
+    # corrispondente.
+    one_hot = pd.get_dummies(df[categorical_features], dtype=int)
 
-    g = np.asarray(g).reshape(-1,1)
+    # Cancelliamo dal DataFrame originale le features categoriche espanse per poi unire alle rimanenti il nuovo dataframe ottenuto dalla funzione
+    # get_dummies()
+    df = df.drop(categorical_features, axis=1)
+    df = df.join(one_hot)
 
-    g = ohe_encoder.fit_transform(g)
+    # Stampa di debug
+    print(df.head)
 
-    # Assegniamo i valori ottenuti dall'encoding al dataset originale
-    dataset[features] = X
-    dataset['Target'] = y
-
-    g_array = np.asarray(g)
-    i = 1
-
-    # Espandiamo la feature "Personal status and sex" in 4 nuove feature che rappresentano i possibili stati della varibile originale
-    # in questo modo otteniamo:
-    # Sex_0: A93 -> Uomo single
-    # Sex_1: A92 -> Donna divorziata/separata/sposata
-    # Sex_2: A91 -> Uomo divorziato/separato
-    # Sex_3: A94 -> Uomo sposato/vedovo
-    # Come definito prima vengono create solamente 3 nuove feature poichè l'originale viene riutilizzata per l'attributo Sex_0,
-    # e non essendo presente alcuna entrata con valore A95 è ridondante creare una feature apposita per quest'ultimo.
-    dataset.rename(columns={"Personal status and sex":"Sex_0"}, inplace=True)
-    dataset['Sex_0'] = g[:, 0]
-    while i < 4:
-        dataset.insert(loc=(8+i), column=f"Sex_{i}", value=0)
-        dataset[f'Sex_{i}'] = g[:,i]
-        i = i + 1
-
-    check = ['Sex_0','Sex_1','Sex_2','Sex_3']
-
-    # Stampiamo in output il dataset ottenuto e modificato
-    ouptut = dataset.to_csv('./Dataset/dataset_modificato.csv', index_label="ID")
+    # Salviamo in locale il dataset in un file csv, pronto per essere utilizzato per la fase di training e testing del modello
+    ouptut = df.to_csv('./Dataset/dataset_modificato.csv', index_label="ID")
 
 # Chiamata funzione per caricare il dataset e organizzare le features per poter essere utilizzate in fase di training
 loading_dataset()
