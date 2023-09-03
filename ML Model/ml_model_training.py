@@ -50,7 +50,7 @@ def traning_and_testing_model():
 
         split_dataset_train = df.loc[train_index]
 
-        fair_dataset = test_fairness(split_dataset_train)
+        fair_dataset = test_fairness(split_dataset_train, i)
 
         X_train = fair_dataset[features]
 
@@ -86,20 +86,20 @@ def validate(ml_model, index, X_test, y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/matrix_report.txt",open_type) as f:
+    with open(f"./reports/quality_reports/matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/metrics_report.txt",open_type) as f:
+    with  open(f"./reports/quality_reports/metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
         f.write('\n')
 
-def test_fairness(dataset):
+def test_fairness(dataset, index):
     ## Funzione che presenta alcune metriche di fairness sul dataset utilizzato e applica processi per ridurre/azzerrare il bias
 
     # Attributi sensibili
@@ -120,8 +120,6 @@ def test_fairness(dataset):
 
     metric_original_train = BinaryLabelDatasetMetric(dataset=dataset_origin_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)    
     
-    print(f'Differenze di output fra gruppo privilegiato e non privilegiato nel database originale: {metric_original_train.mean_difference()}')
-
     if(metric_original_train.mean_difference() != 0.0):
         RW = Reweighing(privileged_groups=privileged_groups, unprivileged_groups=unprivileged_groups)
 
@@ -129,12 +127,24 @@ def test_fairness(dataset):
 
         metric_transformed_train = BinaryLabelDatasetMetric(dataset=dataset_transformed_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
 
-        print(f'Differenze di output fra gruppo privilegiato e non privilegiato nel database pesato: {metric_transformed_train.mean_difference()}')
-
     (fair_dataset,dist) = dataset_transformed_train.convert_to_dataframe()
+
+    print_fairness_metrics(metric_original_train.mean_difference(), metric_transformed_train.mean_difference(), "mean_difference", index)
 
     return fair_dataset
     
+def print_fairness_metrics(original_metric, transformed_metric, metric_type, index):
+    if index == 1:
+        open_mode = 'w'
+    else:
+        open_mode = 'a'
+    
+    with open(f'./reports/fairness_reports/{metric_type}_report.txt', open_mode) as f:
+        f.write(f'{metric_type}: iteration {index}\n')
+        f.write(f'Original metric: {original_metric}\n')
+        f.write(f'Metric after: {transformed_metric}\n')
+        f.write('\n')
+
 
 # Chiamata funzione inizale di training e testing
 traning_and_testing_model()
