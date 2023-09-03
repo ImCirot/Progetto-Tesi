@@ -107,6 +107,7 @@ def test_fairness(dataset, index):
         'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
     ]
 
+    # Setting del dataset per l'utilizzo dell'API AIF360
     dataset_origin_train = StandardDataset(
         df=dataset,
         label_name='Target',
@@ -115,30 +116,45 @@ def test_fairness(dataset, index):
         privileged_classes=[lambda x: x == 1]
     )
 
-    privileged_groups = [{'sex_A91': 1}]
-    unprivileged_groups = [{'sex_A91': 0}]
+    # Setting dei gruppi privilegiati e non
+    # In questo caso si è scelto di trattare come gruppo privilegiato tutte le entrate che presentano la feature 'Sex_A94' = 1, ovvero tutte le entrate
+    # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_92' = 1, ovvero tutte le
+    # donne sposate/divorziate/vedove presenti nel dataset (ricordando che nelle 1000 entrate non sono presenti donne single).
+    privileged_groups = [{'sex_A94': 1}]
+    unprivileged_groups = [{'sex_A92': 1}]
 
+    # Calcolo della metrica sul dataset originale
     metric_original_train = BinaryLabelDatasetMetric(dataset=dataset_origin_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)    
     
+    # Se la metrica originale ottiene già valore 0.0, allora il dataset è gia equo e non ha bisogno di ulteriori operazioni
     if(metric_original_train.mean_difference() != 0.0):
+        # Utilizzamo un operatore di bilanciamento offerto dall'API AIF360
         RW = Reweighing(privileged_groups=privileged_groups, unprivileged_groups=unprivileged_groups)
 
+        # Bilanciamo il dataset
         dataset_transformed_train = RW.fit_transform(dataset_origin_train)
 
+        # Ricalcoliamo la metrica
         metric_transformed_train = BinaryLabelDatasetMetric(dataset=dataset_transformed_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
 
+    # Creiamo un nuovo dataframe sulla base del modello ripesato dall'operazione precedente
     (fair_dataset,dist) = dataset_transformed_train.convert_to_dataframe()
 
+    # Chiamata alla funzione per generare un report dei valori ottenuti
     print_fairness_metrics(metric_original_train.mean_difference(), metric_transformed_train.mean_difference(), "mean_difference", index)
 
     return fair_dataset
     
 def print_fairness_metrics(original_metric, transformed_metric, metric_type, index):
+    ## funzione per creare file di report di metriche di fairness
+
+    # Scegliamo il tipo apertura file, se è la prima iteraz. creiamo file
     if index == 1:
         open_mode = 'w'
     else:
         open_mode = 'a'
     
+    # Creiamo un file nella cartella reports con lo stesso nome della metrica scelta
     with open(f'./reports/fairness_reports/{metric_type}_report.txt', open_mode) as f:
         f.write(f'{metric_type}: iteration {index}\n')
         f.write(f'Original metric: {original_metric}\n')
