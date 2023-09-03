@@ -1,40 +1,40 @@
 mean_difference: iteration 1
-Original metric: 0.11737089201877926
+Original metric: -0.06889564336372844
 Metric after: 2.220446049250313e-16
 
 mean_difference: iteration 2
-Original metric: 0.07804401508778591
-Metric after: 0.0
+Original metric: -0.05741377060588926
+Metric after: -1.1102230246251565e-16
 
 mean_difference: iteration 3
-Original metric: 0.07675657675657677
-Metric after: -1.1102230246251565e-16
-
-mean_difference: iteration 4
-Original metric: 0.07953216374269001
-Metric after: 1.1102230246251565e-16
-
-mean_difference: iteration 5
-Original metric: 0.1301040133695841
-Metric after: -1.1102230246251565e-16
-
-mean_difference: iteration 6
-Original metric: 0.07134502923976604
-Metric after: 2.220446049250313e-16
-
-mean_difference: iteration 7
-Original metric: 0.1191324712351084
-Metric after: -3.3306690738754696e-16
-
-mean_difference: iteration 8
-Original metric: 0.12147439160981566
-Metric after: -1.1102230246251565e-16
-
-mean_difference: iteration 9
-Original metric: 0.1274853801169591
+Original metric: -0.10300751879699255
 Metric after: -2.220446049250313e-16
 
+mean_difference: iteration 4
+Original metric: -0.09068167604752964
+Metric after: 0.0
+
+mean_difference: iteration 5
+Original metric: -0.12090634713275372
+Metric after: -3.3306690738754696e-16
+
+mean_difference: iteration 6
+Original metric: -0.08481056656239139
+Metric after: -5.551115123125783e-16
+
+mean_difference: iteration 7
+Original metric: -0.07016210739614992
+Metric after: -1.1102230246251565e-16
+
+mean_difference: iteration 8
+Original metric: -0.04509568351497473
+Metric after: -3.3306690738754696e-16
+
+mean_difference: iteration 9
+Original metric: -0.08189045936395756
+Metric after: -4.440892098500626e-16
+
 mean_difference: iteration 10
-Original metric: 0.1268893652818105
+Original metric: -0.07766822349074554
 Metric after: 0.0
 
