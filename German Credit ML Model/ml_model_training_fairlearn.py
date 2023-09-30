@@ -114,7 +114,8 @@ def training_model(dataset):
         # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
         validate(model_pipeline, i, X_test, y_test)
 
-    plt.show()
+    # per mostrare grafici
+    # plt.show()
 
 
 def validate(ml_model,index,X_test,y_test):
@@ -147,7 +148,7 @@ def validate(ml_model,index,X_test,y_test):
 
 def load_dataset():
     ## funzione per caricare dataset gia codificato in precedenza
-    df = pd.read_csv('./Dataset/dataset_modificato.csv')
+    df = pd.read_csv('./German Credit Dataset/dataset_modificato.csv')
 
     df.drop('ID', axis=1, inplace=True)
 

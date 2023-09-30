@@ -1,0 +1,40 @@
+disperate_impact: iteration 1
+Original metric: 0.8928352725045928
+Metric after: 0.9999999999999997
+
+disperate_impact: iteration 2
+Original metric: 0.9021312757061762
+Metric after: 1.0000000000000002
+
+disperate_impact: iteration 3
+Original metric: 0.904099138108788
+Metric after: 1.0000000000000002
+
+disperate_impact: iteration 4
+Original metric: 0.9006849315068493
+Metric after: 0.9999999999999999
+
+disperate_impact: iteration 5
+Original metric: 0.9195039195039195
+Metric after: 1.0000000000000002
+
+disperate_impact: iteration 6
+Original metric: 0.8975139285547076
+Metric after: 1.0000000000000004
+
+disperate_impact: iteration 7
+Original metric: 0.9057681324957167
+Metric after: 1.0000000000000002
+
+disperate_impact: iteration 8
+Original metric: 0.9079977094865431
+Metric after: 1.0
+
+disperate_impact: iteration 9
+Original metric: 0.8836493274995949
+Metric after: 1.0
+
+disperate_impact: iteration 10
+Original metric: 0.8746460108857929
+Metric after: 1.0000000000000002
+
