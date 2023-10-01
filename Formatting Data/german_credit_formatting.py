@@ -94,10 +94,7 @@ def loading_dataset():
     print(f'Num. of married/divorced/widow females: {num_marr_div_wid_females}')
     print(f'Males: {num_div_males + num_marr_widow_males + num_single_males}')
     print(f'Females: {num_single_females + num_marr_div_wid_females}')
-    # Codifichiamo l'attributo sensibile "sex" dividendo i possibili valori della variabile nei gruppi favorito e gruppo sfavorito
-    # nel gruppo favorito, a cui assegniamo valore 1, sono presenti le categorie di valori per cui ci si aspetta una possibilità più alta di ricevere una valutazione
-    # positiva rispetto al gruppo sfavorito. Nel gruppo favorito decidiamo di fare ricadere i valori "A_94"
-    # con 0 codifichiamo i rimanenti casi in quanto rappresenteranno nel nostro dataset il gruppo sfavorito
+    
     # Tramite la funzione 'get_dummies()' possiamo indicare features del dataset di tipo categorico da trasormare in numerico, la funzione
     # ci restituisce un dataframe contenente le feature indicate codificate in maniera numerica espandendo il numero di colonne per ogni possibile valore
     # Es. una variabile categorica che può assumere 4 diversi valori verrà espansa in 4 colonne ognuna con valore 0/1 in base al valore categorico 
