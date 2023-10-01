@@ -27,6 +27,7 @@ def formatting_data():
     df['salary'] = df['salary'].replace('<=50K',0)
     df['salary'] = df['salary'].replace('>50K',1)
 
+    # stampiamo in output il dataset in un nuovo file .csv pronto per essere utilizzato
     df.to_csv('./Adult Dataset/adult_modificato.csv',index_label='ID')
 
 formatting_data()
