@@ -19,12 +19,15 @@ def training_model(dataset):
 
     # evidenziamo le features utili alla predizione
     features = dataset.columns.tolist()
+
+    # rimuoviamo dalla lista features la feature target
     features.remove('Target')
 
     # evidenziamo gli attributi sensibili del dataset
     sex_features = [
         'sex_A91','sex_A92','sex_A93','sex_A94'
     ]
+
     # settiamo delle metriche utili per poter fornire delle valutazioni sugli attributi sensibili tramite il framework FairLearn
     metrics = {
         "accuracy": accuracy_score,
@@ -33,17 +36,19 @@ def training_model(dataset):
         "count": count,
     }
 
-
     # settiamo la nostra X sulle sole variabili di features
     X = dataset[features]
-    
+
+    # settiamo la varibile target con valore 1 e 0 per positivo e negativo, riampiazzando il valore 2 usato come standard per indicare il negativo,
+    # operazione necessaria ai fini di utilizzo del toolkit
     dataset['Target'] = dataset['Target'].replace(2,0)
-    print(dataset[sex_features].head)
+
     # settiamo la nostra y sulla variabile da predire
     y = dataset['Target']
 
     # settiamo un dataframe contenente solamente i valori degli attributi sensibili (utile per utilizzare il framework FairLearn)
     sex = dataset[sex_features]
+
     # settiamo contatore per ciclo KFold
     i = 0
 
@@ -133,14 +138,14 @@ def validate(ml_model,index,X_test,y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/quality_reports/fairlearn_matrix_report.txt",open_type) as f:
+    with open(f"./reports/quality_reports/credit_fairlearn_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/quality_reports/fairlearn_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/quality_reports/credit_fairlearn_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
