@@ -8,6 +8,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from fairlearn.metrics import *
 from sklearn.metrics import *
+import matplotlib.pyplot as plt
 
 def load_dataset():
     ## funzione di load del dataset
@@ -51,6 +52,12 @@ def training_model(dataset):
     # setting del set contenente le features protette
     protected_features = dataset[protected_features_names]
 
+    # setting del set contenente il sesso degli individui presenti nel dataset
+    sex = dataset['sex']
+
+    # setting del set contenente razza degli indivuidi presenti nel dataset
+    race = dataset['race']
+
     # setting pipeline contenente modello e scaler per ottimizzazione dei dati da fornire al modello
     model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
 
@@ -75,12 +82,20 @@ def training_model(dataset):
         # setting training set delle sole varibili protette dell'iterazione i-esima
         protected_features_train = protected_features.iloc[train_index]
 
+        # setting training set della singole variabili protette contenenti informazioni sul sesso e razza dell'individuo
+        sex_train = sex.iloc[train_index]
+        race_train = race.iloc[train_index]
+
         # setting test set X ed y dell'iterazione i-esima
         X_test = X.iloc[test_index]
         y_test = y.iloc[test_index]
 
         # setting training set delle sole varibili protette dell'iterazione i-esima
         protected_features_test = protected_features.iloc[test_index]
+
+        # setting test set della singole variabili protette contenenti informazioni sul sesso e razza dell'individuo
+        sex_test = sex.iloc[test_index]
+        race_test = race.iloc[test_index]
 
         # training modello sul set X ed y dell'iterazione i-esima
         model_pipeline.fit(X_train,y_train)
@@ -89,8 +104,28 @@ def training_model(dataset):
         pred = model_pipeline.predict(X_test)
 
         # calcoliamo delle metriche di fairness sulla base degli attributi sensibili
-        mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=protected_features_test)
-        mf.by_group.plot.bar(
+        # overall_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=protected_features_test)
+        # mf.by_group.plot.bar(
+        #     subplots=True,
+        #     layout=[3, 3],
+        #     legend=False,
+        #     figsize=[12, 8],
+        #     title="Show all metrics",
+        # )
+
+        # calcoiamo delle metriche di fairness sulla base dell'attributo protetto "sex"
+        sex_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=sex_test)
+        sex_mf.by_group.plot.bar(
+            subplots=True,
+            layout=[3, 3],
+            legend=False,
+            figsize=[12, 8],
+            title="Show all metrics",
+        )
+
+        # calcoiamo delle metriche di fairness sulla base dell'attributo protetto "race"
+        race_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=race_test)
+        race_mf.by_group.plot.bar(
             subplots=True,
             layout=[3, 3],
             legend=False,
@@ -99,8 +134,11 @@ def training_model(dataset):
         )
 
         validate(model_pipeline, i, X_test, y_test)
+    
+    # per stampare i grafici generati
+    plt.show()
 
-def validate(ml_model, i, X_test, y_test):
+def validate(ml_model, index, X_test, y_test):
     ## funzione utile a calcolare metriche del modello realizzato
 
     pred = ml_model.predict(X_test)
