@@ -80,47 +80,42 @@ def training_model(dataset):
 
         # calcoliamo delle metriche di fairness sulla base degli attributi sensibili
         mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=sex_test)
-        # fnr = false_negative_rate(y_true=y_test,y_pred=pred,pos_label=1)
-        # fpr = false_positive_rate(y_true=y_test,y_pred=pred,pos_label=1)
-        # print(fnr)
-        # print(fpr)  
-        mf.by_group.plot.bar(
+        mf_no_zeros = mf.by_group
+        mf_no_zeros = mf_no_zeros.dropna()
+        mf_no_zeros.plot.bar(
             subplots=True,
-            layout=[3, 3],
+            layout=[2, 2],
             legend=False,
-            figsize=[12, 8],
+            figsize=[20, 10],
             title="Show all metrics",
         )
-
-        # per mostrare i grafici generati per ogni iterazione
-        # plt.show()
 
         # proviamo alcune operazioni di postprocessing sul modello prodotto
-        postprocess_model = ThresholdOptimizer(
-            estimator=model_pipeline,
-            constraints='equalized_odds',
-            objective='balanced_accuracy_score',
-            prefit=True,
-            predict_method='predict_proba'
-        )
+        # postprocess_model = ThresholdOptimizer(
+        #     estimator=model_pipeline,
+        #     constraints='equalized_odds',
+        #     objective='balanced_accuracy_score',
+        #     prefit=True,
+        #     predict_method='predict_proba'
+        # )
 
-        postprocess_model.fit(X_train,y_train,sensitive_features=sex_train)
-        fair_pred = postprocess_model.predict(X_test,sensitive_features=sex_test)
-        fair_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=fair_pred,sensitive_features=sex_test)
-        mf.by_group.plot.bar(
-            subplots=True,
-            layout=[3, 3],
-            legend=False,
-            figsize=[12, 8],
-            title="Show all metrics",
-        )
+        # postprocess_model.fit(X_train,y_train,sensitive_features=sex_train)
+        # fair_pred = postprocess_model.predict(X_test,sensitive_features=sex_test)
+        # fair_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=fair_pred,sensitive_features=sex_test)
+        # mf.by_group.plot.bar(
+        #     subplots=True,
+        #     layout=[3, 3],
+        #     legend=False,
+        #     figsize=[12, 8],
+        #     title="Show all metrics",
+        # )
         
 
         # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
         validate(model_pipeline, i, X_test, y_test)
 
     # per mostrare grafici
-    # plt.show()
+    plt.show()
 
 
 def validate(ml_model,index,X_test,y_test):
