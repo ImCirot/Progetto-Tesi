@@ -33,8 +33,10 @@ def training_model(dataset):
     features.remove('salary')
 
     # setting lista contenente nomi degli attributi protetti
-    protected_features_names = ['race','sex']
+    protected_features_names = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','sex_Female','sex_Male']
 
+    sex_features = ['sex_Female','sex_Male']
+    race_features = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
     # settiamo delle metriche utili per poter fornire delle valutazioni sugli attributi sensibili tramite il framework FairLearn
     metrics = {
         "accuracy": accuracy_score,
@@ -53,10 +55,10 @@ def training_model(dataset):
     protected_features = dataset[protected_features_names]
 
     # setting del set contenente il sesso degli individui presenti nel dataset
-    sex = dataset['sex']
+    sex = dataset[sex_features]
 
     # setting del set contenente razza degli indivuidi presenti nel dataset
-    race = dataset['race']
+    race = dataset[race_features]
 
     # setting pipeline contenente modello e scaler per ottimizzazione dei dati da fornire al modello
     model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
@@ -115,25 +117,29 @@ def training_model(dataset):
 
         # calcoiamo delle metriche di fairness sulla base dell'attributo protetto "sex"
         sex_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=sex_test)
-        sex_mf.by_group.plot.bar(
+        sex_mf_no_zeros = sex_mf.by_group
+        sex_mf_no_zeros = sex_mf_no_zeros.dropna()
+        sex_mf_no_zeros.plot.bar(
             subplots=True,
-            layout=[3, 3],
+            layout=[2, 2],
             legend=False,
-            figsize=[12, 8],
+            figsize=[20, 10],
             title="Show all metrics",
         )
 
         # calcoiamo delle metriche di fairness sulla base dell'attributo protetto "race"
         race_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=race_test)
-        race_mf.by_group.plot.bar(
+        race_mf_no_zeros = race_mf.by_group
+        race_mf_no_zeros = race_mf_no_zeros.dropna()
+        race_mf_no_zeros.plot.bar(
             subplots=True,
-            layout=[3, 3],
+            layout=[3, 2],
             legend=False,
-            figsize=[12, 8],
+            figsize=[20, 10],
             title="Show all metrics",
         )
 
-        validate(model_pipeline, i, X_test, y_test)
+        # validate(model_pipeline, i, X_test, y_test)
     
     # per stampare i grafici generati
     plt.show()
