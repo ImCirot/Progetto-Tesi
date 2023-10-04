@@ -10,6 +10,7 @@ from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.postprocessing import ThresholdOptimizer
 import matplotlib.pyplot as plt
 from fairlearn.reductions import *
+import seaborn as sns
 
 def training_model(dataset):
     ## funzione che addestra il modello sul dataset utilizzando strategia KFold
@@ -59,6 +60,45 @@ def training_model(dataset):
     # utilizzare correttamente il modello
     model_pipeline = make_pipeline(StandardScaler(), LogisticRegression())
 
+
+    # proviamo a rimuovere eventuali correlazioni esistenti fra i dati e le features sensibli
+    # utilizzando una classe messa a disposizione dalla libreria FairLearn
+    corr_remover = CorrelationRemover(sensitive_feature_ids=sex_features,alpha=1.0)
+
+    # creiamo un nuovo modello da addestrare sul dataset modificato
+    fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+
+    features_names = dataset.columns.tolist()
+    for sex_feature in sex_features:
+        features_names.remove(sex_feature)
+        
+
+    # modifichiamo il set training usando lo strumento di preprocessing fornito dalla libreria FairLearn
+    fair_dataset = corr_remover.fit_transform(dataset)
+    fair_dataset = pd.DataFrame(
+        fair_dataset, columns=features_names
+    )
+
+    fair_dataset[sex_features] = dataset[sex_features]
+    fair_dataset['Target'] = dataset['Target']
+    
+    features_list = fair_dataset.columns.tolist()
+    features_list.remove('Target')
+
+    X_fair = fair_dataset[features_list]
+    y_fair = fair_dataset['Target']
+    
+    sens_and_target_features = ['sex_A91','sex_A92','sex_A93','sex_A94','Duration in month','Credit amount','Installment rate in percentage of disposable income',
+    'Present residence since','Age in years']
+    sns.heatmap(dataset[sens_and_target_features].corr(),annot=True,cmap='coolwarm')
+    plt.title("Standard dataset heatmap")
+    plt.show()
+
+    sns.heatmap(fair_dataset[sens_and_target_features].corr(),annot=True,cmap='coolwarm')
+    plt.title("Modified dataset heatmap")
+    plt.show()
+
+
     for train_index, test_index in kf.split(df_array):
         i = i + 1
 
@@ -90,35 +130,44 @@ def training_model(dataset):
             title="Show all metrics",
         )
 
-        # proviamo alcune operazioni di postprocessing sul modello prodotto
-        # postprocess_model = ThresholdOptimizer(
-        #     estimator=model_pipeline,
-        #     constraints='equalized_odds',
-        #     objective='balanced_accuracy_score',
-        #     prefit=True,
-        #     predict_method='predict_proba'
-        # )
+        # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
+        validate(model_pipeline, 'std_models',i, X_test, y_test)
 
-        # postprocess_model.fit(X_train,y_train,sensitive_features=sex_train)
-        # fair_pred = postprocess_model.predict(X_test,sensitive_features=sex_test)
-        # fair_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=fair_pred,sensitive_features=sex_test)
-        # mf.by_group.plot.bar(
-        #     subplots=True,
-        #     layout=[3, 3],
-        #     legend=False,
-        #     figsize=[12, 8],
-        #     title="Show all metrics",
-        # )
-        
+        X_fair_train = X_fair.iloc[train_index]
+        y_fair_train = y_fair.iloc[train_index]
+
+        X_fair_test = X_fair.iloc[test_index]
+        y_fair_test = y_fair.iloc[test_index]
+
+        # addestriamo il modello
+        fair_model_pipeline.fit(X_fair_train,y_train)
 
         # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
-        validate(model_pipeline, i, X_test, y_test)
+        validate(fair_model_pipeline, 'fair_models',i, X_fair_test, y_fair_test)
 
-    # per mostrare grafici
-    plt.show()
+    #     # proviamo alcune operazioni di postprocessing sul modello prodotto
+    #     # postprocess_model = ThresholdOptimizer(
+    #     #     estimator=model_pipeline,
+    #     #     constraints='equalized_odds',
+    #     #     objective='balanced_accuracy_score',
+    #     #     prefit=True,
+    #     #     predict_method='predict_proba'
+    #     # )
 
+    #     # postprocess_model.fit(X_train,y_train,sensitive_features=sex_train)
+    #     # fair_pred = postprocess_model.predict(X_test,sensitive_features=sex_test)
+    #     # fair_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=fair_pred,sensitive_features=sex_test)
+    #     # mf.by_group.plot.bar(
+    #     #     subplots=True,
+    #     #     layout=[3, 3],
+    #     #     legend=False,
+    #     #     figsize=[12, 8],
+    #     #     title="Show all metrics",
+    #     # )
+    # # per mostrare grafici
+    # plt.show()
 
-def validate(ml_model,index,X_test,y_test):
+def validate(ml_model,model_type,index,X_test,y_test):
     ## funzione utile a calcolare metriche del modello realizzato
 
     pred = ml_model.predict(X_test)
@@ -133,14 +182,14 @@ def validate(ml_model,index,X_test,y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/quality_reports/credit_fairlearn_matrix_report.txt",open_type) as f:
+    with open(f"./reports/{model_type}/fairlearn/credit_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/quality_reports/credit_fairlearn_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/{model_type}/fairlearn/credit_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))

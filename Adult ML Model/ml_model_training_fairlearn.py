@@ -6,9 +6,11 @@ from fairlearn.reductions import *
 from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.metrics import *
 from sklearn.metrics import *
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 def load_dataset():
     ## funzione di load del dataset
@@ -16,7 +18,7 @@ def load_dataset():
     df = pd.read_csv('./Adult Dataset/adult_modificato.csv')
 
     # print di debug
-    print(df.head)
+    # print(df.head)
 
     training_model(df)
 
@@ -63,6 +65,42 @@ def training_model(dataset):
     # setting pipeline contenente modello e scaler per ottimizzazione dei dati da fornire al modello
     model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
 
+    # setting pipeline da addestrare sul dataset soggetto ad operazioni di fairness
+    fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+
+    # lista contenente nomi colonne del dataset escluse le feature sensibili
+    features_names = dataset.columns.tolist()
+    for feature in protected_features_names:
+        features_names.remove(feature)
+
+    # creiamo un oggetto fornito dalla libreria Fairlean in grado di rimuovere correlazione fra le feature del dataset e le feature sensibili
+    corr_remover = CorrelationRemover(sensitive_feature_ids=protected_features_names,alpha=1.0)
+    fair_dataset = corr_remover.fit_transform(dataset)
+
+    # ricostruiamo il dataframe inserendo le feature appena modificate
+    fair_dataset = pd.DataFrame(
+        fair_dataset, columns=features_names
+    )
+    # inseriamo nel nuovo dataframe le variabili sensibili rimosse in precedenza e la variabile target
+    fair_dataset[protected_features_names] = dataset[protected_features_names]
+    fair_dataset['salary'] = dataset['salary']
+
+    # settiamo una lista contenente alcuni attrubi del dataset e le variabili sensibili
+    sens_features_and_unses_features = ['sex_Male','sex_Female','race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','age','education-num','hours-per-week','salary','workclass_Federal-gov']
+    
+    # creiamo una heatmap del dataset originale che mostra la correlazione fra gli attributi dichiarati in precedenza
+    sns.heatmap(dataset[sens_features_and_unses_features].corr(),annot=True,cmap='coolwarm',fmt='.2f')
+    plt.title('original dataset')
+    plt.show()
+    
+    # creiamo una heatmap del dataset ricalibrato che mostra la nuova correlazione fra gli attributi
+    sns.heatmap(fair_dataset[sens_features_and_unses_features].corr(),annot=True,cmap='coolwarm',fmt='.2f')
+    plt.title('modified dataset')
+    plt.show()
+
+    # estraiamo feature X ed y dal dataset ricalibrato
+    X_fair = fair_dataset[features]
+    y_fair = fair_dataset['salary']
 
     # setting della strategia KFold con standard di 10 gruppi
     kf = KFold(n_splits=10)
@@ -139,12 +177,23 @@ def training_model(dataset):
             title="Show all metrics",
         )
 
-        # validate(model_pipeline, i, X_test, y_test)
+        validate(model_pipeline,'std_models', i, X_test, y_test)
+
+        # addestriamo ora un modello sul dataframe in precedenza ricalibrato usando fairlearn
+        X_fair_train = X_fair.iloc[train_index]
+        y_fair_train = y_fair.iloc[train_index]
+
+        X_fair_test = X_fair.iloc[test_index]
+        y_fair_test = y_fair.iloc[test_index]
+
+        fair_model_pipeline.fit(X_fair_train,y_fair_train)
+
+        validate(fair_model_pipeline, 'fair_models', i, X_fair_test, y_fair_test)
     
     # per stampare i grafici generati
     plt.show()
 
-def validate(ml_model, index, X_test, y_test):
+def validate(ml_model, model_type, index, X_test, y_test):
     ## funzione utile a calcolare metriche del modello realizzato
 
     pred = ml_model.predict(X_test)
@@ -159,14 +208,14 @@ def validate(ml_model, index, X_test, y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/quality_reports/adult_fairlearn_matrix_report.txt",open_type) as f:
+    with open(f"./reports/{model_type}/fairlearn/adult_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/quality_reports/adult_fairlearn_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/{model_type}/fairlearn/adult_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
