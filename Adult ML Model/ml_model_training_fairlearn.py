@@ -11,7 +11,9 @@ from fairlearn.metrics import *
 from sklearn.metrics import *
 import matplotlib.pyplot as plt
 import seaborn as sns
+from codecarbon import track_emissions
 
+@track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
     ## funzione di load del dataset
 
@@ -68,35 +70,9 @@ def training_model(dataset):
     # setting pipeline da addestrare sul dataset soggetto ad operazioni di fairness
     fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
 
-    # lista contenente nomi colonne del dataset escluse le feature sensibili
-    features_names = dataset.columns.tolist()
-    for feature in protected_features_names:
-        features_names.remove(feature)
-
-    # creiamo un oggetto fornito dalla libreria Fairlean in grado di rimuovere correlazione fra le feature del dataset e le feature sensibili
-    corr_remover = CorrelationRemover(sensitive_feature_ids=protected_features_names,alpha=1.0)
-    fair_dataset = corr_remover.fit_transform(dataset)
-
-    # ricostruiamo il dataframe inserendo le feature appena modificate
-    fair_dataset = pd.DataFrame(
-        fair_dataset, columns=features_names
-    )
-    # inseriamo nel nuovo dataframe le variabili sensibili rimosse in precedenza e la variabile target
-    fair_dataset[protected_features_names] = dataset[protected_features_names]
-    fair_dataset['salary'] = dataset['salary']
-
-    # settiamo una lista contenente alcuni attrubi del dataset e le variabili sensibili
-    sens_features_and_unses_features = ['sex_Male','sex_Female','race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','age','education-num','hours-per-week','salary','workclass_Federal-gov']
-    
-    # creiamo una heatmap del dataset originale che mostra la correlazione fra gli attributi dichiarati in precedenza
-    sns.heatmap(dataset[sens_features_and_unses_features].corr(),annot=True,cmap='coolwarm',fmt='.2f')
-    plt.title('original dataset')
-    plt.show()
-    
-    # creiamo una heatmap del dataset ricalibrato che mostra la nuova correlazione fra gli attributi
-    sns.heatmap(fair_dataset[sens_features_and_unses_features].corr(),annot=True,cmap='coolwarm',fmt='.2f')
-    plt.title('modified dataset')
-    plt.show()
+    # richiamiamo la funzione che dal dataset originale genera un nuovo dataset modificato rimuovendo la correlazione fra gli attributi sensibili e non
+    # del dataset
+    fair_dataset = fairness_preprocess_op(dataset=dataset,protected_features_names=protected_features_names)
 
     # estraiamo feature X ed y dal dataset ricalibrato
     X_fair = fair_dataset[features]
@@ -191,6 +167,45 @@ def training_model(dataset):
         validate(fair_model_pipeline, 'fair_models', i, X_fair_test, y_fair_test)
     
     # per stampare i grafici generati
+    plt.show()
+
+def fairness_preprocess_op(dataset, protected_features_names):
+    ## funzione che utilizza classe offerta da fairlearn in grado di mitigare la correlazione fra gli attributi sensibili e non del dataset
+
+    # lista contenente nomi colonne del dataset escluse le feature sensibili
+    features_names = dataset.columns.tolist()
+    for feature in protected_features_names:
+        features_names.remove(feature)
+
+    # creiamo un oggetto fornito dalla libreria Fairlean in grado di rimuovere correlazione fra le feature del dataset e le feature sensibili
+    corr_remover = CorrelationRemover(sensitive_feature_ids=protected_features_names,alpha=1.0)
+    fair_dataset = corr_remover.fit_transform(dataset)
+
+    # ricostruiamo il dataframe inserendo le feature appena modificate
+    fair_dataset = pd.DataFrame(
+        fair_dataset, columns=features_names
+    )
+
+    # inseriamo nel nuovo dataframe le variabili sensibili rimosse in precedenza e la variabile target
+    fair_dataset[protected_features_names] = dataset[protected_features_names]
+    fair_dataset['salary'] = dataset['salary']
+
+    # stampiamo heatmap che confrontano il grado di correlazione fra gli attributi sensibili e alcuni attributi del dataset
+    show_correlation_heatmap(dataset=dataset,title='original dataset')
+    show_correlation_heatmap(dataset=fair_dataset,title='modified dataset')
+
+    return fair_dataset
+
+
+def show_correlation_heatmap(dataset,title):
+    ## funzione che genera heatmap sul dataset fornito usando attributi sensibili e non per mostrare il grado di correlazione presente
+
+    # settiamo una lista contenente alcuni attrubi del dataset e le variabili sensibili
+    sens_features_and_unses_features = ['sex_Male','sex_Female','race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','age','education-num','hours-per-week','salary','workclass_Federal-gov']
+    
+    # creiamo una heatmap del dataset che mostra la correlazione fra gli attributi dichiarati in precedenza
+    sns.heatmap(dataset[sens_features_and_unses_features].corr(),annot=True,cmap='coolwarm',fmt='.2f',)
+    plt.title(title)
     plt.show()
 
 def validate(ml_model, model_type, index, X_test, y_test):
