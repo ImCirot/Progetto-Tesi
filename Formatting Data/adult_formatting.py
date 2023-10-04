@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import OrdinalEncoder
+from sklearn.preprocessing import OneHotEncoder
 
 
 def formatting_data():
@@ -38,13 +38,12 @@ def formatting_data():
 
     # encoding delle feature categoriche in valori numerici tramite la funzione get_dummies()
     # funzione che crea X nuove colonne, con X numero di possibili valori per la feature, impostando valore 0.0 e 1.0
-    encoder = OrdinalEncoder(dtype=int)
-    df[categorical_features] = encoder.fit_transform(df[categorical_features])
+    one_hot = pd.get_dummies(df[categorical_features], dtype=int)
 
     # Cancelliamo dal DataFrame originale le features categoriche espanse per poi unire alle rimanenti il nuovo dataframe ottenuto dalla funzione
     # get_dummies()
-    # df = df.drop(categorical_features, axis=1)
-    # df = df.join(one_hot)
+    df = df.drop(categorical_features, axis=1)
+    df = df.join(one_hot)
 
     # stampiamo in output il dataset in un nuovo file .csv pronto per essere utilizzato
     df.to_csv('./Adult Dataset/adult_modificato.csv',index_label='ID')
