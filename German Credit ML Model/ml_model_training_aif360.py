@@ -25,14 +25,18 @@ def traning_and_testing_model():
     # pd.options.display.max_columns = 2
     # print(df.head())
 
+    fair_dataset = test_fairness(df)
+
     features = df.columns.tolist()
     features.remove('Target')
 
     target = ['Target']
 
     X = df[features]
+    X_fair = fair_dataset[features]
 
     y = df[target]
+    y_fair = df[target]
 
     # Si crea un array del dataframe utile per la KFold
     df_array = np.array(df)
@@ -47,47 +51,52 @@ def traning_and_testing_model():
     # in particolare la pipeline standard sarà addestrata sui dati as-is
     # mentre la fair pipeline verrà addestrata su dati sui vengono applicate strategie di fairness
     # volte a rimuovere discriminazione e bias nel dataset di training
-    fair_pipe = make_pipeline(StandardScaler(), LogisticRegression())
-    standard_pipe = make_pipeline(StandardScaler(), LogisticRegression())
+    fair_pipe = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,2:5}))
+    standard_pipe = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,2:5}))
 
     # Strategia KFold
     for train_index, test_index in kf.split(df_array):
         i = i+1
 
-        split_dataset_train = df.loc[train_index]
-        
-        fair_dataset = test_fairness(split_dataset_train, i)
+        # setting del training set dell'i-esima iterazione 
+        X_train = X.loc[train_index]
+        y_train = y.loc[train_index]
 
-        # i due sottoinsiemi di training su cui è stata effettuata fairness
-        X_train_fair = fair_dataset[features]
-        y_train_fair = fair_dataset[target]
-
-        # i due sottoinsiemi di dati senza alcuna modifica
-        X_train_std = X.loc[train_index]
-        y_train_std = y.loc[train_index]
-
+        # setting del test set dell'i-esima iterazione 
         X_test = X.loc[test_index]
         y_test = y.loc[test_index]
 
+        # fit del modello sul training set dell'i-esima iterazione
+        standard_pipe.fit(X_train,y_train.values.ravel())
 
-        # Fit dei dati sul nostro modello fair tramite il gruppo di training attuale
-        fair_pipe.fit(X_train_fair,y_train_fair.values.ravel())
+        # Stampiamo metriche di valutazione per il modello
+        validate(standard_pipe, i, "std_models", X_test, y_test)
+    
+    # costruiamo array dal dataset ricalibrato per attuare strategia KFold
+    fair_array = np.asarray(fair_dataset)
 
-        # Fit dei dati sul nostro modello standard traminte il gruppo di training standard attuale 
-        standard_pipe.fit(X_train_std,y_train_std.values.ravel())
+    # reset contatore i
+    i = 0
 
-        # Stampiamo metriche di valutazione per entrambi i modelli generati
-        validate(fair_pipe, "fair", i, X_test,y_test.values.ravel())
-        validate(standard_pipe, "standard", i, X_test, y_test.values.ravel())
+    for train_index,test_index in kf.split(fair_array):
+        i = i+1
 
-    # # Test di predizione del modello
-    # prediction = pd.read_csv('./prediction.csv')
-    # print(f"My prediction: {pipe.predict(prediction)}")
+        # setting training set dell'i-esima iterazione dal dataset ricalibrato
+        X_fair_train = X_fair.iloc[train_index]
+        y_fair_train = y_fair.iloc[train_index]
 
+        # setting test set dell'i-esima iterazione dal dataset ricalibrato
+        X_fair_test = X_fair.iloc[test_index]
+        y_fair_test = y_fair.iloc[test_index]
 
+        # fit del modello sul training set dell'i-esima iterazione
+        fair_pipe.fit(X_fair_train,y_fair_train.values.ravel())
 
-def validate(ml_model, type, index, X_test, y_test):
-    ## funzione utile a calcolare metriche del modello realizzato
+        # Stampiamo metriche di valutazione per il modello
+        validate(fair_pipe, i, "fair_models", X_fair_test, y_fair_test)
+            
+def validate(ml_model,index,model_type,X_test,y_test):
+    ## funzione utile a calcolare le metriche di valutazione del modello passato in input
 
     pred = ml_model.predict(X_test)
 
@@ -101,20 +110,20 @@ def validate(ml_model, type, index, X_test, y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/quality_reports/{type}_matrix_report.txt",open_type) as f:
+    with open(f"./reports/{model_type}/aif360/credit_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/quality_reports/{type}_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/{model_type}/aif360/credit_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
         f.write('\n')
 
-def test_fairness(dataset, index):
+def test_fairness(dataset):
     ## Funzione che presenta alcune metriche di fairness sul dataset utilizzato e applica processi per ridurre/azzerrare il bias
 
     # Attributi sensibili
@@ -127,16 +136,7 @@ def test_fairness(dataset, index):
         'sex_A91','sex_A92','sex_A94'
     ]
 
-    # Setting del dataset per l'utilizzo dell'API AIF360
-    # dataset_origin_train = StandardDataset(
-    #     df=dataset,
-    #     label_name='Target',
-    #     favorable_classes=[1],
-    #     protected_attribute_names=protected_attribute_names,
-    #     privileged_classes=[lambda x: x == 1]
-    # )
-
-    dataset_origin_train = BinaryLabelDataset(
+    aif360_dataset = BinaryLabelDataset(
         df=dataset,
         favorable_label=1,
         unfavorable_label=2,
@@ -152,42 +152,49 @@ def test_fairness(dataset, index):
     unprivileged_groups = [{'sex_A93': 0}]
 
     # Calcolo della metrica sul dataset originale
-    metric_original_train = BinaryLabelDatasetMetric(dataset=dataset_origin_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)    
+    metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)    
     
     # Se la metrica originale ottiene già valore 0.0, allora il dataset è gia equo e non ha bisogno di ulteriori operazioni
-    if(metric_original_train.mean_difference() != 0.0):
+    if(metric_original.mean_difference() != 0.0):
         # Utilizzamo un operatore di bilanciamento offerto dall'API AIF360
         RW = Reweighing(privileged_groups=privileged_groups, unprivileged_groups=unprivileged_groups)
 
         # Bilanciamo il dataset
-        dataset_transformed_train = RW.fit_transform(dataset_origin_train)
+        dataset_transformed = RW.fit_transform(aif360_dataset)
         # Ricalcoliamo la metrica
-        metric_transformed_train = BinaryLabelDatasetMetric(dataset=dataset_transformed_train, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
+        metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
+
+    # stampa della mean_difference del modello originale
+    print_fairness_metrics('mean_difference',metric_original.mean_difference(),'Mean_difference value before', first_message=True)
+
+    # stampa della mean_difference del nuovo modello bilanciato sul file di report
+    print_fairness_metrics('mean_difference',metric_transformed.mean_difference(),'Mean_difference value after')
+
+    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
+    print_fairness_metrics('mean_difference',metric_original.num_positives(privileged=True),'Num. of positive instances of priv_group before')
+    print_fairness_metrics('mean_difference',metric_original.num_positives(privileged=False),'Num. of positive instances of unpriv_group before')
+
+    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
+    print_fairness_metrics('mean_difference',metric_transformed.num_positives(privileged=True),'Num. of positive instances of priv_group after')
+    print_fairness_metrics('mean_difference',metric_transformed.num_positives(privileged=False),'Num. of positive instances of unpriv_group after')
 
     # Creiamo un nuovo dataframe sulla base del modello ripesato dall'operazione precedente
-    fair_dataset = dataset_transformed_train.convert_to_dataframe()[0]
-
-    # Chiamata alla funzione per generare un report dei valori ottenuti
-    print_fairness_metrics(metric_original_train.mean_difference(), metric_transformed_train.mean_difference(), "mean_difference", index)
+    fair_dataset = dataset_transformed.convert_to_dataframe()[0]
 
     return fair_dataset
     
-def print_fairness_metrics(original_metric, transformed_metric, metric_type, index):
-    ## funzione per creare file di report di metriche di fairness
+def print_fairness_metrics(metric_name, metric, message, first_message=False):
+    ## funzione per stampare in file le metriche di fairness del modello passato in input
 
-    # Scegliamo il tipo apertura file, se è la prima iteraz. creiamo file
-    if index == 1:
-        open_mode = 'w'
+    if first_message:
+        open_type = 'w'
     else:
-        open_mode = 'a'
+        open_type = 'a'
     
-    # Creiamo un file nella cartella reports con lo stesso nome della metrica scelta
-    with open(f'./reports/fairness_reports/{metric_type}_report.txt', open_mode) as f:
-        f.write(f'{metric_type}: iteration {index}\n')
-        f.write(f'Original metric: {original_metric}\n')
-        f.write(f'Metric after: {transformed_metric}\n')
+    #scriviamo su un file la metrica passata
+    with open(f"./reports/fairness_reports/credit_{metric_name}_report.txt",open_type) as f:
+        f.write(f"{message}: {metric}")
         f.write('\n')
-
 
 # Chiamata funzione inizale di training e testing
 traning_and_testing_model()

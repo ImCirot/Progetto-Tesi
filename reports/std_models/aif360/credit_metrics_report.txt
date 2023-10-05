@@ -1,0 +1,100 @@
+1 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.93      0.51      0.66        75
+           2       0.37      0.88      0.52        25
+
+    accuracy                           0.60       100
+   macro avg       0.65      0.69      0.59       100
+weighted avg       0.79      0.60      0.62       100
+
+2 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.90      0.53      0.67        68
+           2       0.47      0.88      0.61        32
+
+    accuracy                           0.64       100
+   macro avg       0.68      0.70      0.64       100
+weighted avg       0.76      0.64      0.65       100
+
+3 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.91      0.62      0.74        77
+           2       0.38      0.78      0.51        23
+
+    accuracy                           0.66       100
+   macro avg       0.64      0.70      0.63       100
+weighted avg       0.79      0.66      0.69       100
+
+4 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.88      0.53      0.66        72
+           2       0.40      0.82      0.54        28
+
+    accuracy                           0.61       100
+   macro avg       0.64      0.67      0.60       100
+weighted avg       0.75      0.61      0.63       100
+
+5 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.89      0.67      0.76        72
+           2       0.48      0.79      0.59        28
+
+    accuracy                           0.70       100
+   macro avg       0.68      0.73      0.68       100
+weighted avg       0.77      0.70      0.72       100
+
+6 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.80      0.54      0.65        59
+           2       0.55      0.80      0.65        41
+
+    accuracy                           0.65       100
+   macro avg       0.68      0.67      0.65       100
+weighted avg       0.70      0.65      0.65       100
+
+7 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.89      0.44      0.59        70
+           2       0.40      0.87      0.55        30
+
+    accuracy                           0.57       100
+   macro avg       0.64      0.65      0.57       100
+weighted avg       0.74      0.57      0.58       100
+
+8 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.90      0.63      0.74        68
+           2       0.52      0.84      0.64        32
+
+    accuracy                           0.70       100
+   macro avg       0.71      0.74      0.69       100
+weighted avg       0.78      0.70      0.71       100
+
+9 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.93      0.61      0.74        71
+           2       0.48      0.90      0.63        29
+
+    accuracy                           0.69       100
+   macro avg       0.71      0.75      0.68       100
+weighted avg       0.80      0.69      0.70       100
+
+10 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           1       0.91      0.47      0.62        68
+           2       0.45      0.91      0.60        32
+
+    accuracy                           0.61       100
+   macro avg       0.68      0.69      0.61       100
+weighted avg       0.76      0.61      0.61       100
+
