@@ -9,9 +9,9 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing
-import os
+from codecarbon import track_emissions
 
-
+@track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
     ## funzione di load del dataset e drop features superflue
 
