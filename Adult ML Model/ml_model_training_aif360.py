@@ -331,7 +331,7 @@ def print_fairness_metrics(metric_name, metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/{metric_name}_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/adult_{metric_name}_report.txt",open_type) as f:
         f.write(f"{message}: {metric}")
         f.write('\n')
 
