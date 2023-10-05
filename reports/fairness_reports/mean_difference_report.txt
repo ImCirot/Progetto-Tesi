@@ -1,40 +1,18 @@
-mean_difference: iteration 1
-Original metric: -0.07827876185364102
-Metric after: -2.220446049250313e-16
-
-mean_difference: iteration 2
-Original metric: -0.0718754212620637
-Metric after: 2.220446049250313e-16
-
-mean_difference: iteration 3
-Original metric: -0.06942516382308606
-Metric after: 1.1102230246251565e-16
-
-mean_difference: iteration 4
-Original metric: -0.07250000000000001
-Metric after: -1.1102230246251565e-16
-
-mean_difference: iteration 5
-Original metric: -0.0582902651868169
-Metric after: 1.1102230246251565e-16
-
-mean_difference: iteration 6
-Original metric: -0.07650368713521827
-Metric after: 3.3306690738754696e-16
-
-mean_difference: iteration 7
-Original metric: -0.06893601782587933
-Metric after: 1.1102230246251565e-16
-
-mean_difference: iteration 8
-Original metric: -0.06738195924929236
-Metric after: 0.0
-
-mean_difference: iteration 9
-Original metric: -0.08584409373505497
-Metric after: 0.0
-
-mean_difference: iteration 10
-Original metric: -0.09331625558806089
-Metric after: 1.1102230246251565e-16
-
+Race mean_difference before: -0.10552461630643828
+Race mean_difference after: 0.0
+(RACE) Num. of positive instances of priv_group before: 6839.0
+(RACE) Num. of positive instances of unpriv_group before: 669.0
+(RACE) Num. of positive instances of priv_group after: 6455.306809893244
+(RACE) Num. of positive instances of unpriv_group after: 1052.6931901067564
+Sex mean_difference before: -0.20015891077100018
+Sex mean_difference value after: 1.3877787807814457e-16
+(SEX) Num. of positive instances of priv_group before: 6396.0
+(SEX) Num. of positive instances of unpriv_group before: 1112.0
+(SEX) Num. of positive instances of priv_group after: 5073.040249320335
+(SEX) Num. of positive instances of unpriv_group after: 2434.9597506796636
+Overall mean_difference before: -0.1900443394748335
+Overal mean_difference value after: -2.220446049250313e-16
+(OVR) Num. of positive instances of priv_group before: 5868.0
+(OVR) Num. of positive instances of unpriv_group before: 1640.0
+(OVR) Num. of positive instances of priv_group after: 4490.063788873418
+(OVR) Num. of positive instances of unpriv_group after: 3017.9362111265823
