@@ -95,6 +95,6 @@ def training_and_testing_model(df,df_type,class_weight):
         class_weight=class_weight
     )
 
-    classifier.save(f"./models/{df_type}_gender_recognition_model")
+    classifier.save(f"./output_models/{df_type}_gender_recognition_model")
 
 load_dataset()
