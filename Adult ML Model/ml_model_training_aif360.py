@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing
 from codecarbon import track_emissions
+import pickle
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
@@ -106,6 +107,8 @@ def training_model(dataset):
         # calcolo metriche di valutazione sul modello fair dell'i-esima iterazione
         validate(fair_model_pipeline,i,'fair_models',X_fair_test,y_fair_test)
 
+    pickle.dump(model_pipeline,open('./output_models/std_models/aif360_adult_model.sav','wb'))
+    pickle.dump(fair_model_pipeline,open('./output_models/fair_models/aif360_adult_model.sav','wb'))
 
 def validate(ml_model,index,model_type,X_test,y_test):
     ## funzione utile a calcolare le metriche di valutazione del modello passato in input
@@ -113,6 +116,10 @@ def validate(ml_model,index,model_type,X_test,y_test):
     pred = ml_model.predict(X_test)
 
     matrix = confusion_matrix(y_test, pred)
+
+    y_proba = ml_model.predict_proba(X_test)[::,1]
+
+    auc_score = roc_auc_score(y_test,y_proba)
 
     report = classification_report(y_test, pred)
 
@@ -133,6 +140,7 @@ def validate(ml_model,index,model_type,X_test,y_test):
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
+        f.write(f'AUC ROC report: {auc_score}')
         f.write('\n')
 
 def test_fairness(original_dataset):
