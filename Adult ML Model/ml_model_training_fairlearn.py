@@ -238,7 +238,7 @@ def validate(ml_model, model_type, index, X_test, y_test):
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
-        f.write(f'\nAUC ROC report: {auc_score}')
+        f.write(f'\nAUC ROC score: {auc_score}\n')
         f.write('\n')
 
 
