@@ -140,7 +140,7 @@ def validate(ml_model,index,model_type,X_test,y_test):
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
-        f.write(f'AUC ROC report: {auc_score}')
+        f.write(f'\nAUC ROC report: {auc_score}')
         f.write('\n')
 
 def test_fairness(original_dataset):
