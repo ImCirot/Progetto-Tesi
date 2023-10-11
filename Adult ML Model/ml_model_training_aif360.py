@@ -10,6 +10,8 @@ from sklearn.preprocessing import StandardScaler
 from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing
 from codecarbon import track_emissions
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 import pickle
 
 @track_emissions(country_iso_code='ITA',offline=True)
@@ -62,10 +64,14 @@ def training_model(dataset):
     i = 0
 
     # costruiamo il modello standard tramite pipeline contenente uno scaler per la normalizzazione dati e un regressore
-    model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
+    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
 
     # costruiamo un modello tramite pipeline su cui utilizzare un dataset opportunamente modificato per aumentare fairness
-    fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    lr_fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
+    svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
 
     # ciclo strategia KFold per il modello base
     for train_index,test_index in kf.split(df_array):
@@ -80,10 +86,14 @@ def training_model(dataset):
         y_test = y.iloc[test_index]
 
         # training del modello base sul training set dell'i-esima iterazione
-        model_pipeline.fit(X_train,y_train.values.ravel())
+        lr_model_pipeline.fit(X_train,y_train.values.ravel())
+        rf_model_pipeline.fit(X_train,y_train.values.ravel())
+        svm_model_pipeline.fit(X_train,y_train.values.ravel())
 
         # calcolo metriche di valutazione sul modello base dell'i-esima iterazione 
-        validate(model_pipeline,i,"std_models",X_test,y_test)
+        validate(lr_model_pipeline,i,"std_models",'lr',X_test,y_test)
+        validate(rf_model_pipeline,i,'std_models','rf',X_test,y_test)
+        validate(svm_model_pipeline,i,'std_models','svm',X_test,y_test)
 
     # trasformiamo dataframe in array per poter utilizzare la strategia KFold
     df_fair_array = np.asarray(fair_dataset)
@@ -102,21 +112,29 @@ def training_model(dataset):
         y_fair_test = y_fair.iloc[test_index]
 
         # training del modello sul training set dell'i-esima iterazione
-        fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
 
         # calcolo metriche di valutazione sul modello fair dell'i-esima iterazione
-        validate(fair_model_pipeline,i,'fair_models',X_fair_test,y_fair_test)
+        validate(lr_fair_model_pipeline,i,'fair_models','lr',X_fair_test,y_fair_test)
+        validate(rf_fair_model_pipeline,i,'fair_models','rf',X_fair_test,y_fair_test)
+        validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
 
-    pickle.dump(model_pipeline,open('./output_models/std_models/aif360_adult_model.sav','wb'))
-    pickle.dump(fair_model_pipeline,open('./output_models/fair_models/aif360_adult_model.sav','wb'))
+    pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_adult_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_adult_model.sav','wb'))
+    pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_adult_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_aif360_adult_model.sav','wb'))
+    pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_aif360_adult_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_adult_model.sav','wb'))
 
-def validate(ml_model,index,model_type,X_test,y_test):
+def validate(ml_model,index,model_vers,model_type,X_test,y_test):
     ## funzione utile a calcolare le metriche di valutazione del modello passato in input
 
     pred = ml_model.predict(X_test)
 
     matrix = confusion_matrix(y_test, pred)
-
+    
     y_proba = ml_model.predict_proba(X_test)[::,1]
 
     auc_score = roc_auc_score(y_test,y_proba)
@@ -129,14 +147,14 @@ def validate(ml_model,index,model_type,X_test,y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/{model_type}/aif360/adult_matrix_report.txt",open_type) as f:
+    with open(f"./reports/{model_vers}/aif360/adult/{model_type}_adult_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/{model_type}/aif360/adult_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/{model_vers}/aif360/adult/{model_type}_adult_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))

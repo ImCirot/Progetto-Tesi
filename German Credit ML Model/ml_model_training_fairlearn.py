@@ -11,6 +11,9 @@ from fairlearn.postprocessing import ThresholdOptimizer
 import matplotlib.pyplot as plt
 from fairlearn.reductions import *
 import seaborn as sns
+import pickle
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 
 def training_model(dataset):
     ## funzione che addestra il modello sul dataset utilizzando strategia KFold
@@ -58,7 +61,9 @@ def training_model(dataset):
 
     # Creiamo una pipeline contenente il modello basato su regressione logistica e uno scaler per poter scalare i dati correttamente per poter
     # utilizzare correttamente il modello
-    model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
+    lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
+    rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
+    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True, class_weight={1:1,0:5}))
 
 
     # proviamo a rimuovere eventuali correlazioni esistenti fra i dati e le features sensibli
@@ -66,7 +71,9 @@ def training_model(dataset):
     corr_remover = CorrelationRemover(sensitive_feature_ids=sex_features,alpha=1.0)
 
     # creiamo un nuovo modello da addestrare sul dataset modificato
-    fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression(class_weight={1:1,0:5}))
+    lr_fair_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
+    rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
+    svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
 
     features_names = dataset.columns.tolist()
     for sex_feature in sex_features:
@@ -113,25 +120,30 @@ def training_model(dataset):
         sex_test = sex.loc[test_index]
 
         # fitting del modello sui dati di training per l'iterazione i-esima
-        model_pipeline.fit(X_train,y_train)
+        lr_model_pipeline.fit(X_train,y_train.values.ravel())
+        rf_model_pipeline.fit(X_train,y_train.values.ravel())
+        svm_model_pipeline.fit(X_train,y_train.values.ravel())
 
-        # produciamo una predizione di test per l'iterazione i-esima
-        pred = model_pipeline.predict(X_test)
 
-        # calcoliamo delle metriche di fairness sulla base degli attributi sensibili
-        mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=sex_test)
-        mf_no_zeros = mf.by_group
-        mf_no_zeros = mf_no_zeros.dropna()
-        mf_no_zeros.plot.bar(
-            subplots=True,
-            layout=[2, 2],
-            legend=False,
-            figsize=[20, 10],
-            title="Show all metrics",
-        )
+        # # produciamo una predizione di test per l'iterazione i-esima
+        # pred = lr_model_pipeline.predict(X_test)
+
+        # # calcoliamo delle metriche di fairness sulla base degli attributi sensibili
+        # mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=sex_test)
+        # mf_no_zeros = mf.by_group
+        # mf_no_zeros = mf_no_zeros.dropna()
+        # mf_no_zeros.plot.bar(
+        #     subplots=True,
+        #     layout=[2, 2],
+        #     legend=False,
+        #     figsize=[20, 10],
+        #     title="Show all metrics",
+        # )
 
         # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
-        validate(model_pipeline, 'std_models',i, X_test, y_test)
+        validate(lr_model_pipeline,"std_models",'lr',i,X_test,y_test)
+        validate(rf_model_pipeline,'std_models','rf',i,X_test,y_test)
+        validate(svm_model_pipeline,'std_models','svm',i,X_test,y_test)
 
         X_fair_train = X_fair.iloc[train_index]
         y_fair_train = y_fair.iloc[train_index]
@@ -140,10 +152,14 @@ def training_model(dataset):
         y_fair_test = y_fair.iloc[test_index]
 
         # addestriamo il modello
-        fair_model_pipeline.fit(X_fair_train,y_train)
+        lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
 
         # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
-        validate(fair_model_pipeline, 'fair_models',i, X_fair_test, y_fair_test)
+        validate(lr_fair_model_pipeline,i,'fair_models','lr',X_fair_test,y_fair_test)
+        validate(rf_fair_model_pipeline,i,'fair_models','rf',X_fair_test,y_fair_test)
+        validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
 
     #     # proviamo alcune operazioni di postprocessing sul modello prodotto
     #     # postprocess_model = ThresholdOptimizer(
@@ -167,7 +183,14 @@ def training_model(dataset):
     # # per mostrare grafici
     # plt.show()
 
-def validate(ml_model,model_type,index,X_test,y_test):
+    pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_credit_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_credit_model.sav','wb'))
+    pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_fairlearn_credit_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_credit_model.sav','wb'))
+    pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_credit_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_credit_model.sav','wb'))
+
+def validate(ml_model,model_vers,model_type,index,X_test,y_test):
     ## funzione utile a calcolare metriche del modello realizzato
 
     pred = ml_model.predict(X_test)
@@ -186,14 +209,14 @@ def validate(ml_model,model_type,index,X_test,y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/{model_type}/fairlearn/credit_matrix_report.txt",open_type) as f:
+    with open(f"./reports/{model_vers}/fairlearn/credit/{model_type}credit_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/{model_type}/fairlearn/credit_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/{model_vers}/fairlearn/credit/{model_type}credit_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))

@@ -12,6 +12,9 @@ from sklearn.metrics import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 from codecarbon import track_emissions
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+import pickle
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
@@ -65,10 +68,15 @@ def training_model(dataset):
     race = dataset[race_features]
 
     # setting pipeline contenente modello e scaler per ottimizzazione dei dati da fornire al modello
-    model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
+    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
 
     # setting pipeline da addestrare sul dataset soggetto ad operazioni di fairness
-    fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    lr_fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
+    svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+
 
     # richiamiamo la funzione che dal dataset originale genera un nuovo dataset modificato rimuovendo la correlazione fra gli attributi sensibili e non
     # del dataset
@@ -114,10 +122,12 @@ def training_model(dataset):
         race_test = race.iloc[test_index]
 
         # training modello sul set X ed y dell'iterazione i-esima
-        model_pipeline.fit(X_train,y_train)
+        lr_model_pipeline.fit(X_train,y_train)
+        rf_model_pipeline.fit(X_train,y_train)
+        svm_model_pipeline.fit(X_train,y_train)
 
         # produciamo una predizione di test per l'iterazione i-esima
-        pred = model_pipeline.predict(X_test)
+        pred = lr_model_pipeline.predict(X_test)
 
         # calcoliamo delle metriche di fairness sulla base degli attributi sensibili
         # overall_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=protected_features_test)
@@ -153,7 +163,9 @@ def training_model(dataset):
             title="Show all metrics",
         )
 
-        validate(model_pipeline,'std_models', i, X_test, y_test)
+        validate(lr_model_pipeline,'std_models','lr', i, X_test, y_test)
+        validate(rf_model_pipeline,'std_models','rf',i,X_test,y_test)
+        validate(svm_model_pipeline,'std_models','svm',i,X_test,y_test)
 
         # addestriamo ora un modello sul dataframe in precedenza ricalibrato usando fairlearn
         X_fair_train = X_fair.iloc[train_index]
@@ -162,12 +174,23 @@ def training_model(dataset):
         X_fair_test = X_fair.iloc[test_index]
         y_fair_test = y_fair.iloc[test_index]
 
-        fair_model_pipeline.fit(X_fair_train,y_fair_train)
-
-        validate(fair_model_pipeline, 'fair_models', i, X_fair_test, y_fair_test)
+        lr_fair_model_pipeline.fit(X_fair_train,y_fair_train)
+        rf_fair_model_pipeline.fit(X_fair_train,y_fair_train)
+        svm_fair_model_pipeline.fit(X_fair_train,y_fair_train)
+        
+        validate(lr_fair_model_pipeline,'fair_models','lr',i,X_fair_test,y_fair_test)
+        validate(rf_fair_model_pipeline,'fair_models','rf',i,X_fair_test,y_fair_test)
+        validate(svm_fair_model_pipeline,'fair_models','svm',i,X_fair_test,y_fair_test)
     
     # per stampare i grafici generati
     plt.show()
+
+    pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_adult_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_adult_model.sav','wb'))
+    pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_fairlearn_adult_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_adult_model.sav','wb'))
+    pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_adult_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_adult_model.sav','wb'))
 
 def fairness_preprocess_op(dataset, protected_features_names):
     ## funzione che utilizza classe offerta da fairlearn in grado di mitigare la correlazione fra gli attributi sensibili e non del dataset
@@ -208,7 +231,7 @@ def show_correlation_heatmap(dataset,title):
     plt.title(title)
     plt.show()
 
-def validate(ml_model, model_type, index, X_test, y_test):
+def validate(ml_model, model_vers, model_type, index, X_test, y_test):
     ## funzione utile a calcolare metriche del modello realizzato
 
     pred = ml_model.predict(X_test)
@@ -227,14 +250,14 @@ def validate(ml_model, model_type, index, X_test, y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/{model_type}/fairlearn/adult_matrix_report.txt",open_type) as f:
+    with open(f"./reports/{model_vers}/fairlearn/adult/{model_type}_adult_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/{model_type}/fairlearn/adult_metrics_report.txt",open_type) as f:
+    with open(f"./reports/{model_vers}/fairlearn/adult/{model_type}_adult_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))

@@ -10,6 +10,9 @@ from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing
 from aif360.datasets import StandardDataset
 from aif360.datasets import BinaryLabelDataset
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+import pickle
 
 
 @track_emissions(offline=True, country_iso_code="ITA")
@@ -55,8 +58,13 @@ def traning_and_testing_model():
     # in particolare la pipeline standard sarà addestrata sui dati as-is
     # mentre la fair pipeline verrà addestrata su dati sui vengono applicate strategie di fairness
     # volte a rimuovere discriminazione e bias nel dataset di training
-    fair_pipe = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
-    standard_pipe = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
+    lr_fair_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
+    rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
+    svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
+
+    lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
+    rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
+    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True, class_weight={1:1,0:5}))
 
     # Strategia KFold
     for train_index, test_index in kf.split(df_array):
@@ -71,10 +79,14 @@ def traning_and_testing_model():
         y_test = y.loc[test_index]
 
         # fit del modello sul training set dell'i-esima iterazione
-        standard_pipe.fit(X_train,y_train.values.ravel())
+        lr_model_pipeline.fit(X_train,y_train.values.ravel())
+        rf_model_pipeline.fit(X_train,y_train.values.ravel())
+        svm_model_pipeline.fit(X_train,y_train.values.ravel())
 
         # Stampiamo metriche di valutazione per il modello
-        validate(standard_pipe, i, "std_models", X_test, y_test)
+        validate(lr_model_pipeline, i, "std_models", 'lr', X_test, y_test)
+        validate(rf_model_pipeline,i,'std_models','rf',X_test,y_test)
+        validate(svm_model_pipeline,i,'std_models','svm',X_test,y_test)
     
     # costruiamo array dal dataset ricalibrato per attuare strategia KFold
     fair_array = np.asarray(fair_dataset)
@@ -94,12 +106,23 @@ def traning_and_testing_model():
         y_fair_test = y_fair.iloc[test_index]
 
         # fit del modello sul training set dell'i-esima iterazione
-        fair_pipe.fit(X_fair_train,y_fair_train.values.ravel())
+        lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
 
         # Stampiamo metriche di valutazione per il modello
-        validate(fair_pipe, i, "fair_models", X_fair_test, y_fair_test)
+        validate(lr_fair_model_pipeline, i, "fair_models", 'lr', X_fair_test, y_fair_test)
+        validate(rf_fair_model_pipeline,i,'fair_models','rf',X_fair_test,y_fair_test)
+        validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
+
+    pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_credit_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_credit_model.sav','wb'))
+    pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_credit_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_aif360_credit_model.sav','wb'))
+    pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_aif360_credit_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_credit_model.sav','wb'))
             
-def validate(ml_model,index,model_type,X_test,y_test):
+def validate(ml_model,index,model_vers,model_type,X_test,y_test):
     ## funzione utile a calcolare le metriche di valutazione del modello passato in input
 
     pred = ml_model.predict(X_test)
@@ -118,14 +141,14 @@ def validate(ml_model,index,model_type,X_test,y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/{model_type}/aif360/credit_matrix_report.txt",open_type) as f:
+    with open(f"./reports/{model_vers}/aif360/credit/{model_type}_credit_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/{model_type}/aif360/credit_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/{model_vers}/aif360/credit/{model_type}_credit_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
