@@ -164,9 +164,9 @@ def training_and_testing_model(df,df_type,class_weight):
     )
 
     # salviamo il modello in una directory di output per usi futuri
-    mn_classifier.save(f"./output_models/{df_type}_MobileNetV2_gender_recognition_model")
+    mn_classifier.save(f"./output_models/{df_type}_models/MobileNetV2_gender_recognition_model")
 
-    resnet_classifier.save(f'./output_models/{df_type}_ResNet50_gender_recognition_model')
+    resnet_classifier.save(f'./output_models/{df_type}_models/ResNet50_gender_recognition_model')
 
 def test_fairness(dataset):
     ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
