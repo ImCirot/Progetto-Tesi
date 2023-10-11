@@ -1,0 +1,120 @@
+1 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.86      0.93      0.89      2236
+           1       0.74      0.56      0.64       781
+
+    accuracy                           0.84      3017
+   macro avg       0.80      0.75      0.77      3017
+weighted avg       0.83      0.84      0.83      3017
+
+AUC ROC score: 0.8933632286481942
+
+2 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.87      0.94      0.91      2289
+           1       0.75      0.57      0.65       728
+
+    accuracy                           0.85      3017
+   macro avg       0.81      0.76      0.78      3017
+weighted avg       0.84      0.85      0.84      3017
+
+AUC ROC score: 0.8890420141239278
+
+3 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.88      0.93      0.91      2309
+           1       0.73      0.59      0.66       707
+
+    accuracy                           0.85      3016
+   macro avg       0.81      0.76      0.78      3016
+weighted avg       0.85      0.85      0.85      3016
+
+AUC ROC score: 0.8922401304041807
+
+4 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.86      0.93      0.89      2256
+           1       0.72      0.55      0.63       760
+
+    accuracy                           0.83      3016
+   macro avg       0.79      0.74      0.76      3016
+weighted avg       0.83      0.83      0.83      3016
+
+AUC ROC score: 0.8787898936170213
+
+5 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.87      0.94      0.90      2264
+           1       0.75      0.59      0.66       752
+
+    accuracy                           0.85      3016
+   macro avg       0.81      0.76      0.78      3016
+weighted avg       0.84      0.85      0.84      3016
+
+AUC ROC score: 0.8929033766258178
+
+6 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.87      0.93      0.90      2287
+           1       0.73      0.58      0.64       729
+
+    accuracy                           0.85      3016
+   macro avg       0.80      0.75      0.77      3016
+weighted avg       0.84      0.85      0.84      3016
+
+AUC ROC score: 0.8929549316438175
+
+7 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.87      0.94      0.90      2269
+           1       0.76      0.57      0.65       747
+
+    accuracy                           0.85      3016
+   macro avg       0.82      0.76      0.78      3016
+weighted avg       0.84      0.85      0.84      3016
+
+AUC ROC score: 0.8923102428813239
+
+8 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.87      0.94      0.90      2244
+           1       0.77      0.60      0.67       772
+
+    accuracy                           0.85      3016
+   macro avg       0.82      0.77      0.79      3016
+weighted avg       0.85      0.85      0.85      3016
+
+AUC ROC score: 0.8986300832155755
+
+9 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.87      0.94      0.90      2253
+           1       0.76      0.58      0.65       763
+
+    accuracy                           0.85      3016
+   macro avg       0.81      0.76      0.78      3016
+weighted avg       0.84      0.85      0.84      3016
+
+AUC ROC score: 0.897777188301138
+
+10 iterazione:
+Metriche di valutazione:              precision    recall  f1-score   support
+
+           0       0.87      0.93      0.90      2247
+           1       0.74      0.58      0.65       769
+
+    accuracy                           0.84      3016
+   macro avg       0.81      0.76      0.78      3016
+weighted avg       0.84      0.84      0.84      3016
+
+AUC ROC score: 0.8918465481789618
+
