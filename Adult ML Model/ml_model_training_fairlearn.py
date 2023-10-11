@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from fairlearn.metrics import MetricFrame
 from fairlearn.reductions import *
 from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
@@ -14,7 +13,10 @@ import seaborn as sns
 from codecarbon import track_emissions
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
+from sklearn.pipeline import Pipeline
+from fairlearn.postprocessing import ThresholdOptimizer,plot_threshold_optimizer
 import pickle
+import json
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
@@ -42,30 +44,14 @@ def training_model(dataset):
     # setting lista contenente nomi degli attributi protetti
     protected_features_names = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','sex_Female','sex_Male']
 
-    sex_features = ['sex_Female','sex_Male']
-    race_features = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
-    # settiamo delle metriche utili per poter fornire delle valutazioni sugli attributi sensibili tramite il framework FairLearn
-    metrics = {
-        "accuracy": accuracy_score,
-        "precision": precision_score,
-        "selection rate": selection_rate,
-        "count": count,
-    }
-
     # setting del set contenente le features utili all'apprendimento
     X = dataset[features]
 
     # setting del set contenente la feature target
     y = dataset['salary']
 
-    # setting del set contenente le features protette
-    protected_features = dataset[protected_features_names]
-
-    # setting del set contenente il sesso degli individui presenti nel dataset
-    sex = dataset[sex_features]
-
-    # setting del set contenente razza degli indivuidi presenti nel dataset
-    race = dataset[race_features]
+    # setting del set contenente valori attributi sensibili
+    g = dataset[protected_features_names]
 
     # setting pipeline contenente modello e scaler per ottimizzazione dei dati da fornire al modello
     lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
@@ -95,6 +81,28 @@ def training_model(dataset):
     # setting array contenente valori del dataframe
     df_array = np.asarray(dataset)
 
+    # costruiamo un operatore di postprocessing per cercare di ottimizzare il modello 
+    lr_treshold = ThresholdOptimizer(
+        estimator=lr_model_pipeline,
+        constraints='demographic_parity',
+        predict_method='predict_proba',
+        prefit=True
+    )
+
+    rf_treshold = ThresholdOptimizer(
+        estimator=rf_model_pipeline,
+        constraints='demographic_parity',
+        predict_method='predict_proba',
+        prefit=True
+    )
+
+    svm_treshold = ThresholdOptimizer(
+        estimator=svm_model_pipeline,
+        constraints='demographic_parity',
+        predict_method='predict_proba',
+        prefit=True
+    )
+
     # ciclo strategia KFold
     for train_index, test_index in kf.split(df_array):
         i = i+1
@@ -102,95 +110,70 @@ def training_model(dataset):
         # setting traing set X ed y dell'iterazione i-esima
         X_train = X.iloc[train_index]
         y_train = y.iloc[train_index]
-
-        # setting training set delle sole varibili protette dell'iterazione i-esima
-        protected_features_train = protected_features.iloc[train_index]
-
-        # setting training set della singole variabili protette contenenti informazioni sul sesso e razza dell'individuo
-        sex_train = sex.iloc[train_index]
-        race_train = race.iloc[train_index]
+        g_train = g.iloc[train_index]
 
         # setting test set X ed y dell'iterazione i-esima
         X_test = X.iloc[test_index]
         y_test = y.iloc[test_index]
+        g_test = g.iloc[test_index]
 
-        # setting training set delle sole varibili protette dell'iterazione i-esima
-        protected_features_test = protected_features.iloc[test_index]
-
-        # setting test set della singole variabili protette contenenti informazioni sul sesso e razza dell'individuo
-        sex_test = sex.iloc[test_index]
-        race_test = race.iloc[test_index]
-
-        # training modello sul set X ed y dell'iterazione i-esima
+        # addestriamo i modelli sui set della iterazione i-esima della KFold
         lr_model_pipeline.fit(X_train,y_train)
         rf_model_pipeline.fit(X_train,y_train)
         svm_model_pipeline.fit(X_train,y_train)
 
-        # produciamo una predizione di test per l'iterazione i-esima
-        pred = lr_model_pipeline.predict(X_test)
-
-        # calcoliamo delle metriche di fairness sulla base degli attributi sensibili
-        # overall_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=protected_features_test)
-        # mf.by_group.plot.bar(
-        #     subplots=True,
-        #     layout=[3, 3],
-        #     legend=False,
-        #     figsize=[12, 8],
-        #     title="Show all metrics",
-        # )
-
-        # calcoiamo delle metriche di fairness sulla base dell'attributo protetto "sex"
-        sex_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=sex_test)
-        sex_mf_no_zeros = sex_mf.by_group
-        sex_mf_no_zeros = sex_mf_no_zeros.dropna()
-        sex_mf_no_zeros.plot.bar(
-            subplots=True,
-            layout=[2, 2],
-            legend=False,
-            figsize=[20, 10],
-            title="Show all metrics",
-        )
-
-        # calcoiamo delle metriche di fairness sulla base dell'attributo protetto "race"
-        race_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=race_test)
-        race_mf_no_zeros = race_mf.by_group
-        race_mf_no_zeros = race_mf_no_zeros.dropna()
-        race_mf_no_zeros.plot.bar(
-            subplots=True,
-            layout=[3, 2],
-            legend=False,
-            figsize=[20, 10],
-            title="Show all metrics",
-        )
-
+        # validiamo i modelli per ottenere metriche di valutazione
         validate(lr_model_pipeline,'std_models','lr', i, X_test, y_test)
         validate(rf_model_pipeline,'std_models','rf',i,X_test,y_test)
         validate(svm_model_pipeline,'std_models','svm',i,X_test,y_test)
 
         # addestriamo ora un modello sul dataframe in precedenza ricalibrato usando fairlearn
+
+        # settiamo i training set sul dataset modificato
         X_fair_train = X_fair.iloc[train_index]
         y_fair_train = y_fair.iloc[train_index]
 
+        # settiamo i test set sul dataset modificato
         X_fair_test = X_fair.iloc[test_index]
         y_fair_test = y_fair.iloc[test_index]
 
+        # addestriamo i modelli sull'iterazione i-esima della KFold
         lr_fair_model_pipeline.fit(X_fair_train,y_fair_train)
         rf_fair_model_pipeline.fit(X_fair_train,y_fair_train)
         svm_fair_model_pipeline.fit(X_fair_train,y_fair_train)
         
+        # validiamo i modelli ottenuti per fornire metriche di valutazione
         validate(lr_fair_model_pipeline,'fair_models','lr',i,X_fair_test,y_fair_test)
         validate(rf_fair_model_pipeline,'fair_models','rf',i,X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,'fair_models','svm',i,X_fair_test,y_fair_test)
+
+        lr_treshold.fit(X_train,y_train,sensitive_features=g_train)
+        rf_treshold.fit(X_train,y_train,sensitive_features=g_train)
+        svm_treshold.fit(X_train,y_train,sensitive_features=g_train)
+
+        validate_postop(lr_treshold,"lr",i,X_test,y_test,g_test)
+        validate_postop(rf_treshold,'rf',i,X_test,y_test,g_test)
+        validate_postop(svm_treshold,'svm',i,X_test,y_test,g_test)
+
+        # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
+        # plot_threshold_optimizer(lr_treshold)
     
     # per stampare i grafici generati
     plt.show()
 
+    
+
+    # salviamo i modelli ottenuti
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_adult_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_adult_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_fairlearn_adult_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_adult_model.sav','wb'))
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_adult_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_adult_model.sav','wb'))
+    pickle.dump(lr_treshold,open('./output_models/postop_models/threshold_lr_fairlearn_adult_model.sav','wb'))
+    pickle.dump(rf_treshold,open('./output_models/postop_models/threshold_rf_fairlearn_adult_model.sav','wb'))
+    pickle.dump(svm_treshold,open('./output_models/postop_models/threshold_svm_fairlearn_adult_model.sav','wb'))
+
 
 def fairness_preprocess_op(dataset, protected_features_names):
     ## funzione che utilizza classe offerta da fairlearn in grado di mitigare la correlazione fra gli attributi sensibili e non del dataset
@@ -264,6 +247,30 @@ def validate(ml_model, model_vers, model_type, index, X_test, y_test):
         f.write(f'\nAUC ROC score: {auc_score}\n')
         f.write('\n')
 
+def validate_postop(ml_model,model_type,index,X_test,y_test,g_test):
+    pred = ml_model.predict(X_test,sensitive_features=g_test)
 
+    matrix = confusion_matrix(y_test, pred)
+
+    report = classification_report(y_test, pred)
+
+    if index == 1:
+        open_type = "w"
+    else:
+        open_type = "a"
+    
+    #scriviamo su un file matrice di confusione ottenuta
+    with open(f"./reports/postop_models/{model_type}_adult_matrix_report.txt",open_type) as f:
+        f.write(f"{index} iterazione:\n")
+        f.write(f"Matrice di confusione:\n")
+        f.write(str(matrix))
+        f.write('\n\n')
+    
+    #scriviamo su un file le metriche di valutazione ottenute
+    with open(f"./reports/postop_models/{model_type}_adult_metrics_report.txt",open_type) as f:
+        f.write(f"{index} iterazione:\n")
+        f.write("Metriche di valutazione:")
+        f.write(str(report))
+        f.write('\n')
 
 load_dataset()
