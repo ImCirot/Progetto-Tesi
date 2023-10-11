@@ -21,6 +21,10 @@ def traning_and_testing_model():
     # Drop delle colonne superflue
     df.drop('ID', inplace=True ,axis=1)
 
+    # settiamo la varibile target con valore 1 e 0 per positivo e negativo, riampiazzando il valore 2 usato come standard per indicare il negativo,
+    # operazione necessaria ai fini di utilizzo del toolkit
+    df['Target'] = df['Target'].replace(2,0)
+
     # print di debug
     # pd.options.display.max_columns = 2
     # print(df.head())
@@ -51,8 +55,8 @@ def traning_and_testing_model():
     # in particolare la pipeline standard sarà addestrata sui dati as-is
     # mentre la fair pipeline verrà addestrata su dati sui vengono applicate strategie di fairness
     # volte a rimuovere discriminazione e bias nel dataset di training
-    fair_pipe = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,2:5}))
-    standard_pipe = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,2:5}))
+    fair_pipe = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
+    standard_pipe = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
 
     # Strategia KFold
     for train_index, test_index in kf.split(df_array):
@@ -144,7 +148,7 @@ def test_fairness(dataset):
     aif360_dataset = BinaryLabelDataset(
         df=dataset,
         favorable_label=1,
-        unfavorable_label=2,
+        unfavorable_label=0,
         label_names=['Target'],
         protected_attribute_names=protected_attribute_names,
     )

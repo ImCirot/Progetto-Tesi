@@ -58,7 +58,7 @@ def training_model(dataset):
 
     # Creiamo una pipeline contenente il modello basato su regressione logistica e uno scaler per poter scalare i dati correttamente per poter
     # utilizzare correttamente il modello
-    model_pipeline = make_pipeline(StandardScaler(), LogisticRegression())
+    model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
 
 
     # proviamo a rimuovere eventuali correlazioni esistenti fra i dati e le features sensibli
@@ -66,7 +66,7 @@ def training_model(dataset):
     corr_remover = CorrelationRemover(sensitive_feature_ids=sex_features,alpha=1.0)
 
     # creiamo un nuovo modello da addestrare sul dataset modificato
-    fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression(class_weight={1:1,0:5}))
 
     features_names = dataset.columns.tolist()
     for sex_feature in sex_features:
