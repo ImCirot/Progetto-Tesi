@@ -176,6 +176,10 @@ def validate(ml_model,model_type,index,X_test,y_test):
 
     report = classification_report(y_test, pred)
 
+    y_proba = ml_model.predict_proba(X_test)[::,1]
+
+    auc_score = roc_auc_score(y_test,y_proba)
+
     if index == 1:
         open_type = "w"
     else:
@@ -193,6 +197,7 @@ def validate(ml_model,model_type,index,X_test,y_test):
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
+        f.write(f'\nAUC ROC report: {auc_score}')
         f.write('\n')
 
 def load_dataset():
