@@ -14,7 +14,9 @@ import seaborn as sns
 import pickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
+from codecarbon import track_emissions
 
+@track_emissions(country_iso_code='ITA',offline=True)
 def training_model(dataset):
     ## funzione che addestra il modello sul dataset utilizzando strategia KFold
 
@@ -65,7 +67,26 @@ def training_model(dataset):
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True, class_weight={1:1,0:5}))
 
+    lr_threshold = ThresholdOptimizer(
+        estimator=lr_model_pipeline,
+        constraints='demographic_parity',
+        predict_method='predict_proba',
+        prefit=True
+    )
 
+    rf_threshold = ThresholdOptimizer(
+        estimator=rf_model_pipeline,
+        constraints='demographic_parity',
+        predict_method='predict_proba',
+        prefit=True
+    )
+
+    svm_threshold = ThresholdOptimizer(
+        estimator=svm_model_pipeline,
+        constraints='demographic_parity',
+        predict_method='predict_proba',
+        prefit=True
+    )
     # proviamo a rimuovere eventuali correlazioni esistenti fra i dati e le features sensibli
     # utilizzando una classe messa a disposizione dalla libreria FairLearn
     corr_remover = CorrelationRemover(sensitive_feature_ids=sex_features,alpha=1.0)
@@ -124,22 +145,6 @@ def training_model(dataset):
         rf_model_pipeline.fit(X_train,y_train.values.ravel())
         svm_model_pipeline.fit(X_train,y_train.values.ravel())
 
-
-        # # produciamo una predizione di test per l'iterazione i-esima
-        # pred = lr_model_pipeline.predict(X_test)
-
-        # # calcoliamo delle metriche di fairness sulla base degli attributi sensibili
-        # mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=pred,sensitive_features=sex_test)
-        # mf_no_zeros = mf.by_group
-        # mf_no_zeros = mf_no_zeros.dropna()
-        # mf_no_zeros.plot.bar(
-        #     subplots=True,
-        #     layout=[2, 2],
-        #     legend=False,
-        #     figsize=[20, 10],
-        #     title="Show all metrics",
-        # )
-
         # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
         validate(lr_model_pipeline,"std_models",'lr',i,X_test,y_test)
         validate(rf_model_pipeline,'std_models','rf',i,X_test,y_test)
@@ -157,31 +162,25 @@ def training_model(dataset):
         svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
 
         # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
-        validate(lr_fair_model_pipeline,i,'fair_models','lr',X_fair_test,y_fair_test)
-        validate(rf_fair_model_pipeline,i,'fair_models','rf',X_fair_test,y_fair_test)
-        validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
+        validate(lr_fair_model_pipeline,'fair_models','lr',i,X_fair_test,y_fair_test)
+        validate(rf_fair_model_pipeline,'fair_models','rf',i,X_fair_test,y_fair_test)
+        validate(svm_fair_model_pipeline,'fair_models','svm',i,X_fair_test,y_fair_test)
 
-    #     # proviamo alcune operazioni di postprocessing sul modello prodotto
-    #     # postprocess_model = ThresholdOptimizer(
-    #     #     estimator=model_pipeline,
-    #     #     constraints='equalized_odds',
-    #     #     objective='balanced_accuracy_score',
-    #     #     prefit=True,
-    #     #     predict_method='predict_proba'
-    #     # )
+        # modifichiamo i modelli con postop di fairness
+        lr_threshold.fit(X_train,y_train,sensitive_features=sex_train)
+        rf_threshold.fit(X_train,y_train,sensitive_features=sex_train)
+        svm_threshold.fit(X_train,y_train,sensitive_features=sex_train)
 
-    #     # postprocess_model.fit(X_train,y_train,sensitive_features=sex_train)
-    #     # fair_pred = postprocess_model.predict(X_test,sensitive_features=sex_test)
-    #     # fair_mf = MetricFrame(metrics=metrics,y_true=y_test,y_pred=fair_pred,sensitive_features=sex_test)
-    #     # mf.by_group.plot.bar(
-    #     #     subplots=True,
-    #     #     layout=[3, 3],
-    #     #     legend=False,
-    #     #     figsize=[12, 8],
-    #     #     title="Show all metrics",
-    #     # )
-    # # per mostrare grafici
-    # plt.show()
+        # validiamo i nuovi modelli prodotti
+        validate_postop(lr_threshold,'lr',i,X_test,y_test,sex_test)
+        validate_postop(rf_threshold,'rf',i,X_test,y_test,sex_test)
+        validate_postop(svm_threshold,'svm',i,X_test,y_test,sex_test)
+
+        # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
+        # plot_threshold_optimizer(lr_threshold)
+        # plot_threshold_optimizer(rf_threshold)
+        # plot_threshold_optimizer(svm_threshold)
+
 
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_credit_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_credit_model.sav','wb'))
@@ -189,6 +188,9 @@ def training_model(dataset):
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_credit_model.sav','wb'))
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_credit_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_credit_model.sav','wb'))
+    pickle.dump(lr_threshold,open('./output_models/postop_models/threshold_lr_fairlearn_credit_model.sav','wb'))
+    pickle.dump(rf_threshold,open('./output_models/postop_models/threshold_rf_fairlearn_credit_model.sav','wb'))
+    pickle.dump(svm_threshold,open('./output_models/postop_models/threshold_svm_fairlearn_credit_model.sav','wb'))
 
 def validate(ml_model,model_vers,model_type,index,X_test,y_test):
     ## funzione utile a calcolare metriche del modello realizzato
@@ -209,18 +211,44 @@ def validate(ml_model,model_vers,model_type,index,X_test,y_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/{model_vers}/fairlearn/credit/{model_type}credit_matrix_report.txt",open_type) as f:
+    with open(f"./reports/{model_vers}/fairlearn/credit/{model_type}_credit_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/{model_vers}/fairlearn/credit/{model_type}credit_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/{model_vers}/fairlearn/credit/{model_type}_credit_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
         f.write(f'\nAUC ROC score: {auc_score}\n')
+        f.write('\n')
+
+def validate_postop(ml_model,model_type,index,X_test,y_test,g_test):
+    pred = ml_model.predict(X_test,sensitive_features=g_test)
+
+    matrix = confusion_matrix(y_test,pred)
+
+    report = classification_report(y_test,pred)
+
+    if index == 1:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+
+    # scriviamo su un file la matrice di confusione ottenuta
+    with open(f'./reports/postop_models/{model_type}_credit_matrix_report.txt', open_type) as f:
+        f.write(f'{index} iterazione:\n')
+        f.write(f'Matrice di confusione:\n')
+        f.write(str(matrix))
+        f.write('\n\n')
+
+    # scriviamo su un file le metriche di valutazione ottenute
+    with open(f'./reports/postop_models/{model_type}_credit_metrics_report.txt',open_type) as f:
+        f.write(f'{index} iterazione:\n')
+        f.write('Metriche di valutazione:')
+        f.write(str(report))
         f.write('\n')
 
 def load_dataset():
