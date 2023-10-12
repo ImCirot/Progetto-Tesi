@@ -13,10 +13,8 @@ import seaborn as sns
 from codecarbon import track_emissions
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
-from sklearn.pipeline import Pipeline
 from fairlearn.postprocessing import ThresholdOptimizer,plot_threshold_optimizer
 import pickle
-import json
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
