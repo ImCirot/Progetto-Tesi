@@ -156,7 +156,9 @@ def training_model(dataset):
         validate_postop(svm_threshold,'svm',i,X_test,y_test,g_test)
 
         # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
-        # plot_threshold_optimizer(lr_treshold)
+        # plot_threshold_optimizer(lr_threshold)
+        # plot_threshold_optimizer(rf_threshold)
+        # plot_threshold_optimizer(svm_threshold)
     
     # per stampare i grafici generati
     plt.show()
