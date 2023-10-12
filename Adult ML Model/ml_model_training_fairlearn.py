@@ -82,21 +82,21 @@ def training_model(dataset):
     df_array = np.asarray(dataset)
 
     # costruiamo un operatore di postprocessing per cercare di ottimizzare il modello 
-    lr_treshold = ThresholdOptimizer(
+    lr_threshold = ThresholdOptimizer(
         estimator=lr_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
         prefit=True
     )
 
-    rf_treshold = ThresholdOptimizer(
+    rf_threshold = ThresholdOptimizer(
         estimator=rf_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
         prefit=True
     )
 
-    svm_treshold = ThresholdOptimizer(
+    svm_threshold = ThresholdOptimizer(
         estimator=svm_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
@@ -147,13 +147,13 @@ def training_model(dataset):
         validate(rf_fair_model_pipeline,'fair_models','rf',i,X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,'fair_models','svm',i,X_fair_test,y_fair_test)
 
-        lr_treshold.fit(X_train,y_train,sensitive_features=g_train)
-        rf_treshold.fit(X_train,y_train,sensitive_features=g_train)
-        svm_treshold.fit(X_train,y_train,sensitive_features=g_train)
+        lr_threshold.fit(X_train,y_train,sensitive_features=g_train)
+        rf_threshold.fit(X_train,y_train,sensitive_features=g_train)
+        svm_threshold.fit(X_train,y_train,sensitive_features=g_train)
 
-        validate_postop(lr_treshold,"lr",i,X_test,y_test,g_test)
-        validate_postop(rf_treshold,'rf',i,X_test,y_test,g_test)
-        validate_postop(svm_treshold,'svm',i,X_test,y_test,g_test)
+        validate_postop(lr_threshold,"lr",i,X_test,y_test,g_test)
+        validate_postop(rf_threshold,'rf',i,X_test,y_test,g_test)
+        validate_postop(svm_threshold,'svm',i,X_test,y_test,g_test)
 
         # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
         # plot_threshold_optimizer(lr_treshold)
@@ -170,9 +170,9 @@ def training_model(dataset):
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_adult_model.sav','wb'))
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_adult_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_adult_model.sav','wb'))
-    pickle.dump(lr_treshold,open('./output_models/postop_models/threshold_lr_fairlearn_adult_model.sav','wb'))
-    pickle.dump(rf_treshold,open('./output_models/postop_models/threshold_rf_fairlearn_adult_model.sav','wb'))
-    pickle.dump(svm_treshold,open('./output_models/postop_models/threshold_svm_fairlearn_adult_model.sav','wb'))
+    pickle.dump(lr_threshold,open('./output_models/postop_models/threshold_lr_fairlearn_adult_model.sav','wb'))
+    pickle.dump(rf_threshold,open('./output_models/postop_models/threshold_rf_fairlearn_adult_model.sav','wb'))
+    pickle.dump(svm_threshold,open('./output_models/postop_models/threshold_svm_fairlearn_adult_model.sav','wb'))
 
 
 def fairness_preprocess_op(dataset, protected_features_names):
