@@ -71,7 +71,8 @@ def load_dataset():
     print(f'non white male: {num_non_white_males}')
 
     # effettuiamo delle operazioni di fairness e otteniamo un dataset ¨fair"
-    fair_df = test_fairness(std_df)
+    (fair_df,sample_weights) = test_fairness(std_df)
+    fair_df['weights'] = sample_weights
     filenames = std_df['filename'].tolist()
     fair_df['filename'] = filenames
 
@@ -79,9 +80,9 @@ def load_dataset():
     training_and_testing_model(std_df,'std',class_weight)
 
     # addestriamo più modelli fair sul dataset modificato
-    training_and_testing_model(fair_df,'fair',class_weight)
+    training_and_testing_model(fair_df,'fair',class_weight,weight_name='weights')
 
-def training_and_testing_model(df,df_type,class_weight):
+def training_and_testing_model(df,df_type,class_weight,weight_name=None):
     ## funzione di apprendimento e validazione del modello
 
     # setting dimensioni immagine
@@ -99,46 +100,92 @@ def training_and_testing_model(df,df_type,class_weight):
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2, horizontal_flip=True)
 
     # creiamo il dataset di training del modello
-    train_generator = train_datagen.flow_from_dataframe(
-        dataframe=df,
-        y_col='gender',
-        shuffle=True,
-        target_size=image_size,
-        batch_size=batch_size,
-        subset='training',
-        class_mode='categorical'
-    )
 
-    # creiamo il dataset di testing del modello
-    validation_generator = train_datagen.flow_from_dataframe(
-        dataframe=df,
-        y_col="gender",
-        shuffle=True,
-        target_size=image_size,
-        batch_size=batch_size,
-        subset='validation',
-        class_mode='categorical'
-    )
-    
-    # creiamo il modello sfruttando la strategia MobileNetV2 offerta da TensorFlow
-    mn_classifier = tf.keras.applications.mobilenet_v2.MobileNetV2(
-        include_top=True, 
-        weights=None, 
-        input_tensor=None,
-        input_shape=image_size + (3,), 
-        pooling=None, 
-        classes=2
-    )
+    if weight_name == None:
+        train_generator = train_datagen.flow_from_dataframe(
+            dataframe=df,
+            y_col='gender',
+            shuffle=True,
+            target_size=image_size,
+            batch_size=batch_size,
+            subset='training',
+            class_mode='categorical'
+        )
 
-    # creiamo il modello sfruttando la strategia ResNet50 offerta da TensorFlow
-    resnet_classifier = tf.keras.applications.resnet50.ResNet50(
-        include_top=True, 
-        weights=None, 
-        input_tensor=None,
-        input_shape=image_size + (3,), 
-        pooling=None, 
-        classes=2
-    )
+        # creiamo il dataset di testing del modello
+        validation_generator = train_datagen.flow_from_dataframe(
+            dataframe=df,
+            y_col="gender",
+            shuffle=True,
+            target_size=image_size,
+            batch_size=batch_size,
+            subset='validation',
+            class_mode='categorical'
+        )
+
+        # creiamo il modello sfruttando la strategia MobileNetV2 offerta da TensorFlow
+        mn_classifier = tf.keras.applications.mobilenet_v2.MobileNetV2(
+            include_top=True, 
+            weights=None, 
+            input_tensor=None,
+            input_shape=image_size + (3,), 
+            pooling=None, 
+            classes=2
+        )
+
+        # creiamo il modello sfruttando la strategia ResNet50 offerta da TensorFlow
+        resnet_classifier = tf.keras.applications.resnet50.ResNet50(
+            include_top=True, 
+            weights=None, 
+            input_tensor=None,
+            input_shape=image_size + (3,), 
+            pooling=None, 
+            classes=2
+        )
+
+    else:
+        train_generator = train_datagen.flow_from_dataframe(
+            dataframe=df,
+            y_col='gender',
+            shuffle=True,
+            target_size=image_size,
+            batch_size=batch_size,
+            subset='training',
+            class_mode='categorical',
+            weight_col='weights'
+        )
+
+        # creiamo il dataset di testing del modello
+        validation_generator = train_datagen.flow_from_dataframe(
+            dataframe=df,
+            y_col="gender",
+            shuffle=True,
+            target_size=image_size,
+            batch_size=batch_size,
+            subset='validation',
+            class_mode='categorical',
+            weight_col='weights'
+        )
+
+        # creiamo il modello sfruttando la strategia MobileNetV2 offerta da TensorFlow
+        mn_classifier = tf.keras.applications.mobilenet_v2.MobileNetV2(
+            include_top=True, 
+            weights='weights', 
+            input_tensor=None,
+            input_shape=image_size + (3,), 
+            pooling=None, 
+            classes=2
+        )
+
+        # creiamo il modello sfruttando la strategia ResNet50 offerta da TensorFlow
+        resnet_classifier = tf.keras.applications.resnet50.ResNet50(
+            include_top=True, 
+            weights='weights', 
+            input_tensor=None,
+            input_shape=image_size + (3,), 
+            pooling=None, 
+            classes=2
+        )
     
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     mn_classifier.compile(loss='categorical_crossentropy', metrics=['accuracy'])
@@ -207,6 +254,6 @@ def test_fairness(dataset):
     fair_dataset = fair_dataset.astype(int)
     fair_dataset = fair_dataset.astype(str)
 
-    return fair_dataset
+    return (fair_dataset,race_transformed.instance_weights)
 
 load_dataset()
