@@ -210,27 +210,27 @@ def test_fairness(dataset):
         metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
 
     # stampa della mean_difference del modello originale
-    print_fairness_metrics('mean_difference',metric_original.mean_difference(),'Mean_difference value before', first_message=True)
-    print_fairness_metrics('mean_difference',metric_original.disparate_impact(),'DI value before')
+    print_fairness_metrics(metric_original.mean_difference(),'Mean_difference value before', first_message=True)
+    print_fairness_metrics(metric_original.disparate_impact(),'DI value before')
 
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics('mean_difference',metric_transformed.mean_difference(),'Mean_difference value after')
-    print_fairness_metrics('mean_difference',metric_transformed.disparate_impact(),'DI value after')
+    print_fairness_metrics(metric_transformed.mean_difference(),'Mean_difference value after')
+    print_fairness_metrics(metric_transformed.disparate_impact(),'DI value after')
     
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
-    print_fairness_metrics('mean_difference',metric_original.num_positives(privileged=True),'Num. of positive instances of priv_group before')
-    print_fairness_metrics('mean_difference',metric_original.num_positives(privileged=False),'Num. of positive instances of unpriv_group before')
+    print_fairness_metrics(metric_original.num_positives(privileged=True),'Num. of positive instances of priv_group before')
+    print_fairness_metrics(metric_original.num_positives(privileged=False),'Num. of positive instances of unpriv_group before')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
-    print_fairness_metrics('mean_difference',metric_transformed.num_positives(privileged=True),'Num. of positive instances of priv_group after')
-    print_fairness_metrics('mean_difference',metric_transformed.num_positives(privileged=False),'Num. of positive instances of unpriv_group after')
+    print_fairness_metrics(metric_transformed.num_positives(privileged=True),'Num. of positive instances of priv_group after')
+    print_fairness_metrics(metric_transformed.num_positives(privileged=False),'Num. of positive instances of unpriv_group after')
 
     # Creiamo un nuovo dataframe sulla base del modello ripesato dall'operazione precedente
     fair_dataset = dataset_transformed.convert_to_dataframe()[0]
 
     return (fair_dataset,dataset_transformed.instance_weights)
     
-def print_fairness_metrics(metric_name, metric, message, first_message=False):
+def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
 
     if first_message:
@@ -239,7 +239,7 @@ def print_fairness_metrics(metric_name, metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/credit_{metric_name}_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/credit_report.txt",open_type) as f:
         f.write(f"{message}: {metric}")
         f.write('\n')
 

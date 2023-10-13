@@ -202,8 +202,8 @@ def test_fairness(original_dataset):
     
     # stampiamo la metrica mean_difference sul file di report    
     # (differenza fra predizioni positive di indivudi sfavoriti rispetto alle predizioni positive degli individui favoriti)
-    print_fairness_metrics('mean_difference',race_metric_original.mean_difference(),'Race mean_difference before',first_message=True)
-    print_fairness_metrics('mean_difference',race_metric_original.disparate_impact(),'Race DI before')
+    print_fairness_metrics(race_metric_original.mean_difference(),'Race mean_difference before',first_message=True)
+    print_fairness_metrics(race_metric_original.disparate_impact(),'Race DI before')
     # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
     RACE_RW = Reweighing(unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups)
 
@@ -214,16 +214,16 @@ def test_fairness(original_dataset):
     race_metric_transformed = BinaryLabelDatasetMetric(dataset=race_dataset_transformed,unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups)
     
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics('mean_difference',race_metric_transformed.mean_difference(),'Race mean_difference after')
-    print_fairness_metrics('mean_difference',race_metric_transformed.disparate_impact(),'Race DI after')
+    print_fairness_metrics(race_metric_transformed.mean_difference(),'Race mean_difference after')
+    print_fairness_metrics(race_metric_transformed.disparate_impact(),'Race DI after')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
-    print_fairness_metrics('mean_difference',race_metric_original.num_positives(privileged=True),'(RACE) Num. of positive instances of priv_group before')
-    print_fairness_metrics('mean_difference',race_metric_original.num_positives(privileged=False),'(RACE) Num. of positive instances of unpriv_group before')
+    print_fairness_metrics(race_metric_original.num_positives(privileged=True),'(RACE) Num. of positive instances of priv_group before')
+    print_fairness_metrics(race_metric_original.num_positives(privileged=False),'(RACE) Num. of positive instances of unpriv_group before')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
-    print_fairness_metrics('mean_difference',race_metric_transformed.num_positives(privileged=True),'(RACE) Num. of positive instances of priv_group after')
-    print_fairness_metrics('mean_difference',race_metric_transformed.num_positives(privileged=False),'(RACE) Num. of positive instances of unpriv_group after')
+    print_fairness_metrics(race_metric_transformed.num_positives(privileged=True),'(RACE) Num. of positive instances of priv_group after')
+    print_fairness_metrics(race_metric_transformed.num_positives(privileged=False),'(RACE) Num. of positive instances of unpriv_group after')
 
     #
     #
@@ -259,8 +259,8 @@ def test_fairness(original_dataset):
     sex_metric_original = BinaryLabelDatasetMetric(dataset=aif_sex_dataset, unprivileged_groups=sex_unprivileged_groups, privileged_groups=sex_privileged_groups) 
     
     # stampiamo la metrica mean_difference sul file di report    
-    print_fairness_metrics('mean_difference',sex_metric_original.mean_difference(),'Sex mean_difference before')
-    print_fairness_metrics('mean_difference',sex_metric_original.disparate_impact(),'Sex DI before')
+    print_fairness_metrics(sex_metric_original.mean_difference(),'Sex mean_difference before')
+    print_fairness_metrics(sex_metric_original.disparate_impact(),'Sex DI before')
     
     # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
     SEX_RW = Reweighing(unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
@@ -272,16 +272,16 @@ def test_fairness(original_dataset):
     sex_metric_transformed = BinaryLabelDatasetMetric(dataset=sex_dataset_transformed,unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
     
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics('mean_difference',sex_metric_transformed.mean_difference(),'Sex mean_difference value after')
-    print_fairness_metrics('mean_difference',sex_metric_transformed.disparate_impact(),'Sex DI value after')
+    print_fairness_metrics(sex_metric_transformed.mean_difference(),'Sex mean_difference value after')
+    print_fairness_metrics(sex_metric_transformed.disparate_impact(),'Sex DI value after')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
-    print_fairness_metrics('mean_difference',sex_metric_original.num_positives(privileged=True),'(SEX) Num. of positive instances of priv_group before')
-    print_fairness_metrics('mean_difference',sex_metric_original.num_positives(privileged=False),'(SEX) Num. of positive instances of unpriv_group before')
+    print_fairness_metrics(sex_metric_original.num_positives(privileged=True),'(SEX) Num. of positive instances of priv_group before')
+    print_fairness_metrics(sex_metric_original.num_positives(privileged=False),'(SEX) Num. of positive instances of unpriv_group before')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
-    print_fairness_metrics('mean_difference',sex_metric_transformed.num_positives(privileged=True),'(SEX) Num. of positive instances of priv_group after')
-    print_fairness_metrics('mean_difference',sex_metric_transformed.num_positives(privileged=False),'(SEX) Num. of positive instances of unpriv_group after')
+    print_fairness_metrics(sex_metric_transformed.num_positives(privileged=True),'(SEX) Num. of positive instances of priv_group after')
+    print_fairness_metrics(sex_metric_transformed.num_positives(privileged=False),'(SEX) Num. of positive instances of unpriv_group after')
 
     #
     #
@@ -328,8 +328,8 @@ def test_fairness(original_dataset):
     overall_metric_original = BinaryLabelDatasetMetric(dataset=aif_overall_dataset, unprivileged_groups=overall_unprivileged_groups, privileged_groups=overall_privileged_groups)
 
     # stampiamo la metrica mean_difference sul file di report    
-    print_fairness_metrics('mean_difference',overall_metric_original.mean_difference(),'Overall mean_difference before')
-    print_fairness_metrics('mean_difference',overall_metric_original.disparate_impact(),'Overall DI before')
+    print_fairness_metrics(overall_metric_original.mean_difference(),'Overall mean_difference before')
+    print_fairness_metrics(overall_metric_original.disparate_impact(),'Overall DI before')
     
     # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
     RW = Reweighing(unprivileged_groups=overall_unprivileged_groups,privileged_groups=overall_privileged_groups)
@@ -341,16 +341,16 @@ def test_fairness(original_dataset):
     overall_metric_transformed = BinaryLabelDatasetMetric(dataset=overall_dataset_transformed,unprivileged_groups=overall_unprivileged_groups,privileged_groups=overall_privileged_groups)
     
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics('mean_difference',overall_metric_transformed.mean_difference(),'Overal mean_difference value after')
-    print_fairness_metrics('mean_difference',overall_metric_transformed.disparate_impact(),'Overal DI value after')
+    print_fairness_metrics(overall_metric_transformed.mean_difference(),'Overal mean_difference value after')
+    print_fairness_metrics(overall_metric_transformed.disparate_impact(),'Overal DI value after')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
-    print_fairness_metrics('mean_difference',overall_metric_original.num_positives(privileged=True),'(OVR) Num. of positive instances of priv_group before')
-    print_fairness_metrics('mean_difference',overall_metric_original.num_positives(privileged=False),'(OVR) Num. of positive instances of unpriv_group before')
+    print_fairness_metrics(overall_metric_original.num_positives(privileged=True),'(OVR) Num. of positive instances of priv_group before')
+    print_fairness_metrics(overall_metric_original.num_positives(privileged=False),'(OVR) Num. of positive instances of unpriv_group before')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
-    print_fairness_metrics('mean_difference',overall_metric_transformed.num_positives(privileged=True),'(OVR) Num. of positive instances of priv_group after')
-    print_fairness_metrics('mean_difference',overall_metric_transformed.num_positives(privileged=False),'(OVR) Num. of positive instances of unpriv_group after')
+    print_fairness_metrics(overall_metric_transformed.num_positives(privileged=True),'(OVR) Num. of positive instances of priv_group after')
+    print_fairness_metrics(overall_metric_transformed.num_positives(privileged=False),'(OVR) Num. of positive instances of unpriv_group after')
     #
     #
     # osservando il risultato di questa operazione scopriamo che il numero di individui bianchi di sesso maschile è più grande del resto degli individui
@@ -367,7 +367,7 @@ def test_fairness(original_dataset):
 
     return (aif_df,aif_race_dataset.instance_weights)
 
-def print_fairness_metrics(metric_name, metric, message, first_message=False):
+def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
 
     if first_message:
@@ -376,7 +376,7 @@ def print_fairness_metrics(metric_name, metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/adult_{metric_name}_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/adult_report.txt",open_type) as f:
         f.write(f"{message}: {metric}")
         f.write('\n')
 
