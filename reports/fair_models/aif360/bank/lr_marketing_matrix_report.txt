@@ -1,50 +1,50 @@
 1 iterazione:
 Metriche di confusione:
-[[4352   35]
- [ 102   33]]
+[[4375   12]
+ [ 125   10]]
 
 2 iterazione:
 Metriche di confusione:
-[[4317   35]
- [ 126   43]]
+[[4345    7]
+ [ 156   13]]
 
 3 iterazione:
 Metriche di confusione:
-[[4285   18]
- [ 189   29]]
+[[4264   39]
+ [ 156   62]]
 
 4 iterazione:
 Metriche di confusione:
-[[4161   70]
- [ 185  105]]
+[[4178   53]
+ [ 195   95]]
 
 5 iterazione:
 Metriche di confusione:
-[[4203   42]
- [ 212   64]]
+[[4199   46]
+ [ 185   91]]
 
 6 iterazione:
 Metriche di confusione:
-[[4197   45]
- [ 238   41]]
+[[4156   86]
+ [ 185   94]]
 
 7 iterazione:
 Metriche di confusione:
-[[3940  108]
- [ 372  101]]
+[[3840  208]
+ [ 320  153]]
 
 8 iterazione:
 Metriche di confusione:
-[[3890   38]
- [ 535   58]]
+[[3754  174]
+ [ 393  200]]
 
 9 iterazione:
 Metriche di confusione:
-[[3724   70]
- [ 574  153]]
+[[3621  173]
+ [ 448  279]]
 
 10 iterazione:
 Metriche di confusione:
-[[1928  464]
- [1229  900]]
+[[1790  602]
+ [1397  732]]
 
