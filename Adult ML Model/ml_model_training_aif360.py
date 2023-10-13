@@ -5,7 +5,7 @@ from sklearn.model_selection import KFold
 from sklearn.linear_model import LogisticRegression
 from aif360.datasets import BinaryLabelDataset
 from aif360.datasets import StandardDataset
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import make_pipeline,Pipeline
 from sklearn.preprocessing import StandardScaler
 from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing
@@ -35,7 +35,9 @@ def training_model(dataset):
     ]
 
     # creiamo un dataset fair effettuando modifiche al dataset originale
-    fair_dataset = test_fairness(dataset)
+    (fair_dataset,sample_weights) = test_fairness(dataset)
+
+    fair_dataset['weights'] = sample_weights
 
     # setting nomi features del dataset
     features = dataset.columns.tolist()
@@ -54,6 +56,8 @@ def training_model(dataset):
     y = dataset[target]
     y_fair = fair_dataset[target]
 
+    sample_weights = fair_dataset['weights']
+
     # setting strategia KFold con 10 iterazioni standard
     kf = KFold(n_splits=10)
 
@@ -69,9 +73,18 @@ def training_model(dataset):
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
 
     # costruiamo un modello tramite pipeline su cui utilizzare un dataset opportunamente modificato per aumentare fairness
-    lr_fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
-    rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
-    svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    lr_fair_model_pipeline = Pipeline(steps=[
+        ('scaler', StandardScaler()),
+        ('model',LogisticRegression())
+    ])
+    rf_fair_model_pipeline = Pipeline(steps=[
+        ('scaler', StandardScaler()),
+        ('model',RandomForestClassifier())
+    ])
+    svm_fair_model_pipeline = Pipeline(steps=[
+        ('scaler', StandardScaler()),
+        ('model',SVC(probability=True))
+    ])
 
     # ciclo strategia KFold per il modello base
     for train_index,test_index in kf.split(df_array):
@@ -106,15 +119,16 @@ def training_model(dataset):
         # setting training set per l'i-esima iterazione della strategia KFold per il modello fair
         X_fair_train = X_fair.iloc[train_index]
         y_fair_train = y_fair.iloc[train_index]
+        sample_weights_train = sample_weights[train_index]
 
         # setting test set per l'i-esima iterazione della strategia KFold per il modello fair
         X_fair_test = X_fair.iloc[test_index]
         y_fair_test = y_fair.iloc[test_index]
 
         # training del modello sul training set dell'i-esima iterazione
-        lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
-        rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
-        svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(), model__sample_weight=sample_weights_train)
+        rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(), model__sample_weight=sample_weights_train)
+        svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(), model__sample_weight=sample_weights_train)
 
         # calcolo metriche di valutazione sul modello fair dell'i-esima iterazione
         validate(lr_fair_model_pipeline,i,'fair_models','lr',X_fair_test,y_fair_test)
@@ -189,7 +203,7 @@ def test_fairness(original_dataset):
     # stampiamo la metrica mean_difference sul file di report    
     # (differenza fra predizioni positive di indivudi sfavoriti rispetto alle predizioni positive degli individui favoriti)
     print_fairness_metrics('mean_difference',race_metric_original.mean_difference(),'Race mean_difference before',first_message=True)
-
+    print_fairness_metrics('mean_difference',race_metric_original.disparate_impact(),'Race DI before')
     # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
     RACE_RW = Reweighing(unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups)
 
@@ -201,6 +215,7 @@ def test_fairness(original_dataset):
     
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
     print_fairness_metrics('mean_difference',race_metric_transformed.mean_difference(),'Race mean_difference after')
+    print_fairness_metrics('mean_difference',race_metric_transformed.disparate_impact(),'Race DI after')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
     print_fairness_metrics('mean_difference',race_metric_original.num_positives(privileged=True),'(RACE) Num. of positive instances of priv_group before')
@@ -245,6 +260,7 @@ def test_fairness(original_dataset):
     
     # stampiamo la metrica mean_difference sul file di report    
     print_fairness_metrics('mean_difference',sex_metric_original.mean_difference(),'Sex mean_difference before')
+    print_fairness_metrics('mean_difference',sex_metric_original.disparate_impact(),'Sex DI before')
     
     # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
     SEX_RW = Reweighing(unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
@@ -257,6 +273,7 @@ def test_fairness(original_dataset):
     
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
     print_fairness_metrics('mean_difference',sex_metric_transformed.mean_difference(),'Sex mean_difference value after')
+    print_fairness_metrics('mean_difference',sex_metric_transformed.disparate_impact(),'Sex DI value after')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
     print_fairness_metrics('mean_difference',sex_metric_original.num_positives(privileged=True),'(SEX) Num. of positive instances of priv_group before')
@@ -312,6 +329,7 @@ def test_fairness(original_dataset):
 
     # stampiamo la metrica mean_difference sul file di report    
     print_fairness_metrics('mean_difference',overall_metric_original.mean_difference(),'Overall mean_difference before')
+    print_fairness_metrics('mean_difference',overall_metric_original.disparate_impact(),'Overall DI before')
     
     # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
     RW = Reweighing(unprivileged_groups=overall_unprivileged_groups,privileged_groups=overall_privileged_groups)
@@ -324,6 +342,7 @@ def test_fairness(original_dataset):
     
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
     print_fairness_metrics('mean_difference',overall_metric_transformed.mean_difference(),'Overal mean_difference value after')
+    print_fairness_metrics('mean_difference',overall_metric_transformed.disparate_impact(),'Overal DI value after')
 
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
     print_fairness_metrics('mean_difference',overall_metric_original.num_positives(privileged=True),'(OVR) Num. of positive instances of priv_group before')
@@ -346,7 +365,7 @@ def test_fairness(original_dataset):
     # addestrare un modello più fair
     aif_df = aif_race_dataset.convert_to_dataframe()[0]
 
-    return aif_df
+    return (aif_df,aif_race_dataset.instance_weights)
 
 def print_fairness_metrics(metric_name, metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input

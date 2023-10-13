@@ -5,7 +5,7 @@ from sklearn.metrics import *
 from sklearn.linear_model import LogisticRegression
 from codecarbon import track_emissions
 from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import make_pipeline, Pipeline
 from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing
 from aif360.datasets import StandardDataset
@@ -32,7 +32,8 @@ def traning_and_testing_model():
     # pd.options.display.max_columns = 2
     # print(df.head())
 
-    fair_dataset = test_fairness(df)
+    (fair_dataset,sample_weights) = test_fairness(df)
+    fair_dataset['weights'] = sample_weights
 
     features = df.columns.tolist()
     features.remove('Target')
@@ -44,6 +45,8 @@ def traning_and_testing_model():
 
     y = df[target]
     y_fair = df[target]
+
+    sample_weights = fair_dataset['weights']
 
     # Si crea un array del dataframe utile per la KFold
     df_array = np.array(df)
@@ -58,13 +61,22 @@ def traning_and_testing_model():
     # in particolare la pipeline standard sarà addestrata sui dati as-is
     # mentre la fair pipeline verrà addestrata su dati sui vengono applicate strategie di fairness
     # volte a rimuovere discriminazione e bias nel dataset di training
-    lr_fair_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
-    rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
-    svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
-
     lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
-    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True, class_weight={1:1,0:5}))
+    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
+
+    lr_fair_model_pipeline = Pipeline(steps=[
+        ('scaler',StandardScaler()), 
+        ('model',LogisticRegression(class_weight={1:1,0:5}))
+    ])
+    rf_fair_model_pipeline = Pipeline(steps=[
+        ('scaler',StandardScaler()), 
+        ('model',RandomForestClassifier(class_weight={1:1,0:5}))
+    ])
+    svm_fair_model_pipeline = Pipeline(steps=[
+        ('scaler',StandardScaler()), 
+        ('model',SVC(probability=True,class_weight={1:1,0:5}))
+    ])
 
     # Strategia KFold
     for train_index, test_index in kf.split(df_array):
@@ -100,15 +112,16 @@ def traning_and_testing_model():
         # setting training set dell'i-esima iterazione dal dataset ricalibrato
         X_fair_train = X_fair.iloc[train_index]
         y_fair_train = y_fair.iloc[train_index]
+        sample_weights_train = sample_weights[train_index]
 
         # setting test set dell'i-esima iterazione dal dataset ricalibrato
         X_fair_test = X_fair.iloc[test_index]
         y_fair_test = y_fair.iloc[test_index]
 
         # fit del modello sul training set dell'i-esima iterazione
-        lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
-        rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
-        svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=sample_weights_train)
+        rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=sample_weights_train)
+        svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=sample_weights_train)
 
         # Stampiamo metriche di valutazione per il modello
         validate(lr_fair_model_pipeline, i, "fair_models", 'lr', X_fair_test, y_fair_test)
@@ -198,10 +211,12 @@ def test_fairness(dataset):
 
     # stampa della mean_difference del modello originale
     print_fairness_metrics('mean_difference',metric_original.mean_difference(),'Mean_difference value before', first_message=True)
+    print_fairness_metrics('mean_difference',metric_original.disparate_impact(),'DI value before')
 
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
     print_fairness_metrics('mean_difference',metric_transformed.mean_difference(),'Mean_difference value after')
-
+    print_fairness_metrics('mean_difference',metric_transformed.disparate_impact(),'DI value after')
+    
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
     print_fairness_metrics('mean_difference',metric_original.num_positives(privileged=True),'Num. of positive instances of priv_group before')
     print_fairness_metrics('mean_difference',metric_original.num_positives(privileged=False),'Num. of positive instances of unpriv_group before')
@@ -213,7 +228,7 @@ def test_fairness(dataset):
     # Creiamo un nuovo dataframe sulla base del modello ripesato dall'operazione precedente
     fair_dataset = dataset_transformed.convert_to_dataframe()[0]
 
-    return fair_dataset
+    return (fair_dataset,dataset_transformed.instance_weights)
     
 def print_fairness_metrics(metric_name, metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
