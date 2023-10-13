@@ -201,13 +201,13 @@ def validate(ml_model,ml_type,ml_vers,index,X_test,y_test):
     else:
         open_type = "a"
 
-    with  open(f"./reports/{ml_vers}_models/fairlearn/bank/{ml_type}_marketing_matrix_report.txt",open_type) as f:
+    with  open(f"./reports/{ml_vers}_models/fairlearn/bank/{ml_type}_bank_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
 
-    with  open(f"./reports/{ml_vers}_models/fairlearn/bank/{ml_type}_marketing_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/{ml_vers}_models/fairlearn/bank/{ml_type}_bank_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
