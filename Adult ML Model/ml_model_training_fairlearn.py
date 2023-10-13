@@ -22,9 +22,6 @@ def load_dataset():
 
     df = pd.read_csv('./Adult Dataset/adult_modificato.csv')
 
-    # print di debug
-    # print(df.head)
-
     training_model(df)
 
 def training_model(dataset):
