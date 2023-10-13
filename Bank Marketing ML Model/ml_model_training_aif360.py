@@ -10,7 +10,10 @@ from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing, DisparateImpactRemover
 import numpy as np
 import pandas as pd
+from codecarbon import track_emissions
+import pickle
 
+@track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
     df = pd.read_csv('./Bank Marketing Dataset/dataset.csv')
 
@@ -91,6 +94,14 @@ def load_dataset():
     print(lr_fair_model_pipeline.score(X_fair,y_fair))
     print(rf_fair_model_pipeline.score(X_fair,y_fair))
     print(svm_model_pipeline.score(X_fair,y_fair))
+
+    pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_bank_model.sav','wb'))
+    pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_bank_model.sav','wb'))
+    pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_aif360_bank_model.sav','wb'))
+
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_bank_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_aif360_bank_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_bank_model.sav','wb'))
 
 def test_fairness(dataset):
     maritial_features = [
