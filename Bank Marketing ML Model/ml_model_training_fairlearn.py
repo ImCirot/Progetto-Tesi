@@ -4,7 +4,6 @@ from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 import numpy as np
 import pandas as pd
@@ -40,13 +39,16 @@ def load_dataset():
 
         lr_model_pipeline.fit(X_train,y_train)
         rf_model_pipeline.fit(X_train,y_train)
+        svm_model_pipeline.fit(X_train,y_train)
 
         validate(lr_model_pipeline,'lr','std',i,X_test,y_test)
         validate(rf_model_pipeline,'rf','std',i,X_test,y_test)
+        validate(svm_model_pipeline,'svm','std',i,X_test,y_test)
 
 
     print(lr_model_pipeline.score(X,y))
     print(rf_model_pipeline.score(X,y))
+    print(svm_model_pipeline.score(X,y))
 
 def validate(ml_model,ml_type,ml_vers,index,X_test,y_test):
     pred = ml_model.predict(X_test)
