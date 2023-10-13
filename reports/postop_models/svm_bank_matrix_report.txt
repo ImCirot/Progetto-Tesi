@@ -1,0 +1,50 @@
+1 iterazione:
+Matrice di confusione:
+[[4361   26]
+ [  97   38]]
+
+2 iterazione:
+Matrice di confusione:
+[[4298   54]
+ [ 114   55]]
+
+3 iterazione:
+Matrice di confusione:
+[[4232   71]
+ [ 147   71]]
+
+4 iterazione:
+Matrice di confusione:
+[[4081  150]
+ [ 134  156]]
+
+5 iterazione:
+Matrice di confusione:
+[[4143  102]
+ [ 116  160]]
+
+6 iterazione:
+Matrice di confusione:
+[[4137  105]
+ [ 178  101]]
+
+7 iterazione:
+Matrice di confusione:
+[[2794 1254]
+ [ 186  287]]
+
+8 iterazione:
+Matrice di confusione:
+[[3144  784]
+ [ 245  348]]
+
+9 iterazione:
+Matrice di confusione:
+[[3477  317]
+ [ 335  392]]
+
+10 iterazione:
+Matrice di confusione:
+[[1611  781]
+ [1121 1008]]
+
