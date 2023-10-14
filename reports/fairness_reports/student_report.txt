@@ -1,0 +1,8 @@
+Gender mean_difference before: 0.22696414294063022
+Gender DI before: 1.6444456321452932
+Gender mean_difference after: 0.0
+Gender DI after: 1.0
+Special Needs mean_difference before: -0.07211515502597277
+Special Needs DI before: 0.8558102237955881
+Special Needs mean_difference after: 1.1102230246251565e-16
+Special Needs DI after: 1.0000000000000002
