@@ -378,9 +378,9 @@ def test_fairness(original_dataset):
     #
     # ritorniamo alla funzione chiamante l'unico dataset in cui è stato possibile evidenziare e rimuovere disparità fra i gruppi individuati per poter
     # addestrare un modello più fair
-    aif_df = aif_race_dataset.convert_to_dataframe()[0]
+    aif_df = race_dataset_transformed.convert_to_dataframe()[0]
 
-    return (aif_df,aif_race_dataset.instance_weights)
+    return (aif_df,race_dataset_transformed.instance_weights)
 
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
