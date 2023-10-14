@@ -15,6 +15,7 @@ import pickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from codecarbon import track_emissions
+import xgboost as xgb
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def training_model(dataset):
@@ -66,6 +67,7 @@ def training_model(dataset):
     lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True, class_weight={1:1,0:5}))
+    xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     lr_threshold = ThresholdOptimizer(
         estimator=lr_model_pipeline,
@@ -87,6 +89,14 @@ def training_model(dataset):
         predict_method='predict_proba',
         prefit=True
     )
+
+    xgb_threshold = ThresholdOptimizer(
+        estimator=xgb_model_pipeline,
+        constraints='demographic_parity',
+        predict_method='predict_proba',
+        prefit=True
+    )
+
     # proviamo a rimuovere eventuali correlazioni esistenti fra i dati e le features sensibli
     # utilizzando una classe messa a disposizione dalla libreria FairLearn
     corr_remover = CorrelationRemover(sensitive_feature_ids=sex_features,alpha=1.0)
@@ -95,6 +105,8 @@ def training_model(dataset):
     lr_fair_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
     rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
     svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
+    xgb_fair_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
+
 
     features_names = dataset.columns.tolist()
     for sex_feature in sex_features:
@@ -144,11 +156,13 @@ def training_model(dataset):
         lr_model_pipeline.fit(X_train,y_train.values.ravel())
         rf_model_pipeline.fit(X_train,y_train.values.ravel())
         svm_model_pipeline.fit(X_train,y_train.values.ravel())
+        xgb_model_pipeline.fit(X_train,y_train.values.ravel())
 
         # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
         validate(lr_model_pipeline,"std_models",'lr',i,X_test,y_test)
         validate(rf_model_pipeline,'std_models','rf',i,X_test,y_test)
         validate(svm_model_pipeline,'std_models','svm',i,X_test,y_test)
+        validate(xgb_model_pipeline,'std_models','xgb',i,X_test,y_test)
 
         X_fair_train = X_fair.iloc[train_index]
         y_fair_train = y_fair.iloc[train_index]
@@ -160,26 +174,31 @@ def training_model(dataset):
         lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
         rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
         svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
+        xgb_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
 
         # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
         validate(lr_fair_model_pipeline,'fair_models','lr',i,X_fair_test,y_fair_test)
         validate(rf_fair_model_pipeline,'fair_models','rf',i,X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,'fair_models','svm',i,X_fair_test,y_fair_test)
+        validate(xgb_fair_model_pipeline,'fair_models','xgb',i,X_fair_test,y_fair_test)
 
         # modifichiamo i modelli con postop di fairness
         lr_threshold.fit(X_train,y_train,sensitive_features=sex_train)
         rf_threshold.fit(X_train,y_train,sensitive_features=sex_train)
         svm_threshold.fit(X_train,y_train,sensitive_features=sex_train)
+        xgb_threshold.fit(X_train,y_train,sensitive_features=sex_train)
 
         # validiamo i nuovi modelli prodotti
         validate_postop(lr_threshold,'lr',i,X_test,y_test,sex_test)
         validate_postop(rf_threshold,'rf',i,X_test,y_test,sex_test)
         validate_postop(svm_threshold,'svm',i,X_test,y_test,sex_test)
+        validate_postop(xgb_threshold,'xgb',i,X_test,y_test,sex_test)
 
         # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
         # plot_threshold_optimizer(lr_threshold)
         # plot_threshold_optimizer(rf_threshold)
         # plot_threshold_optimizer(svm_threshold)
+        # plot_threshold_optimizer(xgb_threshold)
 
 
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_credit_model.sav','wb'))
@@ -188,9 +207,12 @@ def training_model(dataset):
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_credit_model.sav','wb'))
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_credit_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_credit_model.sav','wb'))
+    pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_fairlearn_credit_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_fairlearn_credit_model.sav','wb'))
     pickle.dump(lr_threshold,open('./output_models/postop_models/threshold_lr_fairlearn_credit_model.sav','wb'))
     pickle.dump(rf_threshold,open('./output_models/postop_models/threshold_rf_fairlearn_credit_model.sav','wb'))
     pickle.dump(svm_threshold,open('./output_models/postop_models/threshold_svm_fairlearn_credit_model.sav','wb'))
+    pickle.dump(xgb_threshold,open('./output_models/postop_models/threshold_xgb_fairlearn_credit_model.sav','wb'))
 
 def validate(ml_model,model_vers,model_type,index,X_test,y_test):
     ## funzione utile a calcolare metriche del modello realizzato
