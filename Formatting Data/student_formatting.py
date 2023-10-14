@@ -15,6 +15,6 @@ def load_dataset():
     df['Target'] = df['Target'].replace('Graduate',1)
 
     # salviamo il dataframe ottenuto in un file csv da utilizzare per i modelli
-    df.to_csv('./Student Dataset/dataset.csv')
+    df.to_csv('./Student Dataset/dataset.csv',index_label='ID')
 
 load_dataset()
