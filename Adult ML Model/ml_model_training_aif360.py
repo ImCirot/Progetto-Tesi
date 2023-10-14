@@ -11,6 +11,7 @@ from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing
 from codecarbon import track_emissions
 from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
 from sklearn.svm import SVC
 import pickle
 
@@ -71,19 +72,27 @@ def training_model(dataset):
     lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    xgb_model_pipeline = make_pipeline(StandardScaler(), xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     # costruiamo un modello tramite pipeline su cui utilizzare un dataset opportunamente modificato per aumentare fairness
     lr_fair_model_pipeline = Pipeline(steps=[
         ('scaler', StandardScaler()),
         ('model',LogisticRegression())
     ])
+
     rf_fair_model_pipeline = Pipeline(steps=[
         ('scaler', StandardScaler()),
         ('model',RandomForestClassifier())
     ])
+
     svm_fair_model_pipeline = Pipeline(steps=[
         ('scaler', StandardScaler()),
         ('model',SVC(probability=True))
+    ])
+
+    xgb_fair_model_pipeline = Pipeline(steps=[
+        ('scaler', StandardScaler()),
+        ('model',xgb.XGBClassifier(objective='binary:logistic',random_state=42))
     ])
 
     # ciclo strategia KFold per il modello base
@@ -102,11 +111,13 @@ def training_model(dataset):
         lr_model_pipeline.fit(X_train,y_train.values.ravel())
         rf_model_pipeline.fit(X_train,y_train.values.ravel())
         svm_model_pipeline.fit(X_train,y_train.values.ravel())
+        xgb_model_pipeline.fit(X_train,y_train.values.ravel())
 
         # calcolo metriche di valutazione sul modello base dell'i-esima iterazione 
         validate(lr_model_pipeline,i,"std_models",'lr',X_test,y_test)
         validate(rf_model_pipeline,i,'std_models','rf',X_test,y_test)
         validate(svm_model_pipeline,i,'std_models','svm',X_test,y_test)
+        validate(xgb_model_pipeline,i,'std_models','xgb',X_test,y_test)
 
     # trasformiamo dataframe in array per poter utilizzare la strategia KFold
     df_fair_array = np.asarray(fair_dataset)
@@ -129,18 +140,22 @@ def training_model(dataset):
         lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(), model__sample_weight=sample_weights_train)
         rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(), model__sample_weight=sample_weights_train)
         svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(), model__sample_weight=sample_weights_train)
+        xgb_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(), model__sample_weight=sample_weights_train)
 
         # calcolo metriche di valutazione sul modello fair dell'i-esima iterazione
         validate(lr_fair_model_pipeline,i,'fair_models','lr',X_fair_test,y_fair_test)
         validate(rf_fair_model_pipeline,i,'fair_models','rf',X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
+        validate(xgb_fair_model_pipeline,i,'fair_models','xgb',X_fair_test,y_fair_test)
 
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_adult_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_adult_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_adult_model.sav','wb'))
+    pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_aif360_adult_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_aif360_adult_model.sav','wb'))
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_aif360_adult_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_adult_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_aif360_adult_model.sav','wb'))
 
 def validate(ml_model,index,model_vers,model_type,X_test,y_test):
     ## funzione utile a calcolare le metriche di valutazione del modello passato in input
