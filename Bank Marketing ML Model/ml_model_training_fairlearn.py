@@ -14,6 +14,7 @@ from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.metrics import *
 from fairlearn.postprocessing import ThresholdOptimizer,plot_threshold_optimizer
 import pickle
+import xgboost as xgb
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
@@ -59,6 +60,11 @@ def load_dataset():
         ('model',SVC(probability=True))
     ])
 
+    xgb_model_pipeline = Pipeline(steps=[
+        ('scaler',StandardScaler()),
+        ('model',xgb.XGBClassifier(objective='binary:logistic', random_state=42))
+    ])
+
     lr_fair_model_pipeline = Pipeline(steps=[
         ('scaler',StandardScaler()),
         ('model',LogisticRegression())
@@ -74,22 +80,34 @@ def load_dataset():
         ('model',SVC(probability=True))
     ])
 
-    lr_threshold_model_pipeline = ThresholdOptimizer(
+    xgb_fair_model_pipeline = Pipeline(steps=[
+        ('scaler',StandardScaler()),
+        ('model',xgb.XGBClassifier(objective='binary:logistic', random_state=42))
+    ])
+
+    lr_threshold = ThresholdOptimizer(
         estimator=lr_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
         prefit=True
     )
 
-    rf_threshold_model_pipeline = ThresholdOptimizer(
+    rf_threshold = ThresholdOptimizer(
         estimator=rf_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
         prefit=True
     )
 
-    svm_threshold_model_pipeline = ThresholdOptimizer(
+    svm_threshold = ThresholdOptimizer(
         estimator=svm_model_pipeline,
+        constraints='demographic_parity',
+        predict_method='predict_proba',
+        prefit=True
+    )
+
+    xgb_threshold = ThresholdOptimizer(
+        estimator=xgb_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
         prefit=True
@@ -115,45 +133,60 @@ def load_dataset():
         lr_model_pipeline.fit(X_train,y_train)
         rf_model_pipeline.fit(X_train,y_train)
         svm_model_pipeline.fit(X_train,y_train)
+        xgb_model_pipeline.fit(X_train,y_train)
 
         validate(lr_model_pipeline,'lr','std',i,X_test,y_test)
         validate(rf_model_pipeline,'rf','std',i,X_test,y_test)
         validate(svm_model_pipeline,'svm','std',i,X_test,y_test)
+        validate(xgb_model_pipeline,'xgb','std',i,X_test,y_test)
 
         lr_fair_model_pipeline.fit(X_fair_train,y_fair_train)
         rf_fair_model_pipeline.fit(X_fair_train,y_fair_train)
         svm_fair_model_pipeline.fit(X_fair_train,y_fair_train)
+        xgb_fair_model_pipeline.fit(X_fair_train,y_fair_train)
 
         validate(lr_fair_model_pipeline,'lr','fair',i,X_fair_test,y_fair_test)
         validate(rf_fair_model_pipeline,'rf','fair',i,X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,'svm','fair',i,X_fair_test,y_fair_test)
+        validate(xgb_fair_model_pipeline,'xgb','fair',i,X_fair_test,y_fair_test)
 
-        lr_threshold_model_pipeline.fit(X_train,y_train,sensitive_features=g_train)
-        rf_threshold_model_pipeline.fit(X_train,y_train,sensitive_features=g_train)
-        svm_threshold_model_pipeline.fit(X_train,y_train,sensitive_features=g_train)
+        lr_threshold.fit(X_train,y_train,sensitive_features=g_train)
+        rf_threshold.fit(X_train,y_train,sensitive_features=g_train)
+        svm_threshold.fit(X_train,y_train,sensitive_features=g_train)
+        xgb_threshold.fit(X_train,y_train,sensitive_features=g_train)
 
-        validate_postop(lr_threshold_model_pipeline,'lr',i,X_test,y_test,g_test)
-        validate_postop(rf_threshold_model_pipeline,'rf',i,X_test,y_test,g_test)
-        validate_postop(svm_threshold_model_pipeline,'svm',i,X_test,y_test,g_test)
+        validate_postop(lr_threshold,'lr',i,X_test,y_test,g_test)
+        validate_postop(rf_threshold,'rf',i,X_test,y_test,g_test)
+        validate_postop(svm_threshold,'svm',i,X_test,y_test,g_test)
+        validate_postop(xgb_threshold,'xgb',i,X_test,y_test,g_test)
 
 
     print(lr_model_pipeline.score(X,y))
     print(rf_model_pipeline.score(X,y))
     print(svm_model_pipeline.score(X,y))
+    print(xgb_model_pipeline.score(X,y))
 
     print(lr_fair_model_pipeline.score(X,y))
     print(rf_fair_model_pipeline.score(X,y))
     print(svm_fair_model_pipeline.score(X,y))
+    print(xgb_fair_model_pipeline.score(X,y))
 
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_bank_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_bank_model.sav','wb'))
+
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_fairlearn_bank_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_bank_model.sav','wb'))
+
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_bank_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_abank_model.sav','wb'))
-    pickle.dump(lr_threshold_model_pipeline,open('./output_models/postop_models/threshold_lr_fairlearn_bank_model.sav','wb'))
-    pickle.dump(rf_threshold_model_pipeline,open('./output_models/postop_models/threshold_rf_fairlearn_bank_model.sav','wb'))
-    pickle.dump(svm_threshold_model_pipeline,open('./output_models/postop_models/threshold_svm_fairlearn_bank_model.sav','wb'))
+
+    pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_fairlearn_bank_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_fairlearn_bank_model.sav','wb'))
+
+    pickle.dump(lr_threshold,open('./output_models/postop_models/threshold_lr_fairlearn_bank_model.sav','wb'))
+    pickle.dump(rf_threshold,open('./output_models/postop_models/threshold_rf_fairlearn_bank_model.sav','wb'))
+    pickle.dump(svm_threshold,open('./output_models/postop_models/threshold_svm_fairlearn_bank_model.sav','wb'))
+    pickle.dump(xgb_threshold,open('./output_models/postop_models/threshold_xgb_fairlearn_bank_model.sav','wb'))
 
 
 def fairness_preprocess_op(dataset,protected_features_names):
