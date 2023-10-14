@@ -116,5 +116,5 @@ Metriche di valutazione:              precision    recall  f1-score   support
    macro avg       0.71      0.74      0.71       100
 weighted avg       0.77      0.72      0.73       100
 
-AUC ROC score: 0.7755055147058824
+AUC ROC score: 0.7752757352941176
 
