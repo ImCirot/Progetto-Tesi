@@ -15,6 +15,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from fairlearn.postprocessing import ThresholdOptimizer,plot_threshold_optimizer
 import pickle
+import xgboost as xgb
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
@@ -52,11 +53,13 @@ def training_model(dataset):
     lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    xgb_model_pipeline = make_pipeline(StandardScaler(), xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     # setting pipeline da addestrare sul dataset soggetto ad operazioni di fairness
     lr_fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
     rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
     svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    xgb_fair_model_pipeline = make_pipeline(StandardScaler(), xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
 
     # richiamiamo la funzione che dal dataset originale genera un nuovo dataset modificato rimuovendo la correlazione fra gli attributi sensibili e non
@@ -98,6 +101,13 @@ def training_model(dataset):
         prefit=True
     )
 
+    xgb_threshold = ThresholdOptimizer(
+        estimator=xgb_model_pipeline,
+        constraints='demographic_parity',
+        predict_method='predict_proba',
+        prefit=True
+    )
+
     # ciclo strategia KFold
     for train_index, test_index in kf.split(df_array):
         i = i+1
@@ -116,11 +126,13 @@ def training_model(dataset):
         lr_model_pipeline.fit(X_train,y_train)
         rf_model_pipeline.fit(X_train,y_train)
         svm_model_pipeline.fit(X_train,y_train)
+        xgb_model_pipeline.fit(X_train,y_train)
 
         # validiamo i modelli per ottenere metriche di valutazione
         validate(lr_model_pipeline,'std_models','lr', i, X_test, y_test)
         validate(rf_model_pipeline,'std_models','rf',i,X_test,y_test)
         validate(svm_model_pipeline,'std_models','svm',i,X_test,y_test)
+        validate(xgb_model_pipeline,'std_models','xgb',i,X_test,y_test)
 
         # addestriamo ora un modello sul dataframe in precedenza ricalibrato usando fairlearn
 
@@ -136,24 +148,29 @@ def training_model(dataset):
         lr_fair_model_pipeline.fit(X_fair_train,y_fair_train)
         rf_fair_model_pipeline.fit(X_fair_train,y_fair_train)
         svm_fair_model_pipeline.fit(X_fair_train,y_fair_train)
+        xgb_fair_model_pipeline.fit(X_fair_train,y_fair_train)
         
         # validiamo i modelli ottenuti per fornire metriche di valutazione
         validate(lr_fair_model_pipeline,'fair_models','lr',i,X_fair_test,y_fair_test)
         validate(rf_fair_model_pipeline,'fair_models','rf',i,X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,'fair_models','svm',i,X_fair_test,y_fair_test)
+        validate(xgb_fair_model_pipeline,'fair_models','xgb',i,X_fair_test,y_fair_test)
 
         lr_threshold.fit(X_train,y_train,sensitive_features=g_train)
         rf_threshold.fit(X_train,y_train,sensitive_features=g_train)
         svm_threshold.fit(X_train,y_train,sensitive_features=g_train)
+        xgb_threshold.fit(X_train,y_train,sensitive_features=g_train)
 
         validate_postop(lr_threshold,"lr",i,X_test,y_test,g_test)
         validate_postop(rf_threshold,'rf',i,X_test,y_test,g_test)
         validate_postop(svm_threshold,'svm',i,X_test,y_test,g_test)
+        validate_postop(xgb_threshold,'xgb',i,X_test,y_test,g_test)
 
         # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
         # plot_threshold_optimizer(lr_threshold)
         # plot_threshold_optimizer(rf_threshold)
         # plot_threshold_optimizer(svm_threshold)
+        # plot_threshold_optimizer(xgb_threshold)
     
     # per stampare i grafici generati
     plt.show()
@@ -164,12 +181,15 @@ def training_model(dataset):
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_adult_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_adult_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_fairlearn_adult_model.sav','wb'))
+    pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_fairlearn_adult_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_adult_model.sav','wb'))
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_adult_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_adult_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_fairlearn_adult_model.sav','wb'))
     pickle.dump(lr_threshold,open('./output_models/postop_models/threshold_lr_fairlearn_adult_model.sav','wb'))
     pickle.dump(rf_threshold,open('./output_models/postop_models/threshold_rf_fairlearn_adult_model.sav','wb'))
     pickle.dump(svm_threshold,open('./output_models/postop_models/threshold_svm_fairlearn_adult_model.sav','wb'))
+    pickle.dump(xgb_threshold,open('./output_models/postop_models/threshold_xgb_fairlearn_adult_model.sav','wb'))
 
 
 def fairness_preprocess_op(dataset, protected_features_names):
