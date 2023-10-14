@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from codecarbon import track_emissions
 import pickle
+import xgboost as xgb
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
@@ -38,21 +39,28 @@ def load_dataset():
     lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     lr_fair_model_pipeline = Pipeline(steps=[
         ('scaler',StandardScaler()),
         ('model',LogisticRegression())
-        ])
+    ])
+
     rf_fair_model_pipeline = Pipeline(steps=[
         ('scaler',StandardScaler()),
         ('model',RandomForestClassifier())
-        ])
+    ])
     
     svm_fair_model_pipeline = Pipeline(steps=[
         ('scaler',StandardScaler()),
         ('model',SVC(probability=True))
-        ])
+    ])
     
+    xgb_fair_model_pipeline = Pipeline(steps=[
+        ('scaler', StandardScaler()),
+        ('model', xgb.XGBClassifier(objective='binary:logistic', random_state=42))
+    ])
+
     i = 0
 
     for train_index, test_index in kf.split(df_array):
@@ -73,35 +81,42 @@ def load_dataset():
         lr_model_pipeline.fit(X_train,y_train)
         rf_model_pipeline.fit(X_train,y_train)
         svm_model_pipeline.fit(X_train,y_train)
+        xgb_model_pipeline.fit(X_train,y_train)
 
         lr_fair_model_pipeline.fit(X_fair_train,y_fair_train,model__sample_weight=sample_weights_train)
         rf_fair_model_pipeline.fit(X_fair_train,y_fair_train,model__sample_weight=sample_weights_train)
         svm_fair_model_pipeline.fit(X_fair_train,y_fair_train,model__sample_weight=sample_weights_train)
+        xgb_fair_model_pipeline.fit(X_fair_train,y_fair_train,model__sample_weight=sample_weights_train)
 
         validate(lr_model_pipeline,'lr','std',i,X_test,y_test)
         validate(rf_model_pipeline,'rf','std',i,X_test,y_test)
         validate(svm_model_pipeline,'svm','std',i,X_test,y_test)
+        validate(xgb_model_pipeline,'xgb','std',i,X_test,y_test)
 
         validate(lr_fair_model_pipeline,'lr','fair',i,X_fair_test,y_fair_test)
         validate(rf_fair_model_pipeline,'rf','fair',i,X_fair_test,y_fair_test)
         validate(svm_model_pipeline,'svm','fair',i,X_fair_test,y_fair_test)
-
+        validate(xgb_fair_model_pipeline,'xgb','fair',i,X_fair_test,y_fair_test)
 
     print(lr_model_pipeline.score(X,y))
     print(rf_model_pipeline.score(X,y))
     print(svm_model_pipeline.score(X,y))
+    print(xgb_model_pipeline.score(X,y))
     
     print(lr_fair_model_pipeline.score(X_fair,y_fair))
     print(rf_fair_model_pipeline.score(X_fair,y_fair))
     print(svm_model_pipeline.score(X_fair,y_fair))
+    print(xgb_fair_model_pipeline.score(X_fair,y_fair))
 
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_bank_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_bank_model.sav','wb'))
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_aif360_bank_model.sav','wb'))
+    pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_aif360_bank_model.sav','wb'))
 
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_bank_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_aif360_bank_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_bank_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_aif360_bank_model.sav','wb'))
 
 def test_fairness(dataset):
     maritial_features = [
@@ -205,7 +220,7 @@ def print_fairness_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/bank_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/marketing_report.txt",open_type) as f:
         f.write(f"{message}: {metric}")
         f.write('\n')
 
