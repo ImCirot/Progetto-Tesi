@@ -81,7 +81,7 @@ def traning_and_testing_model():
         ('model',SVC(probability=True,class_weight={1:1,0:5}))
     ])
 
-    xgb_fair_model_pipeline = fair_model_pipeline = Pipeline(steps=[
+    xgb_fair_model_pipeline = Pipeline(steps=[
         ('scaler', StandardScaler()),
         ('model', xgb.XGBClassifier(objective='binary:logistic', class_weight={1:1,0:5}, random_state=42))
     ])
