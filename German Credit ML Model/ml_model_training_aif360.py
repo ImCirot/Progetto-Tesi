@@ -28,11 +28,10 @@ def traning_and_testing_model():
     # operazione necessaria ai fini di utilizzo del toolkit
     df['Target'] = df['Target'].replace(2,0)
 
-    # print di debug
-    # pd.options.display.max_columns = 2
-    # print(df.head())
+    fair_dataset = df.copy(deep=True)
 
-    (fair_dataset,sample_weights) = test_fairness(df)
+    sample_weights = test_fairness(df)
+
     fair_dataset['weights'] = sample_weights
 
     features = df.columns.tolist()
@@ -190,11 +189,6 @@ def test_fairness(dataset):
         'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
     ]
 
-    # Attributi sensibili con vantaggio
-    privileged_attribute_names = [
-        'sex_A91','sex_A92','sex_A94'
-    ]
-
     aif360_dataset = BinaryLabelDataset(
         df=dataset,
         favorable_label=1,
@@ -239,10 +233,10 @@ def test_fairness(dataset):
     print_fairness_metrics(metric_transformed.num_positives(privileged=True),'Num. of positive instances of priv_group after')
     print_fairness_metrics(metric_transformed.num_positives(privileged=False),'Num. of positive instances of unpriv_group after')
 
-    # Creiamo un nuovo dataframe sulla base del modello ripesato dall'operazione precedente
-    fair_dataset = dataset_transformed.convert_to_dataframe()[0]
+    # otteniamo i nuovi pesi forniti dall'oggetto che mitigano i problemi di fairness
+    sample_weights = dataset_transformed.instance_weights
 
-    return (fair_dataset,dataset_transformed.instance_weights)
+    return sample_weights
     
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input

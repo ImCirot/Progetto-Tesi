@@ -18,7 +18,10 @@ import xgboost as xgb
 def load_dataset():
     df = pd.read_csv('./Bank Marketing Dataset/dataset.csv')
 
-    (df_fair,instance_weights) = test_fairness(df)
+    df_fair = df.copy(deep=True)
+
+    instance_weights = test_fairness(df)
+    
     df_fair['weights'] = instance_weights
 
     kf = KFold(n_splits=10)
@@ -154,12 +157,17 @@ def test_fairness(dataset):
 
     df_mod = marital_df_trans.convert_to_dataframe()[0]
 
+    sample_weights = marital_df_trans.instance_weights
+
+    df_mod['weights'] = sample_weights
+
     ed_df_aif360 = BinaryLabelDataset(
         df=df_mod,
         favorable_label=1,
         unfavorable_label=0,
         label_names = ['y'],
-        protected_attribute_names=education_features
+        protected_attribute_names=education_features,
+        instance_weights_name =['weights']
     )
 
     ed_privileged_groups = [{'education_primary': 1}]
@@ -179,7 +187,9 @@ def test_fairness(dataset):
     print_fairness_metrics(ed_metric_trans.disparate_impact(),'(Ed.) DI after')
     print_fairness_metrics(ed_metric_trans.mean_difference(),'(Ed.) Mean_difference after')
 
-    return (ed_df_trans.convert_to_dataframe()[0],ed_df_trans.instance_weights)
+    sample_weights = ed_df_trans.instance_weigths
+
+    return sample_weights
 
 
 def validate(ml_model,ml_type,ml_vers,index,X_test,y_test):

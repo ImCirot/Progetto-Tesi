@@ -35,8 +35,10 @@ def training_model(dataset):
         'race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','sex_Female','sex_Male'
     ]
 
+    fair_dataset = dataset.copy(deep=True)
+
     # creiamo un dataset fair effettuando modifiche al dataset originale
-    (fair_dataset,sample_weights) = test_fairness(dataset)
+    sample_weights = test_fairness(dataset)
 
     fair_dataset['weights'] = sample_weights
 
@@ -239,29 +241,28 @@ def test_fairness(original_dataset):
     # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
     print_fairness_metrics(race_metric_transformed.num_positives(privileged=True),'(RACE) Num. of positive instances of priv_group after')
     print_fairness_metrics(race_metric_transformed.num_positives(privileged=False),'(RACE) Num. of positive instances of unpriv_group after')
-
-    #
-    #
-    #
-    # possiamo concludere che, in seguito alla ricalibrazione offerta, se il valore è diminuito allora siamo riusciti a rimuovere questa disparità nelle istanze 
-    # di input con esito positivo, questo ci permette di assumere che un modello addestrato su questo nuovo dataset, in grado di fornire un numero maggiore di 
-    # istanze positive anche per il gruppo sfavorito, possa portare a realizzare un modello più fair.
-    #
-    #
-    #
     
+    # passiamo ora a valutare il dataset sulla base della feature legata al genere
+
+    new_dataset = race_dataset_transformed.convert_to_dataframe()[0]
+
+    sample_weights = race_dataset_transformed.instance_weights
+
+    new_dataset['weights'] = sample_weights
+
     # setting nome varibili sensibili legate al sesso
     sex_features = ['sex_Male','sex_Female']
 
     # costruiamo il dataset sfruttando l'oggetto richiesto dalla libreria AIF360 per operare
     # questo dataset sfrutterà solamente i gruppi ottenuti utilizzando la feature "sex"
     aif_sex_dataset = BinaryLabelDataset(
-        df=original_dataset,
+        df=new_dataset,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['salary'],
         protected_attribute_names=sex_features,
-        privileged_protected_attributes=['sex_Male']
+        privileged_protected_attributes=['sex_Male'],
+        instance_weights_name=['weights']
     )
 
     # setting dei gruppi privilegiati e non del delle varibili protette
@@ -298,89 +299,9 @@ def test_fairness(original_dataset):
     print_fairness_metrics(sex_metric_transformed.num_positives(privileged=True),'(SEX) Num. of positive instances of priv_group after')
     print_fairness_metrics(sex_metric_transformed.num_positives(privileged=False),'(SEX) Num. of positive instances of unpriv_group after')
 
-    #
-    #
-    #
-    # eseguendo questa parte di codice notiamo come, per gli attributi legati al sesso, il numero di istanze di individui di sesso maschile è più grande
-    # quindi è giusto trattarli come gruppo favorito, ma al momento del calcolo della metrica si può notare un valore negativo, il che indica che, nonostante
-    # il numero di indivudi di sesso maschile superiore agli individui di sesso femminile, la differenza fra casi positivi gruppo non favorito e gruppo favorito
-    # vada in favore del gruppo sfavorito.
-    # Questo risulta in un bilanciamento incorretto che va ad aggiungere piuttosto che rimuovere la disparità passando da un valore che favoriva il gruppo
-    # sfavorito in un valore che favorisce ampiamente il gruppo favorito, aumentando ancora di più la disparità fra i gruppi
-    #
-    #
-    #
+    sample_weights = sex_dataset_transformed.instance_weights
 
-    # scegliamo ora di effettuare la stessa operazione, prendendo contemporaneamente sia gli attributi legati al sesso che alla razza e testandone le disparità
-    # presenti nel dataset
-
-    # lista dei nomi delle features protette
-    protected_features = [
-        'race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','sex_Male','sex_Female'
-    ]
-
-    # lista nomi delle features protette favorite
-    privileged_features = [
-        'sex_Male','race_White'
-    ]
-
-    aif_overall_dataset = BinaryLabelDataset(
-        df=original_dataset,
-        favorable_label=1,
-        unfavorable_label=0,
-        label_names=['salary'],
-        protected_attribute_names=protected_features,
-        privileged_protected_attributes=privileged_features
-    )
-
-    # setting dei gruppi privilegiati e non del delle varibili protette
-    # in particolare, scegliamo di trattare gli individui bianchi di sesso maschile come favoriti data la forte presenza di quest'ultimi all'interno del dataset
-    # rispetto agli individui altri individui indipendentemente dal sesso e razza.
-    overall_privileged_groups = [{'sex_Male': 1, 'race_White': 1}]
-    overall_unprivileged_groups = [{'sex_Male': 1, 'race_White': 0}, {'sex_Male': 0}]
-
-    # Calcolo della metrica sul dataset originale
-    overall_metric_original = BinaryLabelDatasetMetric(dataset=aif_overall_dataset, unprivileged_groups=overall_unprivileged_groups, privileged_groups=overall_privileged_groups)
-
-    # stampiamo la metrica mean_difference sul file di report    
-    print_fairness_metrics(overall_metric_original.mean_difference(),'Overall mean_difference before')
-    print_fairness_metrics(overall_metric_original.disparate_impact(),'Overall DI before')
-    
-    # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
-    RW = Reweighing(unprivileged_groups=overall_unprivileged_groups,privileged_groups=overall_privileged_groups)
-
-    # bilanciamo il dataset originale sfruttando l'oggetto appena creato
-    overall_dataset_transformed = RW.fit_transform(aif_overall_dataset)
-
-    # vengono ricalcolate le metriche sul nuovo modello appena bilanciato
-    overall_metric_transformed = BinaryLabelDatasetMetric(dataset=overall_dataset_transformed,unprivileged_groups=overall_unprivileged_groups,privileged_groups=overall_privileged_groups)
-    
-    # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics(overall_metric_transformed.mean_difference(),'Overal mean_difference value after')
-    print_fairness_metrics(overall_metric_transformed.disparate_impact(),'Overal DI value after')
-
-    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
-    print_fairness_metrics(overall_metric_original.num_positives(privileged=True),'(OVR) Num. of positive instances of priv_group before')
-    print_fairness_metrics(overall_metric_original.num_positives(privileged=False),'(OVR) Num. of positive instances of unpriv_group before')
-
-    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
-    print_fairness_metrics(overall_metric_transformed.num_positives(privileged=True),'(OVR) Num. of positive instances of priv_group after')
-    print_fairness_metrics(overall_metric_transformed.num_positives(privileged=False),'(OVR) Num. of positive instances of unpriv_group after')
-    #
-    #
-    # osservando il risultato di questa operazione scopriamo che il numero di individui bianchi di sesso maschile è più grande del resto degli individui
-    # (maschi di razza diversa/donne), ma nonostante questo il dataset presenta una mean_difference negativa, quindi, in generale, il gruppo più piccolo,
-    # indicato inizialmente come sfavorito date le informazioni precedenti, in realtà ha un numero più alto di predizioni positive.
-    # Questo porta quindi ad un ribilanciamento che favorisce ulteriormente il gruppo più piccolo indicato come sfavorito, aumentando maggiormente
-    # la mean_difference con il gruppo indicato come favorito.
-    # Per questo possiamo concludere che questo ribilanciamento non è corretto
-    #
-    #
-    # ritorniamo alla funzione chiamante l'unico dataset in cui è stato possibile evidenziare e rimuovere disparità fra i gruppi individuati per poter
-    # addestrare un modello più fair
-    aif_df = race_dataset_transformed.convert_to_dataframe()[0]
-
-    return (aif_df,race_dataset_transformed.instance_weights)
+    return sample_weights
 
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
