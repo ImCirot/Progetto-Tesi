@@ -13,31 +13,6 @@ def loading_dataset():
     ## funzione che carica il dataset in un dataframe, effettua un encoding delle feature tramite OneShot per le varibili categoriche 
     ## e salva il nuovo dataframe pronto per essere utilizzato dal modello
     
-    # Creazione etichette del dataset
-    col_names = [
-        'Status of exisiting checking account',
-        'Duration in month',
-        'Credit history',
-        'Purpose',
-        'Credit amount',
-        'Savings account/bonds',
-        'Present employment since',
-        'Installment rate in percentage of disposable income',
-        'sex',
-        'Other debtors / guarantors',
-        'Present residence since',
-        'Property',
-        'Age in years',
-        'Other installment plans',
-        'Housing',
-        'Number of existing credits at this bank',
-        'Job',
-        'Number of people being liable to provide maintenance for',
-        'Telephone',
-        'foreign worker',
-        'Target'
-    ]
-    
     # Etichette del dataset contenenti dati di tipo categorico
     # Questa lista viene utilizzata per indicare quali tipi di dati andranno codificati tramite OneShot Encoding
     categorical_features = [
@@ -69,8 +44,9 @@ def loading_dataset():
     ]
 
     # Lettura del dataset da file memorizzato nel DataFrame df
-    df = pd.read_csv('./Dataset/German-Dataset.csv', names=col_names, index_col=False, header=None)
-
+    df = pd.read_csv('./German Credit Dataset/German-Dataset.csv', index_col=False)
+    
+    print(df.columns)
     # stampiamo dei valori per capire la distribuzione dell'attributo sensibile "sex"
     single_males = df[df['sex'] == 'A93']
     num_single_males = single_males.shape[0]
@@ -110,7 +86,7 @@ def loading_dataset():
     # print(df.head)
 
     # Salviamo in locale il dataset in un file csv, pronto per essere utilizzato per la fase di training e testing del modello
-    ouptut = df.to_csv('./Dataset/dataset_modificato.csv', index_label="ID")
+    ouptut = df.to_csv('./German Credit Dataset/dataset_modificato.csv', index_label="ID")
 
 # Chiamata funzione per caricare il dataset e organizzare le features per poter essere utilizzate in fase di training
 loading_dataset()
