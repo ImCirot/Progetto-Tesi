@@ -187,7 +187,7 @@ def test_fairness(dataset):
     print_fairness_metrics(ed_metric_trans.disparate_impact(),'(Ed.) DI after')
     print_fairness_metrics(ed_metric_trans.mean_difference(),'(Ed.) Mean_difference after')
 
-    sample_weights = ed_df_trans.instance_weigths
+    sample_weights = ed_df_trans.instance_weights
 
     return sample_weights
 
