@@ -43,3 +43,8 @@ Matrice di confusione:
 [[19 10]
  [11 60]]
 
+10 iterazione:
+Matrice di confusione:
+[[15 17]
+ [ 6 62]]
+
