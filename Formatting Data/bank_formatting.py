@@ -13,6 +13,7 @@ def load_dataset():
     feature_names = df.columns.tolist()
 
     feature_names.remove('y')
+    df.to_csv('./Bank Marketing Dataset/original_dataset.csv', index_label='ID')
 
     df_dummies = pd.get_dummies(df[feature_names],dtype=int)
     df = df.drop(feature_names, axis=1)
