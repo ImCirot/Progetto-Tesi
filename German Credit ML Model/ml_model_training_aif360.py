@@ -63,7 +63,7 @@ def traning_and_testing_model():
     lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
-    xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', class_weight={1:1,0:5}, random_state=42))
+    xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     lr_fair_model_pipeline = Pipeline(steps=[
         ('scaler',StandardScaler()), 
@@ -82,7 +82,7 @@ def traning_and_testing_model():
 
     xgb_fair_model_pipeline = Pipeline(steps=[
         ('scaler', StandardScaler()),
-        ('model', xgb.XGBClassifier(objective='binary:logistic', class_weight={1:1,0:5}, random_state=42))
+        ('model', xgb.XGBClassifier(objective='binary:logistic', random_state=42))
     ])
 
     # Strategia KFold
