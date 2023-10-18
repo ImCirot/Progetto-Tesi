@@ -6,7 +6,7 @@ from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from fairlearn.preprocessing import CorrelationRemover
-from fairlearn.metrics import *
+from fairlearn.metrics import MetricFrame,demographic_parity_difference,demographic_parity_ratio
 from sklearn.metrics import *
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -39,6 +39,8 @@ def training_model(dataset):
 
     # setting lista contenente nomi degli attributi protetti
     protected_features_names = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','sex_Female','sex_Male']
+    sex_features_names = ['sex_Female','sex_Male']
+    race_features_names = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
 
     # setting del set contenente le features utili all'apprendimento
     X = dataset[features]
@@ -47,7 +49,9 @@ def training_model(dataset):
     y = dataset['salary']
 
     # setting del set contenente valori attributi sensibili
-    g = dataset[protected_features_names]
+    g= dataset[protected_features_names]
+    g_sex = dataset[sex_features_names]
+    g_race = dataset[race_features_names]
 
     # setting pipeline contenente modello e scaler per ottimizzazione dei dati da fornire al modello
     lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
@@ -175,7 +179,53 @@ def training_model(dataset):
     # per stampare i grafici generati
     plt.show()
 
-    
+    lr_std_pred = lr_model_pipeline.predict(X)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X)
+    lr_threshold_pred = lr_threshold.predict(X,sensitive_features=g)
+
+    rf_std_pred = rf_model_pipeline.predict(X)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X)
+    rf_threshold_pred = rf_threshold.predict(X,sensitive_features=g)
+
+    svm_std_pred = svm_model_pipeline.predict(X)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X)
+    svm_threshold_pred = svm_threshold.predict(X,sensitive_features=g)
+
+    xgb_std_pred = xgb_model_pipeline.predict(X)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X)
+    xgb_threshold_pred = xgb_threshold.predict(X,sensitive_features=g)
+
+    predictions = {
+        'lr_std':lr_std_pred,
+        'lr_fair': lr_fair_pred,
+        'lr_threshold': lr_threshold_pred,
+        'rf_std': rf_std_pred,
+        'rf_fair':rf_fair_pred,
+        'rf_threshold':rf_threshold_pred,
+        'svm_std': svm_std_pred,
+        'svm_fair': svm_fair_pred,
+        'svm_threshold': svm_threshold_pred,
+        'xgb_std': xgb_std_pred,
+        'xgb_fair': xgb_fair_pred,
+        'xgb_threshold': xgb_threshold_pred
+    }
+
+    start = True
+
+    for name,prediction in predictions.items():
+
+        sex_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g_sex)
+        race_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g_race)
+
+        if start is True:
+            open_type = 'w'
+            start = False
+        else:
+            open_type = 'a'
+
+        with open('./reports/fairness_reports/adult_model_DI.txt',open_type) as f:
+            f.write(f'{name}_sex DI: {sex_DI}\n')
+            f.write(f'{name}_race DI: {race_DI}\n')
 
     # salviamo i modelli ottenuti
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_adult_model.sav','wb'))
