@@ -38,28 +38,11 @@ def training_model(dataset):
         'Gender','Educational special needs'
     ]
 
-    # per le operazioni di postprocessing, è necessario trasformare le varibili continue in variabili discrete.
-    # creiamo una copia del dataset originale 
-    post_op_dataset = dataset.copy(deep=True)
-
-    # settiamo come positivi tutti gli studenti la cui eta è minore di 30, 0 gli studenti con più di 30 anni
-    post_op_dataset['Age at enrollment'] = post_op_dataset['Age at enrollment'].apply(lambda x: 1 if x<=30 else 0)
-
-    # otteniamo valore medio dei voti di ammissione
-    grade_mean = post_op_dataset['Admission grade'].mean()
-
-    # settiamo come positivi tutti gli studenti il cui voto supera o è uguale al voto medio, 0 altrimenti
-    post_op_dataset['Admission grade'] = post_op_dataset['Admission grade'].apply(lambda x: 1 if x>=grade_mean else 0)
-
     X = dataset[features]
 
     y = dataset['Target']
 
-    X_postop = post_op_dataset[features]
-
-    y_postop = post_op_dataset['Target']
-
-    g = post_op_dataset[protected_features]
+    g = dataset[protected_features]
 
     i = 0
 
@@ -156,29 +139,67 @@ def training_model(dataset):
         validate(rf_fair_model_pipeline,'fair_models','rf',i,X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,'fair_models','svm',i,X_fair_test,y_fair_test)
         validate(xgb_fair_model_pipeline,'fair_models','xgb',i,X_fair_test,y_fair_test)
-
-        X_postop_train = X_postop.iloc[train_index]
-        y_postop_train = y_postop.iloc[train_index]
-        
-        X_postop_test = X_postop.iloc[test_index]
-        y_postop_test = y_postop.iloc[test_index]
         
         g_test = g.iloc[test_index]
         g_train = g.iloc[train_index]
 
-        lr_threshold.fit(X_postop_train,y_postop_train,sensitive_features=g_train)
-        rf_threshold.fit(X_postop_train,y_postop_train,sensitive_features=g_train)
-        svm_threshold.fit(X_postop_train,y_postop_train,sensitive_features=g_train)
-        xgb_threshold.fit(X_postop_train,y_postop_train,sensitive_features=g_train)
+        lr_threshold.fit(X_train,y_train,sensitive_features=g_train)
+        rf_threshold.fit(X_train,y_train,sensitive_features=g_train)
+        svm_threshold.fit(X_train,y_train,sensitive_features=g_train)
+        xgb_threshold.fit(X_train,y_train,sensitive_features=g_train)
 
         # validiamo i nuovi modelli prodotti
-        validate_postop(lr_threshold,'lr',i,X_postop_test,y_postop_test,g_test)
-        validate_postop(rf_threshold,'rf',i,X_postop_test,y_postop_test,g_test)
-        validate_postop(svm_threshold,'svm',i,X_postop_test,y_postop_test,g_test)
-        validate_postop(xgb_threshold,'xgb',i,X_postop_test,y_postop_test,g_test)
+        validate_postop(lr_threshold,'lr',i,X_test,y_test,g_test)
+        validate_postop(rf_threshold,'rf',i,X_test,y_test,g_test)
+        validate_postop(svm_threshold,'svm',i,X_test,y_test,g_test)
+        validate_postop(xgb_threshold,'xgb',i,X_test,y_test,g_test)
 
+    lr_std_pred = lr_model_pipeline.predict(X)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X_fair)
+    lr_threshold_pred = lr_threshold.predict(X,sensitive_features=g)
+
+    rf_std_pred = rf_model_pipeline.predict(X)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X_fair)
+    rf_threshold_pred = rf_threshold.predict(X,sensitive_features=g)
+
+    svm_std_pred = svm_model_pipeline.predict(X)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X_fair)
+    svm_threshold_pred = svm_threshold.predict(X,sensitive_features=g)
+
+    xgb_std_pred = xgb_model_pipeline.predict(X)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_fair)
+    xgb_threshold_pred = xgb_threshold.predict(X,sensitive_features=g)
+
+    predictions = {
+        'lr_std':lr_std_pred,
+        'lr_fair': lr_fair_pred,
+        'lr_threshold': lr_threshold_pred,
+        'rf_std': rf_std_pred,
+        'rf_fair':rf_fair_pred,
+        'rf_threshold':rf_threshold_pred,
+        'svm_std': svm_std_pred,
+        'svm_fair': svm_fair_pred,
+        'svm_threshold': svm_threshold_pred,
+        'xgb_std': xgb_std_pred,
+        'xgb_fair': xgb_fair_pred,
+        'xgb_threshold': xgb_threshold_pred
+    }
+
+    start = True
+
+    for name,prediction in predictions.items():
+
+        DI_score = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
+
+        if start is True:
+            open_type = 'w'
+            start = False
+        else:
+            open_type = 'a'
+
+        with open('./reports/fairness_reports/student_model_DI.txt',open_type) as f:
+            f.write(f'{name} DI: {DI_score}\n')
     
-
     # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
     # plot_threshold_optimizer(lr_threshold)
     # plot_threshold_optimizer(rf_threshold)
