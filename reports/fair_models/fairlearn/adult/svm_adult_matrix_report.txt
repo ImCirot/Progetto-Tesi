@@ -23,3 +23,28 @@ Matrice di confusione:
 [[2118  146]
  [ 307  445]]
 
+6 iterazione:
+Matrice di confusione:
+[[2128  159]
+ [ 308  421]]
+
+7 iterazione:
+Matrice di confusione:
+[[2138  131]
+ [ 324  423]]
+
+8 iterazione:
+Matrice di confusione:
+[[2104  140]
+ [ 306  466]]
+
+9 iterazione:
+Matrice di confusione:
+[[2115  138]
+ [ 325  438]]
+
+10 iterazione:
+Matrice di confusione:
+[[2091  156]
+ [ 324  445]]
+
