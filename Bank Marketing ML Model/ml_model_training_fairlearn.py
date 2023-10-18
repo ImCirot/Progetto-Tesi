@@ -33,6 +33,14 @@ def load_dataset():
          'education_primary','education_secondary','education_tertiary'
     ] 
 
+    marital_feature_names = [
+        'marital_divorced','marital_married','marital_single'
+    ]
+
+    education_feature_names = [
+        'education_primary','education_secondary','education_tertiary'
+    ]
+
     fair_dataset = fairness_preprocess_op(dataset=df, protected_features_names=protected_features_names)
 
     X = df[feature_names]
@@ -42,7 +50,8 @@ def load_dataset():
     y_fair = fair_dataset['y']
     
     g = df[protected_features_names]
-
+    g_marital = df[marital_feature_names]
+    g_education = df[education_feature_names]
 
 
     lr_model_pipeline = Pipeline(steps=[
@@ -171,18 +180,62 @@ def load_dataset():
     print(svm_fair_model_pipeline.score(X,y))
     print(xgb_fair_model_pipeline.score(X,y))
 
+    lr_std_pred = lr_model_pipeline.predict(X)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X)
+    lr_threshold_pred = lr_threshold.predict(X,sensitive_features=g)
+
+    rf_std_pred = rf_model_pipeline.predict(X)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X)
+    rf_threshold_pred = rf_threshold.predict(X,sensitive_features=g)
+
+    svm_std_pred = svm_model_pipeline.predict(X)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X)
+    svm_threshold_pred = svm_threshold.predict(X,sensitive_features=g)
+
+    xgb_std_pred = xgb_model_pipeline.predict(X)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X)
+    xgb_threshold_pred = xgb_threshold.predict(X,sensitive_features=g)
+
+    predictions = {
+        'lr_std':lr_std_pred,
+        'lr_fair': lr_fair_pred,
+        'lr_threshold': lr_threshold_pred,
+        'rf_std': rf_std_pred,
+        'rf_fair':rf_fair_pred,
+        'rf_threshold':rf_threshold_pred,
+        'svm_std': svm_std_pred,
+        'svm_fair': svm_fair_pred,
+        'svm_threshold': svm_threshold_pred,
+        'xgb_std': xgb_std_pred,
+        'xgb_fair': xgb_fair_pred,
+        'xgb_threshold': xgb_threshold_pred
+    }
+
+    start = True
+
+    for name,prediction in predictions.items():
+
+        marital_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g_marital)
+        education_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g_education)
+
+        if start is True:
+            open_type = 'w'
+            start = False
+        else:
+            open_type = 'a'
+
+        with open('./reports/fairness_reports/bank_model_DI.txt',open_type) as f:
+            f.write(f'{name}_marital DI: {marital_DI}\n')
+            f.write(f'{name}_education DI: {education_DI}\n')
+
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_bank_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_bank_model.sav','wb'))
-
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_fairlearn_bank_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_bank_model.sav','wb'))
-
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_bank_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_abank_model.sav','wb'))
-
     pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_fairlearn_bank_model.sav','wb'))
     pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_fairlearn_bank_model.sav','wb'))
-
     pickle.dump(lr_threshold,open('./output_models/postop_models/threshold_lr_fairlearn_bank_model.sav','wb'))
     pickle.dump(rf_threshold,open('./output_models/postop_models/threshold_rf_fairlearn_bank_model.sav','wb'))
     pickle.dump(svm_threshold,open('./output_models/postop_models/threshold_svm_fairlearn_bank_model.sav','wb'))
