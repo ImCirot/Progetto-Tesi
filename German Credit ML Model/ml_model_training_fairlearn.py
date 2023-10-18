@@ -35,14 +35,6 @@ def training_model(dataset):
         'sex_A91','sex_A92','sex_A93','sex_A94'
     ]
 
-    # settiamo delle metriche utili per poter fornire delle valutazioni sugli attributi sensibili tramite il framework FairLearn
-    metrics = {
-        "accuracy": accuracy_score,
-        "precision": precision_score,
-        "selection rate": selection_rate,
-        "count": count,
-    }
-
     # settiamo la nostra X sulle sole variabili di features
     X = dataset[features]
 
@@ -199,6 +191,52 @@ def training_model(dataset):
         # plot_threshold_optimizer(rf_threshold)
         # plot_threshold_optimizer(svm_threshold)
         # plot_threshold_optimizer(xgb_threshold)
+
+    lr_std_pred = lr_model_pipeline.predict(X)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X_fair)
+    lr_threshold_pred = lr_threshold.predict(X,sensitive_features=sex)
+
+    rf_std_pred = rf_model_pipeline.predict(X)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X_fair)
+    rf_threshold_pred = rf_threshold.predict(X,sensitive_features=sex)
+
+    svm_std_pred = svm_model_pipeline.predict(X)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X_fair)
+    svm_threshold_pred = svm_threshold.predict(X,sensitive_features=sex)
+
+    xgb_std_pred = xgb_model_pipeline.predict(X)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_fair)
+    xgb_threshold_pred = xgb_threshold.predict(X,sensitive_features=sex)
+
+    predictions = {
+        'lr_std':lr_std_pred,
+        'lr_fair': lr_fair_pred,
+        'lr_threshold': lr_threshold_pred,
+        'rf_std': rf_std_pred,
+        'rf_fair':rf_fair_pred,
+        'rf_threshold':rf_threshold_pred,
+        'svm_std': svm_std_pred,
+        'svm_fair': svm_fair_pred,
+        'svm_threshold': svm_threshold_pred,
+        'xgb_std': xgb_std_pred,
+        'xgb_fair': xgb_fair_pred,
+        'xgb_threshold': xgb_threshold_pred
+    }
+
+    start = True
+
+    for name,prediction in predictions.items():
+
+        sex_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=sex)
+
+        if start is True:
+            open_type = 'w'
+            start = False
+        else:
+            open_type = 'a'
+
+        with open('./reports/fairness_reports/credit_model_DI.txt',open_type) as f:
+            f.write(f'{name}_sex DI: {sex_DI}\n')
 
 
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_credit_model.sav','wb'))
