@@ -1,0 +1,80 @@
+1 iter: Race Mean difference pre inprocessing: -0.10414799248817319
+1 iter: Race DI pre inprocessing: 0.6030781618313125
+1 iter: Race Mean difference post inprocessing: -0.030125325150899607
+1 iter: Race DI post inprocessing: 0.9467935572813334
+1 iter: Gender Mean difference pre inprocessing: -0.20193223304121147
+1 iter: Gender DI pre inprocessing: 0.3558706408250036
+1 iter: Gender Mean difference post inprocessing: 0.06970585058258272
+1 iter: Gender DI post inprocessing: 1.129250086988316
+2 iter: Race Mean difference pre inprocessing: -0.10403766748077609
+2 iter: Race DI pre inprocessing: 0.6064442205832554
+2 iter: Race Mean difference post inprocessing: -0.04190957642663384
+2 iter: Race DI post inprocessing: 0.9242609745414143
+2 iter: Gender Mean difference pre inprocessing: -0.20165890034258255
+2 iter: Gender DI pre inprocessing: 0.3603026542515621
+2 iter: Gender Mean difference post inprocessing: 0.06118728113228289
+2 iter: Gender DI post inprocessing: 1.1159724191187976
+3 iter: Race Mean difference pre inprocessing: -0.10459847812940032
+3 iter: Race DI pre inprocessing: 0.6056427771882822
+3 iter: Race Mean difference post inprocessing: -0.024926449510756732
+3 iter: Race DI post inprocessing: 0.949515229873604
+3 iter: Gender Mean difference pre inprocessing: -0.20087247802112163
+3 iter: Gender DI pre inprocessing: 0.36337222749363896
+3 iter: Gender Mean difference post inprocessing: 0.06669258024701535
+3 iter: Gender DI post inprocessing: 1.142304886250981
+4 iter: Race Mean difference pre inprocessing: -0.10541739802631708
+4 iter: Race DI pre inprocessing: 0.5997535009853386
+4 iter: Race Mean difference post inprocessing: -0.03976037922545206
+4 iter: Race DI post inprocessing: 0.9285091347491198
+4 iter: Gender Mean difference pre inprocessing: -0.19828697888420665
+4 iter: Gender DI pre inprocessing: 0.3661102728685169
+4 iter: Gender Mean difference post inprocessing: 0.06304057849199451
+4 iter: Gender DI post inprocessing: 1.1189089143950233
+5 iter: Race Mean difference pre inprocessing: -0.1043664928773276
+5 iter: Race DI pre inprocessing: 0.6040457165459319
+5 iter: Race Mean difference post inprocessing: -0.03246582157011285
+5 iter: Race DI post inprocessing: 0.9207105011167032
+5 iter: Gender Mean difference pre inprocessing: -0.20060863628424905
+5 iter: Gender DI pre inprocessing: 0.3610979075435633
+5 iter: Gender Mean difference post inprocessing: 0.04916047344815311
+5 iter: Gender DI post inprocessing: 1.1263998430334998
+6 iter: Race Mean difference pre inprocessing: -0.10679865749900777
+6 iter: Race DI pre inprocessing: 0.5965614579760649
+6 iter: Race Mean difference post inprocessing: -0.030275547816007553
+6 iter: Race DI post inprocessing: 0.9326035458177142
+6 iter: Gender Mean difference pre inprocessing: -0.1995061030561526
+6 iter: Gender DI pre inprocessing: 0.36518271176223704
+6 iter: Gender Mean difference post inprocessing: 0.06579024276754014
+6 iter: Gender DI post inprocessing: 1.1552835768560847
+7 iter: Race Mean difference pre inprocessing: -0.1080778136392192
+7 iter: Race DI pre inprocessing: 0.5908282578932704
+7 iter: Race Mean difference post inprocessing: -0.020012947468901254
+7 iter: Race DI post inprocessing: 0.9705763821798802
+7 iter: Gender Mean difference pre inprocessing: -0.20170983786523095
+7 iter: Gender DI pre inprocessing: 0.3586060790072467
+7 iter: Gender Mean difference post inprocessing: 0.09408587723622219
+7 iter: Gender DI post inprocessing: 1.1454508660139542
+8 iter: Race Mean difference pre inprocessing: -0.10465066760347094
+8 iter: Race DI pre inprocessing: 0.601839445971076
+8 iter: Race Mean difference post inprocessing: 0.03876133444605823
+8 iter: Race DI post inprocessing: 1.092047321185052
+8 iter: Gender Mean difference pre inprocessing: -0.19684687574225068
+8 iter: Gender DI pre inprocessing: 0.36907170550281765
+8 iter: Gender Mean difference post inprocessing: -0.06994979134628887
+8 iter: Gender DI post inprocessing: 0.8442918833243187
+9 iter: Race Mean difference pre inprocessing: -0.10616536755436462
+9 iter: Race DI pre inprocessing: 0.5967614925687149
+9 iter: Race Mean difference post inprocessing: -0.04037090755489792
+9 iter: Race DI post inprocessing: 0.9266699821481446
+9 iter: Gender Mean difference pre inprocessing: -0.2002665730104958
+9 iter: Gender DI pre inprocessing: 0.36118203994633563
+9 iter: Gender Mean difference post inprocessing: 0.05883619928840911
+9 iter: Gender DI post inprocessing: 1.111898039771254
+10 iter: Race Mean difference pre inprocessing: -0.10701163338760822
+10 iter: Race DI pre inprocessing: 0.5935160319010416
+10 iter: Race Mean difference post inprocessing: -0.037327408467886236
+10 iter: Race DI post inprocessing: 0.9291462335239098
+10 iter: Gender Mean difference pre inprocessing: -0.19988637035441814
+10 iter: Gender DI pre inprocessing: 0.36149826499185084
+10 iter: Gender Mean difference post inprocessing: 0.053384806708051125
+10 iter: Gender DI post inprocessing: 1.1058636124807262
