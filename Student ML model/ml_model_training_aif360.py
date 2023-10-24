@@ -12,8 +12,11 @@ import pandas as pd
 from aif360.datasets import StandardDataset, BinaryLabelDataset
 from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing
+from aif360.algorithms.inprocessing import *
+from fairlearn.reductions import DemographicParity
 import pickle
 
+@track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
     ## funzione di load del dataset dal file csv
 
@@ -57,6 +60,11 @@ def training_testing_models(dataset):
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
     xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic',random_state=42))
+
+    post_lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
+    post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
+    post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    post_xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic',random_state=42))
 
     # settiamo i nostri modelli sul dataset fair
     lr_fair_model_pipeline = Pipeline(steps=[
@@ -122,6 +130,27 @@ def training_testing_models(dataset):
         validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
         validate(xgb_fair_model_pipeline,i,'fair_models','xgb',X_fair_test,y_fair_test)
 
+        processed_train = processing_fairness(dataset,X_train,y_train,sensible_features_names,i)
+
+        X_postop_train = processed_train[feature_names]
+        y_postop_train = processed_train['Target']
+
+        post_lr_model_pipeline.fit(X_postop_train,y_postop_train)
+        post_rf_model_pipeline.fit(X_postop_train,y_postop_train)
+        post_svm_model_pipeline.fit(X_postop_train,y_postop_train)
+        post_xgb_model_pipeline.fit(X_postop_train,y_postop_train)
+
+        validate_postop(post_lr_model_pipeline,'lr',i,X_test,y_test)
+        validate_postop(post_rf_model_pipeline,'rf',i,X_test,y_test)
+        validate_postop(post_svm_model_pipeline,'svm',i,X_test,y_test)
+        validate_postop(post_xgb_model_pipeline,'xgb',i,X_test,y_test)
+
+    ## attuiamo una fase di postprocessing
+    # test_postprocessing(lr_model_pipeline,'lr','std',dataset,X,sensible_features_names)
+    # test_postprocessing(rf_model_pipeline,'rf','std',dataset,X,sensible_features_names)
+    # test_postprocessing(svm_model_pipeline,'svm','std',dataset,X,sensible_features_names)
+    # test_postprocessing(xgb_model_pipeline,'xgb','std',dataset,X,sensible_features_names)
+    
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_student_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_student_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_student_model.sav','wb'))
@@ -130,6 +159,184 @@ def training_testing_models(dataset):
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_student_model.sav','wb'))
     pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_aif360_student_model.sav','wb'))
     pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_aif360_student_model.sav','wb'))
+
+def processing_fairness(dataset,X_set,y_set,protected_features,index):
+
+    fair_classifier = MetaFairClassifier(type='sr')
+
+    train_dataset = pd.DataFrame(X_set)
+
+    train_dataset['Target'] = y_set
+
+    aif_train = BinaryLabelDataset(
+        df=train_dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_features,
+    )
+
+    privileged_groups = [{'Gender': 1}]
+    unprivileged_groups = [{'Gender': 0}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    if index == 1:
+        first_message = True
+    else:
+        first_message = False
+    
+    print_postop_metrics(metrics_og.mean_difference(),f'{index} iter: Gender Mean difference pre inprocessing',first_message=first_message)
+    print_postop_metrics(metrics_og.disparate_impact(),f'{index} iter: Gender DI pre inprocessing')
+
+    fair_postop_df = fair_classifier.fit_predict(dataset=aif_train)
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_postop_metrics(metrics_trans.mean_difference(),f'{index} iter: Gender Mean difference post inprocessing')
+    print_postop_metrics(metrics_trans.disparate_impact(),f'{index} iter: Gender DI post inprocessing')
+
+    privileged_groups = [{'Educational special needs': 0}]
+    unprivileged_groups = [{'Educational special needs': 1}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    print_postop_metrics(metrics_og.mean_difference(),f'{index} iter: Sp. Needs Mean difference pre inprocessing')
+    print_postop_metrics(metrics_og.disparate_impact(),f'{index} iter: Sp. Needs DI pre inprocessing')
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_postop_metrics(metrics_trans.mean_difference(),f'{index} iter: Sp. Needs Mean difference post inprocessing')
+    print_postop_metrics(metrics_trans.disparate_impact(),f'{index} iter: Sp. Needs DI post inprocessing')
+
+    privileged_groups = [{'International': 0}]
+    unprivileged_groups = [{'International': 1}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    print_postop_metrics(metrics_og.mean_difference(),f'{index} iter: International Mean difference pre inprocessing')
+    print_postop_metrics(metrics_og.disparate_impact(),f'{index} iter: International DI pre inprocessing')
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_postop_metrics(metrics_trans.mean_difference(),f'{index} iter: International Mean difference post inprocessing')
+    print_postop_metrics(metrics_trans.disparate_impact(),f'{index} iter: International DI post inprocessing')
+
+    mod_aif_dataset = StandardDataset(
+        df=train_dataset,
+        label_name='Target',
+        favorable_classes=[1],
+        protected_attribute_names=['Age at enrollment'],
+        privileged_classes=[lambda x: x <= 30]
+    )
+
+    mod_aif_post = StandardDataset(
+        df=fair_postop_df.convert_to_dataframe()[0],
+        label_name='Target',
+        favorable_classes=[1],
+        protected_attribute_names=['Age at enrollment'],
+        privileged_classes=[lambda x: x <= 30]
+    )
+
+    age_aif_dataset = BinaryLabelDataset(
+        df=mod_aif_dataset.convert_to_dataframe()[0],
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_features,
+    )
+
+    age_aif_post = BinaryLabelDataset(
+        df=mod_aif_post.convert_to_dataframe()[0],
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_features,
+    )
+
+    privileged_groups = [{'Age at enrollment': 1}]
+    unprivileged_groups = [{'Age at enrollment': 0}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=age_aif_dataset,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    print_postop_metrics(metrics_og.mean_difference(),f'{index} iter: Age Mean difference pre inprocessing')
+    print_postop_metrics(metrics_og.disparate_impact(),f'{index} iter: Age DI pre inprocessing')
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=age_aif_post,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_postop_metrics(metrics_trans.mean_difference(),f'{index} iter: Age Mean difference post inprocessing')
+    print_postop_metrics(metrics_trans.disparate_impact(),f'{index} iter: Age DI post inprocessing')
+
+    grade_mean = dataset['Admission grade'].mean()
+
+    mod_aif_dataset = StandardDataset(
+        df=train_dataset,
+        label_name='Target',
+        favorable_classes=[1],
+        protected_attribute_names=['Admission grade'],
+        privileged_classes=[lambda x: x >= grade_mean]
+    )
+
+    mod_aif_post = StandardDataset(
+        df=fair_postop_df.convert_to_dataframe()[0],
+        label_name='Target',
+        favorable_classes=[1],
+        protected_attribute_names=['Admission grade'],
+        privileged_classes=[lambda x: x < grade_mean]
+    )
+
+    grade_aif_dataset = BinaryLabelDataset(
+        df=mod_aif_dataset.convert_to_dataframe()[0],
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_features,
+    )
+
+    grade_aif_post = BinaryLabelDataset(
+        df=mod_aif_post.convert_to_dataframe()[0],
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_features,
+    )
+
+    privileged_groups = [{'Admission grade': 1}]
+    unprivileged_groups = [{'Admission grade': 0}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=grade_aif_dataset,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    print_postop_metrics(metrics_og.mean_difference(),f'{index} iter: Grade Mean difference pre inprocessing')
+    print_postop_metrics(metrics_og.disparate_impact(),f'{index} iter: Grade DI pre inprocessing')
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=grade_aif_post,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_postop_metrics(metrics_trans.mean_difference(),f'{index} iter: Grade Mean difference post inprocessing')
+    print_postop_metrics(metrics_trans.disparate_impact(),f'{index} iter: Grade DI post inprocessing')
+
+
+    postop_train = fair_postop_df.convert_to_dataframe()[0]
+    
+    return postop_train
+
+
+
+def validate_postop(ml_model,model_type,index,X_test,y_test):
+    pred = ml_model.predict(X_test)
+
+    report = classification_report(y_pred=pred,y_true=y_test)
+
+    if index == 1:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+
+    # scriviamo su un file le metriche di valutazione ottenute
+    with open(f'./reports/postop_models/aif360/student/{model_type}_student_metrics_report.txt',open_type) as f:
+        f.write(f'{index} iterazione:\n')
+        f.write('Metriche di valutazione:')
+        f.write(str(report))
+        f.write('\n')
 
 def validate(ml_model,index,model_vers,model_type,X_test,y_test):
     ## funzione utile a calcolare le metriche di valutazione del modello passato in input
@@ -375,6 +582,19 @@ def print_fairness_metrics(metric, message, first_message=False):
     
     #scriviamo su un file la metrica passata
     with open(f"./reports/fairness_reports/student_report.txt",open_type) as f:
+        f.write(f"{message}: {metric}")
+        f.write('\n')
+
+def print_postop_metrics(metric, message, first_message=False):
+    ## funzione per stampare in file le metriche di fairness del modello passato in input
+
+    if first_message:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+    
+    #scriviamo su un file la metrica passata
+    with open(f"./reports/fairness_reports/postprocessing/student_report.txt",open_type) as f:
         f.write(f"{message}: {metric}")
         f.write('\n')
 
