@@ -1,12 +1,12 @@
 lr_std_sex DI: 0.4835294117647059
 lr_fair_sex DI: 0.4835294117647059
-lr_threshold_sex DI: 0.9725400457665904
+lr_threshold_sex DI: 0.9353448275862069
 rf_std_sex DI: 0.8533333333333334
-rf_fair_sex DI: 0.7658795180722892
-rf_threshold_sex DI: 0.9613811903680146
+rf_fair_sex DI: 0.7677294685990338
+rf_threshold_sex DI: 0.9112903225806451
 svm_std_sex DI: 0.7100845070422536
 svm_fair_sex DI: 0.793103448275862
-svm_threshold_sex DI: 0.95236995287813
+svm_threshold_sex DI: 0.967696847336543
 xgb_std_sex DI: 0.8019512195121951
 xgb_fair_sex DI: 0.7677294685990338
-xgb_threshold_sex DI: 0.9101833719067117
+xgb_threshold_sex DI: 0.9417721518987341
