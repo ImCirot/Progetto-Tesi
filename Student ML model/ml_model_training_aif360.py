@@ -594,7 +594,7 @@ def print_postop_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/postprocessing/student_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/postprocessing/aif360/student_report.txt",open_type) as f:
         f.write(f"{message}: {metric}")
         f.write('\n')
 

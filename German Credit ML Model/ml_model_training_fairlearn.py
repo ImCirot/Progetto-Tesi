@@ -235,7 +235,7 @@ def training_model(dataset):
         else:
             open_type = 'a'
 
-        with open('./reports/fairness_reports/credit_model_DI.txt',open_type) as f:
+        with open('./reports/fairness_reports/postprocessing/fairlearn/credit_model_DI.txt',open_type) as f:
             f.write(f'{name}_sex DI: {sex_DI}\n')
 
 
@@ -298,14 +298,14 @@ def validate_postop(ml_model,model_type,index,X_test,y_test,g_test):
         open_type = 'a'
 
     # scriviamo su un file la matrice di confusione ottenuta
-    with open(f'./reports/postop_models/{model_type}_credit_matrix_report.txt', open_type) as f:
+    with open(f'./reports/postop_models/fairlearn/credit/{model_type}_credit_matrix_report.txt', open_type) as f:
         f.write(f'{index} iterazione:\n')
         f.write(f'Matrice di confusione:\n')
         f.write(str(matrix))
         f.write('\n\n')
 
     # scriviamo su un file le metriche di valutazione ottenute
-    with open(f'./reports/postop_models/{model_type}_credit_metrics_report.txt',open_type) as f:
+    with open(f'./reports/postop_models/fairlearn/credit/{model_type}_credit_metrics_report.txt',open_type) as f:
         f.write(f'{index} iterazione:\n')
         f.write('Metriche di valutazione:')
         f.write(str(report))
