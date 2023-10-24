@@ -197,7 +197,7 @@ def training_model(dataset):
         else:
             open_type = 'a'
 
-        with open('./reports/fairness_reports/student_model_DI.txt',open_type) as f:
+        with open('./reports/fairness_reports/postprocessing/fairlearn/student_model_DI.txt',open_type) as f:
             f.write(f'{name} DI: {DI_score}\n')
     
     # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
@@ -265,14 +265,14 @@ def validate_postop(ml_model,model_type,index,X_test,y_test,g_test):
         open_type = 'a'
 
     # scriviamo su un file la matrice di confusione ottenuta
-    with open(f'./reports/postop_models/{model_type}_student_matrix_report.txt', open_type) as f:
+    with open(f'./reports/postop_models/fairlearn/student/{model_type}_student_matrix_report.txt', open_type) as f:
         f.write(f'{index} iterazione:\n')
         f.write(f'Matrice di confusione:\n')
         f.write(str(matrix))
         f.write('\n\n')
 
     # scriviamo su un file le metriche di valutazione ottenute
-    with open(f'./reports/postop_models/{model_type}_student_metrics_report.txt',open_type) as f:
+    with open(f'./reports/postop_models/fairlearn/student/{model_type}_student_metrics_report.txt',open_type) as f:
         f.write(f'{index} iterazione:\n')
         f.write('Metriche di valutazione:')
         f.write(str(report))
