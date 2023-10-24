@@ -172,6 +172,10 @@ def traning_and_testing_model():
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_credit_model.sav','wb'))
     pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_aif360_credit_model.sav','wb'))
     pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_aif360_credit_model.sav','wb'))
+    pickle.dump(post_lr_model_pipeline,open('./output_models/postop_models/lr_aif360_credit_model.sav','wb'))
+    pickle.dump(post_rf_model_pipeline,open('./output_models/postop_models/rf_aif360_credit_model.sav','wb'))
+    pickle.dump(post_svm_model_pipeline,open('./output_models/postop_models/svm_aif360_credit_model.sav','wb'))
+    pickle.dump(post_xgb_model_pipeline,open('./output_models/postop_models/xgb_aif360_credit_model.sav','wb'))
             
 def processing_fairness(dataset,X_set,y_set,protected_features,index):
 
