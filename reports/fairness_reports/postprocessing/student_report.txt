@@ -1,0 +1,200 @@
+1 iter: Gender Mean difference pre inprocessing: 0.22418729507144136
+1 iter: Gender DI pre inprocessing: 1.6345002362376428
+1 iter: Gender Mean difference post inprocessing: 0.20160662919809258
+1 iter: Gender DI post inprocessing: 1.4458269045094847
+1 iter: Sp. Needs Mean difference pre inprocessing: -0.0579746975305232
+1 iter: Sp. Needs DI pre inprocessing: 0.8823463461667824
+1 iter: Sp. Needs Mean difference post inprocessing: -0.03390420418761397
+1 iter: Sp. Needs DI post inprocessing: 0.9412794703000612
+1 iter: International Mean difference pre inprocessing: 0.0032360312546071412
+1 iter: International DI pre inprocessing: 1.0065772717057457
+1 iter: International Mean difference post inprocessing: 0.02363261093911251
+1 iter: International DI post inprocessing: 1.041002685765443
+1 iter: Age Mean difference pre inprocessing: -0.19750482838658273
+1 iter: Age DI pre inprocessing: 0.6221793299976806
+1 iter: Age Mean difference post inprocessing: -0.2501234161592891
+1 iter: Age DI post inprocessing: 0.5938362875211544
+1 iter: Grade Mean difference pre inprocessing: -0.09363080729145573
+1 iter: Grade DI pre inprocessing: 0.8270303677433772
+1 iter: Grade Mean difference post inprocessing: 0.099375845230672
+1 iter: Grade DI post inprocessing: 1.187550625850132
+2 iter: Gender Mean difference pre inprocessing: 0.23145035643971085
+2 iter: Gender DI pre inprocessing: 1.666866339491917
+2 iter: Gender Mean difference post inprocessing: 0.2530947383186466
+2 iter: Gender DI post inprocessing: 1.6295504012494393
+2 iter: Sp. Needs Mean difference pre inprocessing: -0.03336010488147684
+2 iter: Sp. Needs DI pre inprocessing: 0.9330758568399105
+2 iter: Sp. Needs Mean difference post inprocessing: -0.056173007192885094
+2 iter: Sp. Needs DI post inprocessing: 0.9010691850064484
+2 iter: International Mean difference pre inprocessing: -0.014245469566866231
+2 iter: International DI pre inprocessing: 0.9714208080862973
+2 iter: International Mean difference post inprocessing: -0.031094075899991913
+2 iter: International DI post inprocessing: 0.9452507571602318
+2 iter: Age Mean difference pre inprocessing: -0.19566047245409512
+2 iter: Age DI pre inprocessing: 0.6289462372889024
+2 iter: Age Mean difference post inprocessing: -0.2234270666511588
+2 iter: Age DI post inprocessing: 0.6279510940277901
+2 iter: Grade Mean difference pre inprocessing: -0.09981131664731913
+2 iter: Grade DI pre inprocessing: 0.8187611289808082
+2 iter: Grade Mean difference post inprocessing: 0.09671350759163189
+2 iter: Grade DI post inprocessing: 1.185470693717773
+3 iter: Gender Mean difference pre inprocessing: 0.2292756912526644
+3 iter: Gender DI pre inprocessing: 1.6626022432861873
+3 iter: Gender Mean difference post inprocessing: 0.13709702319207195
+3 iter: Gender DI post inprocessing: 1.297447966247106
+3 iter: Sp. Needs Mean difference pre inprocessing: -0.0564499198939285
+3 iter: Sp. Needs DI pre inprocessing: 0.8850851346184125
+3 iter: Sp. Needs Mean difference post inprocessing: -0.047903430749682285
+3 iter: Sp. Needs DI post inprocessing: 0.9125695732838591
+3 iter: International Mean difference pre inprocessing: -0.019947520882522163
+3 iter: International DI pre inprocessing: 0.9593820701357466
+3 iter: International Mean difference post inprocessing: 0.010619828971647371
+3 iter: International DI post inprocessing: 1.0194121060457695
+3 iter: Age Mean difference pre inprocessing: -0.18051226714344526
+3 iter: Age DI pre inprocessing: 0.6513463806515524
+3 iter: Age Mean difference post inprocessing: -0.23358070665775504
+3 iter: Age DI post inprocessing: 0.5990000254230825
+3 iter: Grade Mean difference pre inprocessing: -0.0995285919245747
+3 iter: Grade DI pre inprocessing: 0.8166578569810466
+3 iter: Grade Mean difference post inprocessing: 0.10023912003825919
+3 iter: Grade DI post inprocessing: 1.2005741626794257
+4 iter: Gender Mean difference pre inprocessing: 0.23760937506222973
+4 iter: Gender DI pre inprocessing: 1.6858506415551697
+4 iter: Gender Mean difference post inprocessing: 0.25727398570436144
+4 iter: Gender DI post inprocessing: 1.4879716055970815
+4 iter: Sp. Needs Mean difference pre inprocessing: -0.0684750826341215
+4 iter: Sp. Needs DI pre inprocessing: 0.8646670854271358
+4 iter: Sp. Needs Mean difference post inprocessing: -0.01171179760996699
+4 iter: Sp. Needs DI post inprocessing: 0.98325
+4 iter: International Mean difference pre inprocessing: 0.04645080083605668
+4 iter: International DI pre inprocessing: 1.0921439943190279
+4 iter: International Mean difference post inprocessing: 0.04347436978186314
+4 iter: International DI post inprocessing: 1.0622753946231178
+4 iter: Age Mean difference pre inprocessing: -0.19394609464948148
+4 iter: Age DI pre inprocessing: 0.637129649047288
+4 iter: Age Mean difference post inprocessing: -0.22083731942159845
+4 iter: Age DI post inprocessing: 0.6985012919896642
+4 iter: Grade Mean difference pre inprocessing: -0.09399241237405631
+4 iter: Grade DI pre inprocessing: 0.8305261092376002
+4 iter: Grade Mean difference post inprocessing: 0.09224406947815456
+4 iter: Grade DI post inprocessing: 1.1407511475285752
+5 iter: Gender Mean difference pre inprocessing: 0.21818169890046452
+5 iter: Gender DI pre inprocessing: 1.6188269882028954
+5 iter: Gender Mean difference post inprocessing: 0.24576630715266662
+5 iter: Gender DI post inprocessing: 1.4998754592440375
+5 iter: Sp. Needs Mean difference pre inprocessing: -0.08813149625332367
+5 iter: Sp. Needs DI pre inprocessing: 0.8211956255210632
+5 iter: Sp. Needs Mean difference post inprocessing: -0.1261904761904762
+5 iter: Sp. Needs DI post inprocessing: 0.8058608058608059
+5 iter: International Mean difference pre inprocessing: -0.022529623905203522
+5 iter: International DI pre inprocessing: 0.9542573221757322
+5 iter: International Mean difference post inprocessing: -0.019149922720247292
+5 iter: International DI post inprocessing: 0.9705
+5 iter: Age Mean difference pre inprocessing: -0.18221658782827171
+5 iter: Age DI pre inprocessing: 0.6498399361401822
+5 iter: Age Mean difference post inprocessing: -0.22097221084323787
+5 iter: Age DI post inprocessing: 0.6765297906602254
+5 iter: Grade Mean difference pre inprocessing: -0.09985236908134687
+5 iter: Grade DI pre inprocessing: 0.8167254263874202
+5 iter: Grade Mean difference post inprocessing: 0.11530956927818814
+5 iter: Grade DI post inprocessing: 1.1939924756890827
+6 iter: Gender Mean difference pre inprocessing: 0.22628332387975048
+6 iter: Gender DI pre inprocessing: 1.6398356054530876
+6 iter: Gender Mean difference post inprocessing: 0.19383685479296653
+6 iter: Gender DI post inprocessing: 1.3784433831672203
+6 iter: Sp. Needs Mean difference pre inprocessing: -0.02139813168515231
+6 iter: Sp. Needs DI pre inprocessing: 0.9580664786239698
+6 iter: Sp. Needs Mean difference post inprocessing: -0.0466852933705868
+6 iter: Sp. Needs DI post inprocessing: 0.927808326787117
+6 iter: International Mean difference pre inprocessing: -0.026800155940244985
+6 iter: International DI pre inprocessing: 0.947519734918624
+6 iter: International Mean difference post inprocessing: -0.012030071030228684
+6 iter: International DI post inprocessing: 0.9813902361827529
+6 iter: Age Mean difference pre inprocessing: -0.19470796295697296
+6 iter: Age DI pre inprocessing: 0.6380660154516432
+6 iter: Age Mean difference post inprocessing: -0.22071427507892716
+6 iter: Age DI post inprocessing: 0.6743700725371018
+6 iter: Grade Mean difference pre inprocessing: -0.08848546548805236
+6 iter: Grade DI pre inprocessing: 0.8411515730132753
+6 iter: Grade Mean difference post inprocessing: 0.09642984218876827
+6 iter: Grade DI post inprocessing: 1.1604635060812312
+7 iter: Gender Mean difference pre inprocessing: 0.22400799743482602
+7 iter: Gender DI pre inprocessing: 1.629376315869771
+7 iter: Gender Mean difference post inprocessing: 0.1930081633240397
+7 iter: Gender DI post inprocessing: 1.331357140559838
+7 iter: Sp. Needs Mean difference pre inprocessing: -0.008478196220498002
+7 iter: Sp. Needs DI pre inprocessing: 0.9829700346464219
+7 iter: Sp. Needs Mean difference post inprocessing: 0.04048771256319439
+7 iter: Sp. Needs DI post inprocessing: 1.0574951818607614
+7 iter: International Mean difference pre inprocessing: -0.0026630825180146145
+7 iter: International DI pre inprocessing: 0.9946503899081416
+7 iter: International Mean difference post inprocessing: 0.004174832368466497
+7 iter: International DI post inprocessing: 1.005925420694212
+7 iter: Age Mean difference pre inprocessing: -0.19853254277615068
+7 iter: Age DI pre inprocessing: 0.6219949199417464
+7 iter: Age Mean difference post inprocessing: -0.24069958915217876
+7 iter: Age DI post inprocessing: 0.6738387478747531
+7 iter: Grade Mean difference pre inprocessing: -0.08438755145836985
+7 iter: Grade DI pre inprocessing: 0.8443794271635356
+7 iter: Grade Mean difference post inprocessing: 0.08918615752454284
+7 iter: Grade DI post inprocessing: 1.1346121529878337
+8 iter: Gender Mean difference pre inprocessing: 0.22525296232192776
+8 iter: Gender DI pre inprocessing: 1.6296227380564727
+8 iter: Gender Mean difference post inprocessing: 0.18324679359162122
+8 iter: Gender DI post inprocessing: 1.3156924958905158
+8 iter: Sp. Needs Mean difference pre inprocessing: -0.03661629132985478
+8 iter: Sp. Needs DI pre inprocessing: 0.9274495939662747
+8 iter: Sp. Needs Mean difference post inprocessing: 0.045570304685176644
+8 iter: Sp. Needs DI post inprocessing: 1.0651832602457907
+8 iter: International Mean difference pre inprocessing: -0.024130201928035888
+8 iter: International DI pre inprocessing: 0.9522079044550954
+8 iter: International Mean difference post inprocessing: -0.007537588765025638
+8 iter: International DI post inprocessing: 0.9892296355081911
+8 iter: Age Mean difference pre inprocessing: -0.1786610480581312
+8 iter: Age DI pre inprocessing: 0.6635448783510388
+8 iter: Age Mean difference post inprocessing: -0.21505845229270149
+8 iter: Age DI post inprocessing: 0.706138854131119
+8 iter: Grade Mean difference pre inprocessing: -0.0965769095388948
+8 iter: Grade DI pre inprocessing: 0.8259594037424675
+8 iter: Grade Mean difference post inprocessing: 0.09753526967596815
+8 iter: Grade DI post inprocessing: 1.1493061899438575
+9 iter: Gender Mean difference pre inprocessing: 0.21541284777107655
+9 iter: Gender DI pre inprocessing: 1.5967337273658395
+9 iter: Gender Mean difference post inprocessing: 0.17872714033409542
+9 iter: Gender DI post inprocessing: 1.3257996100368115
+9 iter: Sp. Needs Mean difference pre inprocessing: -0.04624216234536521
+9 iter: Sp. Needs DI pre inprocessing: 0.9083543240973971
+9 iter: Sp. Needs Mean difference post inprocessing: -0.042768174885612575
+9 iter: Sp. Needs DI post inprocessing: 0.9359535591929958
+9 iter: International Mean difference pre inprocessing: -0.014379185986604814
+9 iter: International DI pre inprocessing: 0.971491317671093
+9 iter: International Mean difference post inprocessing: -0.007439464193714551
+9 iter: International DI post inprocessing: 0.9888537244307217
+9 iter: Age Mean difference pre inprocessing: -0.1965185083253062
+9 iter: Age DI pre inprocessing: 0.6318001340689939
+9 iter: Age Mean difference post inprocessing: -0.23618117124378302
+9 iter: Age DI post inprocessing: 0.6640183675067396
+9 iter: Grade Mean difference pre inprocessing: -0.09053658738907983
+9 iter: Grade DI pre inprocessing: 0.8358536080989933
+9 iter: Grade Mean difference post inprocessing: 0.09589763082749192
+9 iter: Grade DI post inprocessing: 1.1542476508156043
+10 iter: Gender Mean difference pre inprocessing: 0.23728590250329373
+10 iter: Gender DI pre inprocessing: 1.680907372400756
+10 iter: Gender Mean difference post inprocessing: 0.28081806204335846
+10 iter: Gender DI post inprocessing: 1.5917965545529122
+10 iter: Sp. Needs Mean difference pre inprocessing: -0.07459514990943256
+10 iter: Sp. Needs DI pre inprocessing: 0.850847604220723
+10 iter: Sp. Needs Mean difference post inprocessing: -0.03634594068506858
+10 iter: Sp. Needs DI post inprocessing: 0.9443713432144127
+10 iter: International Mean difference pre inprocessing: -0.004511138531757053
+10 iter: International DI pre inprocessing: 0.9909660962907855
+10 iter: International Mean difference post inprocessing: 0.007026761665936965
+10 iter: International DI post inprocessing: 1.0107645777098442
+10 iter: Age Mean difference pre inprocessing: -0.19232646771670214
+10 iter: Age DI pre inprocessing: 0.6360342812621738
+10 iter: Age Mean difference post inprocessing: -0.221269100019997
+10 iter: Age DI post inprocessing: 0.6776856317949332
+10 iter: Grade Mean difference pre inprocessing: -0.09571742095458569
+10 iter: Grade DI pre inprocessing: 0.8260107309158847
+10 iter: Grade Mean difference post inprocessing: 0.10213704708848714
+10 iter: Grade DI post inprocessing: 1.1687932308246114
