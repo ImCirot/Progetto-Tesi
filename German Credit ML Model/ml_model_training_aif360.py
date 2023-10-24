@@ -11,6 +11,7 @@ from aif360.algorithms.preprocessing import Reweighing
 from aif360.datasets import StandardDataset
 from aif360.datasets import BinaryLabelDataset
 from sklearn.ensemble import RandomForestClassifier
+from aif360.algorithms.inprocessing import MetaFairClassifier
 from sklearn.svm import SVC
 import pickle
 import xgboost as xgb
@@ -47,6 +48,10 @@ def traning_and_testing_model():
 
     sample_weights = fair_dataset['weights']
 
+    protected_attribute_names = [
+        'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
+    ]
+
     # Si crea un array del dataframe utile per la KFold
     df_array = np.array(df)
 
@@ -64,6 +69,11 @@ def traning_and_testing_model():
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
     xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
+
+    post_lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
+    post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
+    post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
+    post_xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     lr_fair_model_pipeline = Pipeline(steps=[
         ('scaler',StandardScaler()), 
@@ -139,6 +149,21 @@ def traning_and_testing_model():
         validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
         validate(xgb_fair_model_pipeline,i,'fair_models','xgb',X_fair_test,y_fair_test)
 
+        processed_train = processing_fairness(df,X_train,y_train,protected_attribute_names,i)
+
+        X_postop_train = processed_train[features]
+        y_postop_train = processed_train['Target']
+
+        post_lr_model_pipeline.fit(X_postop_train,y_postop_train)
+        post_rf_model_pipeline.fit(X_postop_train,y_postop_train)
+        post_svm_model_pipeline.fit(X_postop_train,y_postop_train)
+        post_xgb_model_pipeline.fit(X_postop_train,y_postop_train)
+
+        validate_postop(post_lr_model_pipeline,'lr',i,X_test,y_test)
+        validate_postop(post_rf_model_pipeline,'rf',i,X_test,y_test)
+        validate_postop(post_svm_model_pipeline,'svm',i,X_test,y_test)
+        validate_postop(post_xgb_model_pipeline,'xgb',i,X_test,y_test)
+
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_credit_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_credit_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_credit_model.sav','wb'))
@@ -147,6 +172,81 @@ def traning_and_testing_model():
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_credit_model.sav','wb'))
     pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_aif360_credit_model.sav','wb'))
     pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_aif360_credit_model.sav','wb'))
+            
+def processing_fairness(dataset,X_set,y_set,protected_features,index):
+
+    fair_classifier = MetaFairClassifier(type='sr')
+
+    train_dataset = pd.DataFrame(X_set)
+
+    train_dataset['Target'] = y_set
+
+    aif_train = BinaryLabelDataset(
+        df=train_dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_features,
+    )
+
+    privileged_groups = [{'sex_A93': 1}]
+    unprivileged_groups = [{'sex_A93': 0}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    if index == 1:
+        first_message = True
+    else:
+        first_message = False
+    
+    print_postop_metrics(metrics_og.mean_difference(),f'{index} iter: Gender Mean difference pre inprocessing',first_message=first_message)
+    print_postop_metrics(metrics_og.disparate_impact(),f'{index} iter: Gender DI pre inprocessing')
+
+    fair_postop_df = fair_classifier.fit_predict(dataset=aif_train)
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_postop_metrics(metrics_trans.mean_difference(),f'{index} iter: Gender Mean difference post inprocessing')
+    print_postop_metrics(metrics_trans.disparate_impact(),f'{index} iter: Gender DI post inprocessing')
+
+    postop_train = fair_postop_df.convert_to_dataframe()[0]
+    
+    return postop_train
+
+def print_postop_metrics(metric, message, first_message=False):
+    ## funzione per stampare in file le metriche di fairness del modello passato in input
+
+    if first_message:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+    
+    #scriviamo su un file la metrica passata
+    with open(f"./reports/fairness_reports/postprocessing/aif360/credit_report.txt",open_type) as f:
+        f.write(f"{message}: {metric}")
+        f.write('\n')
+
+def validate_postop(ml_model,model_type,index,X_test,y_test):
+    pred = ml_model.predict(X_test)
+
+    report = classification_report(y_pred=pred,y_true=y_test)
+
+    y_proba = ml_model.predict_proba(X_test)[::,1]
+
+    auc_score = roc_auc_score(y_test,y_proba)
+
+    if index == 1:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+
+    # scriviamo su un file le metriche di valutazione ottenute
+    with open(f'./reports/postop_models/aif360/credit/{model_type}_credit_metrics_report.txt',open_type) as f:
+        f.write(f'{index} iterazione:\n')
+        f.write('Metriche di valutazione:')
+        f.write(str(report))
+        f.write(f'\nAUC ROC score: {auc_score}\n')
+        f.write('\n')
             
 def validate(ml_model,index,model_vers,model_type,X_test,y_test):
     ## funzione utile a calcolare le metriche di valutazione del modello passato in input
