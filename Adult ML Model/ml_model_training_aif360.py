@@ -11,9 +11,11 @@ from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.algorithms.preprocessing import Reweighing
 from codecarbon import track_emissions
 from sklearn.ensemble import RandomForestClassifier
+from aif360.algorithms.inprocessing import MetaFairClassifier
 import xgboost as xgb
 from sklearn.svm import SVC
 import pickle
+import warnings
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
@@ -76,6 +78,11 @@ def training_model(dataset):
     svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
     xgb_model_pipeline = make_pipeline(StandardScaler(), xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
+    post_lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression(max_iter=200))
+    post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
+    post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    post_xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic',random_state=42))
+
     # costruiamo un modello tramite pipeline su cui utilizzare un dataset opportunamente modificato per aumentare fairness
     lr_fair_model_pipeline = Pipeline(steps=[
         ('scaler', StandardScaler()),
@@ -120,15 +127,7 @@ def training_model(dataset):
         validate(rf_model_pipeline,i,'std_models','rf',X_test,y_test)
         validate(svm_model_pipeline,i,'std_models','svm',X_test,y_test)
         validate(xgb_model_pipeline,i,'std_models','xgb',X_test,y_test)
-
-    # trasformiamo dataframe in array per poter utilizzare la strategia KFold
-    df_fair_array = np.asarray(fair_dataset)
-
-    # resettiamo contatore i
-    i = 0
-    for train_index, test_index in kf.split(df_fair_array):
-        i = i+1
-
+        
         # setting training set per l'i-esima iterazione della strategia KFold per il modello fair
         X_fair_train = X_fair.iloc[train_index]
         y_fair_train = y_fair.iloc[train_index]
@@ -150,6 +149,37 @@ def training_model(dataset):
         validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
         validate(xgb_fair_model_pipeline,i,'fair_models','xgb',X_fair_test,y_fair_test)
 
+        processed_train = processing_fairness(dataset,X_train,y_train,protected_features_names,i)
+
+        X_postop_train = processed_train[features]
+        y_postop_train = processed_train['salary']
+    
+        post_lr_model_pipeline.fit(X_postop_train,y_postop_train)
+        post_rf_model_pipeline.fit(X_postop_train,y_postop_train)
+        post_svm_model_pipeline.fit(X_postop_train,y_postop_train)
+        post_xgb_model_pipeline.fit(X_postop_train,y_postop_train)
+
+        validate_postop(post_lr_model_pipeline,'lr',i,X_test,y_test)
+        validate_postop(post_rf_model_pipeline,'rf',i,X_test,y_test)
+        validate_postop(post_svm_model_pipeline,'svm',i,X_test,y_test)
+        validate_postop(post_xgb_model_pipeline,'xgb',i,X_test,y_test)
+
+    with open('./reports/final_scores/aif360/adult_scores.txt','w') as f:
+        f.write(str(lr_model_pipeline.score(X,y)))
+        f.write(str(rf_model_pipeline.score(X,y)))
+        f.write(str(svm_model_pipeline.score(X,y)))
+        f.write(str(xgb_model_pipeline.score(X,y)))
+        
+        f.write(str(lr_fair_model_pipeline.score(X_fair,y_fair)))
+        f.write(str(rf_fair_model_pipeline.score(X_fair,y_fair)))
+        f.write(str(svm_model_pipeline.score(X_fair,y_fair)))
+        f.write(str(xgb_fair_model_pipeline.score(X_fair,y_fair)))
+
+        f.write(str(post_lr_model_pipeline.score(X,y)))
+        f.write(str(post_rf_model_pipeline.score(X,y)))
+        f.write(str(post_svm_model_pipeline.score(X,y)))
+        f.write(str(post_xgb_model_pipeline.score(X,y)))
+
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_adult_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_adult_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_adult_model.sav','wb'))
@@ -158,6 +188,100 @@ def training_model(dataset):
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_aif360_adult_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_adult_model.sav','wb'))
     pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_aif360_adult_model.sav','wb'))
+    pickle.dump(post_lr_model_pipeline,open('./output_models/postop_models/lr_aif360_adult_model.sav','wb'))
+    pickle.dump(post_rf_model_pipeline,open('./output_models/postop_models/rf_aif360_adult_model.sav','wb'))
+    pickle.dump(post_svm_model_pipeline,open('./output_models/postop_models/svm_aif360_adult_model.sav','wb'))
+    pickle.dump(post_xgb_model_pipeline,open('./output_models/postop_models/xgb_aif360_adult_model.sav','wb'))
+
+def processing_fairness(dataset,X_set,y_set,protected_features,index):
+
+    fair_classifier = MetaFairClassifier(type='fdr')
+
+    train_dataset = pd.DataFrame(X_set)
+
+    train_dataset['salary'] = y_set
+
+    aif_train = BinaryLabelDataset(
+        df=train_dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=protected_features,
+    )
+
+    privileged_groups = [{'race_White': 1}]
+    unprivileged_groups = [{'race_White': 0}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    if index == 1:
+        first_message = True
+    else:
+        first_message = False
+    
+    print_postop_metrics(metrics_og.mean_difference(),f'{index} iter: Race Mean difference pre inprocessing',first_message=first_message)
+    print_postop_metrics(metrics_og.disparate_impact(),f'{index} iter: Race DI pre inprocessing')
+
+    fair_postop_df = fair_classifier.fit_predict(dataset=aif_train)
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_postop_metrics(metrics_trans.mean_difference(),f'{index} iter: Race Mean difference post inprocessing')
+    print_postop_metrics(metrics_trans.disparate_impact(),f'{index} iter: Race DI post inprocessing')
+
+    privileged_groups = [{'sex_Male': 1}]
+    unprivileged_groups = [{'sex_Female': 1}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    print_postop_metrics(metrics_og.mean_difference(),f'{index} iter: Gender Mean difference pre inprocessing')
+    print_postop_metrics(metrics_og.disparate_impact(),f'{index} iter: Gender DI pre inprocessing')
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_postop_metrics(metrics_trans.mean_difference(),f'{index} iter: Gender Mean difference post inprocessing')
+    print_postop_metrics(metrics_trans.disparate_impact(),f'{index} iter: Gender DI post inprocessing')
+
+    postop_train = fair_postop_df.convert_to_dataframe()[0]
+    
+    return postop_train
+    
+
+def print_postop_metrics(metric, message, first_message=False):
+    ## funzione per stampare in file le metriche di fairness del modello passato in input
+
+    if first_message:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+    
+    #scriviamo su un file la metrica passata
+    with open(f"./reports/fairness_reports/postprocessing/aif360/adult_report.txt",open_type) as f:
+        f.write(f"{message}: {metric}")
+        f.write('\n')
+
+def validate_postop(ml_model,model_type,index,X_test,y_test):
+    pred = ml_model.predict(X_test)
+
+    report = classification_report(y_pred=pred,y_true=y_test)
+
+    y_proba = ml_model.predict_proba(X_test)[::,1]
+
+    auc_score = roc_auc_score(y_test,y_proba)
+
+    if index == 1:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+
+    # scriviamo su un file le metriche di valutazione ottenute
+    with open(f'./reports/postop_models/aif360/adult/{model_type}_adult_metrics_report.txt',open_type) as f:
+        f.write(f'{index} iterazione:\n')
+        f.write('Metriche di valutazione:')
+        f.write(str(report))
+        f.write(f'\nAUC ROC score: {auc_score}\n')
+        f.write('\n')
+
 
 def validate(ml_model,index,model_vers,model_type,X_test,y_test):
     ## funzione utile a calcolare le metriche di valutazione del modello passato in input
@@ -316,4 +440,5 @@ def print_fairness_metrics(metric, message, first_message=False):
         f.write(f"{message}: {metric}")
         f.write('\n')
 
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 load_dataset()
