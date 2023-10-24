@@ -1,38 +1,38 @@
 1 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
 
-           0       0.83      0.82      0.82       193
-           1       0.86      0.87      0.86       250
+           0       0.82      0.79      0.80       193
+           1       0.84      0.86      0.85       250
 
-    accuracy                           0.85       443
-   macro avg       0.84      0.84      0.84       443
-weighted avg       0.85      0.85      0.85       443
+    accuracy                           0.83       443
+   macro avg       0.83      0.83      0.83       443
+weighted avg       0.83      0.83      0.83       443
 
-AUC ROC score: 0.9179689119170984
+AUC ROC score: 0.9167357512953367
 
 2 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
 
-           0       0.84      0.79      0.82       217
-           1       0.81      0.85      0.83       226
+           0       0.83      0.80      0.81       217
+           1       0.82      0.84      0.83       226
 
     accuracy                           0.82       443
    macro avg       0.82      0.82      0.82       443
 weighted avg       0.82      0.82      0.82       443
 
-AUC ROC score: 0.9105154765303209
+AUC ROC score: 0.9063047999673749
 
 3 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
 
-           0       0.85      0.82      0.83       187
-           1       0.87      0.89      0.88       256
+           0       0.82      0.83      0.82       187
+           1       0.87      0.87      0.87       256
 
-    accuracy                           0.86       443
-   macro avg       0.86      0.85      0.86       443
-weighted avg       0.86      0.86      0.86       443
+    accuracy                           0.85       443
+   macro avg       0.85      0.85      0.85       443
+weighted avg       0.85      0.85      0.85       443
 
-AUC ROC score: 0.9341473094919786
+AUC ROC score: 0.9295308322192514
 
 4 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
@@ -44,77 +44,77 @@ Metriche di valutazione:              precision    recall  f1-score   support
    macro avg       0.83      0.83      0.83       443
 weighted avg       0.84      0.83      0.83       443
 
-AUC ROC score: 0.9201504844361987
+AUC ROC score: 0.919325912183055
 
 5 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
 
-           0       0.84      0.83      0.83       192
-           1       0.87      0.88      0.87       250
+           0       0.85      0.83      0.84       192
+           1       0.87      0.89      0.88       250
 
     accuracy                           0.86       442
-   macro avg       0.86      0.85      0.85       442
+   macro avg       0.86      0.86      0.86       442
 weighted avg       0.86      0.86      0.86       442
 
-AUC ROC score: 0.9234270833333335
+AUC ROC score: 0.9227916666666667
 
 6 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
 
-           0       0.91      0.84      0.88       264
-           1       0.79      0.88      0.84       178
+           0       0.91      0.84      0.87       264
+           1       0.79      0.87      0.83       178
 
-    accuracy                           0.86       442
-   macro avg       0.85      0.86      0.86       442
-weighted avg       0.87      0.86      0.86       442
+    accuracy                           0.85       442
+   macro avg       0.85      0.86      0.85       442
+weighted avg       0.86      0.85      0.85       442
 
-AUC ROC score: 0.9340419645897173
+AUC ROC score: 0.9334567585972081
 
 7 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
 
-           0       0.87      0.82      0.84       215
-           1       0.84      0.89      0.86       227
+           0       0.86      0.81      0.83       215
+           1       0.83      0.87      0.85       227
 
-    accuracy                           0.85       442
-   macro avg       0.85      0.85      0.85       442
-weighted avg       0.85      0.85      0.85       442
+    accuracy                           0.84       442
+   macro avg       0.84      0.84      0.84       442
+weighted avg       0.84      0.84      0.84       442
 
-AUC ROC score: 0.9152853191271386
+AUC ROC score: 0.9194037496158181
 
 8 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
 
            0       0.92      0.81      0.86       241
-           1       0.80      0.92      0.85       201
+           1       0.80      0.91      0.85       201
 
     accuracy                           0.86       442
    macro avg       0.86      0.86      0.86       442
-weighted avg       0.87      0.86      0.86       442
+weighted avg       0.86      0.86      0.86       442
 
-AUC ROC score: 0.9247022150657501
+AUC ROC score: 0.9226275262690696
 
 9 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
 
-           0       0.88      0.83      0.86       240
-           1       0.81      0.87      0.84       202
+           0       0.89      0.84      0.86       240
+           1       0.82      0.88      0.85       202
 
-    accuracy                           0.85       442
-   macro avg       0.85      0.85      0.85       442
-weighted avg       0.85      0.85      0.85       442
+    accuracy                           0.86       442
+   macro avg       0.85      0.86      0.85       442
+weighted avg       0.86      0.86      0.86       442
 
-AUC ROC score: 0.9336014851485149
+AUC ROC score: 0.9357157590759076
 
 10 iterazione:
 Metriche di valutazione:              precision    recall  f1-score   support
 
-           0       0.87      0.77      0.82       221
-           1       0.80      0.89      0.84       221
+           0       0.87      0.79      0.82       221
+           1       0.80      0.88      0.84       221
 
     accuracy                           0.83       442
-   macro avg       0.83      0.83      0.83       442
-weighted avg       0.83      0.83      0.83       442
+   macro avg       0.84      0.83      0.83       442
+weighted avg       0.84      0.83      0.83       442
 
-AUC ROC score: 0.9101062631805246
+AUC ROC score: 0.9140476239225241
 
