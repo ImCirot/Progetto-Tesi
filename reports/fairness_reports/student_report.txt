@@ -1,20 +1,20 @@
-Gender mean_difference before: 0.22719033760342677
-Gender DI before: 1.645502473811196
-Gender mean_difference after: 1.6653345369377348e-16
-Gender DI after: 1.0000000000000004
-Special Needs mean_difference before: -0.07205555662226387
-Special Needs DI before: 0.8558966329545065
-Special Needs mean_difference after: -2.220446049250313e-16
-Special Needs DI after: 0.9999999999999996
-Age mean_difference before: -0.1682611775186093
-Age DI before: 0.679262316573541
-Age mean_difference after: -1.6653345369377348e-16
-Age DI after: 0.9999999999999997
-International mean_difference before: -0.037644942230740774
-International DI before: 0.9247346453979499
-International mean_difference after: 3.885780586188048e-16
-International DI after: 1.0000000000000009
-Grade mean_difference before: -0.10312526285828888
-Grade DI before: 0.813668041245783
-Grade mean_difference after: -1.1102230246251565e-16
-Grade DI after: 0.9999999999999998
+Gender mean_difference before: 0.22696414294063022
+Gender DI before: 1.6444456321452932
+Gender mean_difference after: 0.0
+Gender DI after: 1.0
+Special Needs mean_difference before: -0.07211515502597277
+Special Needs DI before: 0.8558102237955881
+Special Needs mean_difference after: 1.1102230246251565e-16
+Special Needs DI after: 1.0000000000000002
+Age mean_difference before: -0.16840069725342593
+Age DI before: 0.6790804438689088
+Age mean_difference after: 0.0
+Age DI after: 1.0
+International mean_difference before: -0.0342458659739332
+International DI before: 0.931533395102826
+International mean_difference after: 1.1102230246251565e-16
+International DI after: 1.0000000000000002
+Grade mean_difference before: -0.10328458978101879
+Grade DI before: 0.813449913839095
+Grade mean_difference after: 0.0
+Grade DI after: 1.0
