@@ -1,0 +1,60 @@
+1 iter: Marital Mean difference pre inprocessing: 0.002353066772488699
+1 iter: Marital DI pre inprocessing: 1.0186159692443928
+1 iter: Marital Mean difference post inprocessing: 0.29295618413754854
+1 iter: Marital DI post inprocessing: 1.4143395042359586
+1 iter: Education Mean difference pre inprocessing: 0.037889484887756286
+1 iter: Education DI pre inprocessing: 1.401723094674464
+2 iter: Marital Mean difference pre inprocessing: -6.856416873682325e-05
+2 iter: Marital DI pre inprocessing: 0.9994551367417037
+2 iter: Marital Mean difference post inprocessing: 0.3307574704656011
+2 iter: Marital DI post inprocessing: 1.4942266157168964
+2 iter: Education Mean difference pre inprocessing: 0.03974684614644372
+2 iter: Education DI pre inprocessing: 1.4317184033565855
+3 iter: Marital Mean difference pre inprocessing: 0.0030835792918838673
+3 iter: Marital DI pre inprocessing: 1.0248123604885062
+3 iter: Marital Mean difference post inprocessing: 0.3560876915828275
+3 iter: Marital DI post inprocessing: 1.5530064993758876
+3 iter: Education Mean difference pre inprocessing: 0.032232914701058574
+3 iter: Education DI pre inprocessing: 1.332383977799686
+4 iter: Marital Mean difference pre inprocessing: 0.00027955960428960314
+4 iter: Marital DI pre inprocessing: 1.0022760984618262
+4 iter: Marital Mean difference post inprocessing: 0.2813504823151125
+4 iter: Marital DI post inprocessing: 1.3914988814317673
+4 iter: Education Mean difference pre inprocessing: 0.04021513792129716
+4 iter: Education DI pre inprocessing: 1.453267323750298
+5 iter: Marital Mean difference pre inprocessing: -0.0002526775344586091
+5 iter: Marital DI pre inprocessing: 0.9979495343618561
+5 iter: Marital Mean difference post inprocessing: 0.32237775860629503
+5 iter: Marital DI post inprocessing: 1.4757484906977698
+5 iter: Education Mean difference pre inprocessing: 0.04076638266225123
+5 iter: Education DI pre inprocessing: 1.4593693101780332
+6 iter: Marital Mean difference pre inprocessing: 0.0015706900864610046
+6 iter: Marital DI pre inprocessing: 1.0127754187799916
+6 iter: Marital Mean difference post inprocessing: 0.1992950710479574
+6 iter: Marital DI post inprocessing: 1.2488995182142735
+6 iter: Education Mean difference pre inprocessing: 0.040934693299676514
+6 iter: Education DI pre inprocessing: 1.4620394637335827
+7 iter: Marital Mean difference pre inprocessing: 0.0037515872072274997
+7 iter: Marital DI pre inprocessing: 1.0318125410496113
+7 iter: Marital Mean difference post inprocessing: 0.3587529842873799
+7 iter: Marital DI post inprocessing: 1.559461448547556
+7 iter: Education Mean difference pre inprocessing: 0.03809533943612177
+7 iter: Education DI pre inprocessing: 1.4421304403801831
+8 iter: Marital Mean difference pre inprocessing: 0.004829136652888311
+8 iter: Marital DI pre inprocessing: 1.042047740563481
+8 iter: Marital Mean difference post inprocessing: 0.06095900357228817
+8 iter: Marital DI post inprocessing: 1.6658470693870737
+8 iter: Education Mean difference pre inprocessing: 0.03532205115318572
+8 iter: Education DI pre inprocessing: 1.413267998492273
+9 iter: Marital Mean difference pre inprocessing: 0.003208013105601648
+9 iter: Marital DI pre inprocessing: 1.0287085252422934
+9 iter: Marital Mean difference post inprocessing: 0.33198054204308547
+9 iter: Marital DI post inprocessing: 1.4969623834886818
+9 iter: Education Mean difference pre inprocessing: 0.03376087918769015
+9 iter: Education DI pre inprocessing: 1.404538254126182
+10 iter: Marital Mean difference pre inprocessing: 0.010202708787298467
+10 iter: Marital DI pre inprocessing: 1.1334340424902585
+10 iter: Marital Mean difference post inprocessing: 0.018077221146647865
+10 iter: Marital DI post inprocessing: 1.4888608757828048
+10 iter: Education Mean difference pre inprocessing: 0.021262388741942258
+10 iter: Education DI pre inprocessing: 1.3561168865746995
