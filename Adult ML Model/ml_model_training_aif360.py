@@ -108,6 +108,8 @@ def training_model(dataset):
     for train_index,test_index in kf.split(df_array):
         i = i+1
 
+        print(f'\n######### Inizio {i} iterazione #########\n')
+        
         # setting training set per l'i-iterazione della strategia KFold 
         X_train = X.iloc[train_index]
         y_train = y.iloc[train_index]
@@ -164,6 +166,9 @@ def training_model(dataset):
         validate_postop(post_svm_model_pipeline,'svm',i,X_test,y_test)
         validate_postop(post_xgb_model_pipeline,'xgb',i,X_test,y_test)
 
+        print(f'\n######### Fine {i} iterazione #########\n')
+
+    print(f'######### Inizio stesura report finale #########')
     with open('./reports/final_scores/aif360/adult_scores.txt','w') as f:
         f.write(f'LR std model: {str(lr_model_pipeline.score(X,y))}\n')
         f.write(f'RF std model: {str(rf_model_pipeline.score(X,y))}\n')
@@ -180,6 +185,7 @@ def training_model(dataset):
         f.write(f'SVM post model: {str(post_svm_model_pipeline.score(X,y))}\n')
         f.write(f'XGB post model: {str(post_xgb_model_pipeline.score(X,y))}\n')
 
+    print(f'######### Inizio salvataggio modelli #########')
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_adult_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_adult_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_adult_model.sav','wb'))
