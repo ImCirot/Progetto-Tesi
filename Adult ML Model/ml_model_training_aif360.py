@@ -165,20 +165,20 @@ def training_model(dataset):
         validate_postop(post_xgb_model_pipeline,'xgb',i,X_test,y_test)
 
     with open('./reports/final_scores/aif360/adult_scores.txt','w') as f:
-        f.write(str(lr_model_pipeline.score(X,y)))
-        f.write(str(rf_model_pipeline.score(X,y)))
-        f.write(str(svm_model_pipeline.score(X,y)))
-        f.write(str(xgb_model_pipeline.score(X,y)))
+        f.write(f'LR std model: {str(lr_model_pipeline.score(X,y))}\n')
+        f.write(f'RF std model: {str(rf_model_pipeline.score(X,y))}\n')
+        f.write(f'SVM std model: {str(svm_model_pipeline.score(X,y))}\n')
+        f.write(f'XGB std model: {str(xgb_model_pipeline.score(X,y))}\n')
         
-        f.write(str(lr_fair_model_pipeline.score(X_fair,y_fair)))
-        f.write(str(rf_fair_model_pipeline.score(X_fair,y_fair)))
-        f.write(str(svm_model_pipeline.score(X_fair,y_fair)))
-        f.write(str(xgb_fair_model_pipeline.score(X_fair,y_fair)))
+        f.write(f'LR fair model: {str(lr_fair_model_pipeline.score(X_fair,y_fair))}\n')
+        f.write(f'RF fair model: {str(rf_fair_model_pipeline.score(X_fair,y_fair))}\n')
+        f.write(f'SVM fair model: {str(svm_fair_model_pipeline.score(X_fair,y_fair))}\n')
+        f.write(f'XGB fair model: {str(xgb_fair_model_pipeline.score(X_fair,y_fair))}\n')
 
-        f.write(str(post_lr_model_pipeline.score(X,y)))
-        f.write(str(post_rf_model_pipeline.score(X,y)))
-        f.write(str(post_svm_model_pipeline.score(X,y)))
-        f.write(str(post_xgb_model_pipeline.score(X,y)))
+        f.write(f'LR post model: {str(post_lr_model_pipeline.score(X,y))}\n')
+        f.write(f'RF post model: {str(post_rf_model_pipeline.score(X,y))}\n')
+        f.write(f'SVM post model: {str(post_svm_model_pipeline.score(X,y))}\n')
+        f.write(f'XGB post model: {str(post_xgb_model_pipeline.score(X,y))}\n')
 
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_adult_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_adult_model.sav','wb'))
