@@ -180,6 +180,8 @@ def training_testing_models(dataset):
     pickle.dump(post_svm_model_pipeline,open('./output_models/postop_models/svm_aif360_student_model.sav','wb'))
     pickle.dump(post_xgb_model_pipeline,open('./output_models/postop_models/xgb_aif360_student_model.sav','wb'))
 
+    print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
+
 def processing_fairness(dataset,X_set,y_set,protected_features,index):
 
     fair_classifier = MetaFairClassifier(type='sr')
