@@ -1,50 +1,50 @@
 1 iterazione:
 Matrice di confusione:
-[[153  40]
- [ 37 213]]
+[[152  41]
+ [ 31 219]]
 
 2 iterazione:
 Matrice di confusione:
-[[173  44]
- [ 33 193]]
+[[177  40]
+ [ 34 192]]
 
 3 iterazione:
 Matrice di confusione:
-[[159  28]
- [ 29 227]]
+[[157  30]
+ [ 31 225]]
 
 4 iterazione:
 Matrice di confusione:
-[[195  50]
- [ 23 175]]
+[[196  49]
+ [ 22 176]]
 
 5 iterazione:
 Matrice di confusione:
 [[161  31]
- [ 31 219]]
+ [ 28 222]]
 
 6 iterazione:
 Matrice di confusione:
-[[220  44]
- [ 23 155]]
+[[222  42]
+ [ 24 154]]
 
 7 iterazione:
 Matrice di confusione:
-[[171  44]
- [ 28 199]]
+[[173  42]
+ [ 23 204]]
 
 8 iterazione:
 Matrice di confusione:
-[[190  51]
+[[199  42]
  [ 17 184]]
 
 9 iterazione:
 Matrice di confusione:
 [[198  42]
- [ 28 174]]
+ [ 27 175]]
 
 10 iterazione:
 Matrice di confusione:
-[[173  48]
- [ 25 196]]
+[[171  50]
+ [ 24 197]]
 
