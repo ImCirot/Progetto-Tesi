@@ -127,6 +127,8 @@ def load_dataset():
     for train_index, test_index in kf.split(df_array):
         i = i + 1
 
+        print(f'\n######### Inizio {i} iterazione #########\n')
+
         X_train = X.iloc[train_index]
         y_train = y.iloc[train_index]
         X_fair_train = X_fair.iloc[train_index]
@@ -169,16 +171,7 @@ def load_dataset():
         validate_postop(svm_threshold,'svm',i,X_test,y_test,g_test)
         validate_postop(xgb_threshold,'xgb',i,X_test,y_test,g_test)
 
-
-    print(lr_model_pipeline.score(X,y))
-    print(rf_model_pipeline.score(X,y))
-    print(svm_model_pipeline.score(X,y))
-    print(xgb_model_pipeline.score(X,y))
-
-    print(lr_fair_model_pipeline.score(X,y))
-    print(rf_fair_model_pipeline.score(X,y))
-    print(svm_fair_model_pipeline.score(X,y))
-    print(xgb_fair_model_pipeline.score(X,y))
+        print(f'\n######### Fine {i} iterazione #########\n')
 
     lr_std_pred = lr_model_pipeline.predict(X)
     lr_fair_pred = lr_fair_model_pipeline.predict(X)
@@ -224,10 +217,23 @@ def load_dataset():
         else:
             open_type = 'a'
 
-        with open('./reports/fairness_reports/bank_model_DI.txt',open_type) as f:
+        with open('./reports/fairness_reports/postprocessing/fairlearn/bank_model_DI.txt',open_type) as f:
             f.write(f'{name}_marital DI: {marital_DI}\n')
             f.write(f'{name}_education DI: {education_DI}\n')
 
+    print(f'######### Inizio stesura report finale #########')
+    with open('./reports/final_scores/fairlearn/bank_scores.txt','w') as f:
+        f.write(f'LR std model: {str(lr_model_pipeline.score(X,y))}\n')
+        f.write(f'RF std model: {str(rf_model_pipeline.score(X,y))}\n')
+        f.write(f'SVM std model: {str(svm_model_pipeline.score(X,y))}\n')
+        f.write(f'XGB std model: {str(xgb_model_pipeline.score(X,y))}\n')
+        
+        f.write(f'LR fair model: {str(lr_fair_model_pipeline.score(X_fair,y_fair))}\n')
+        f.write(f'RF fair model: {str(rf_fair_model_pipeline.score(X_fair,y_fair))}\n')
+        f.write(f'SVM fair model: {str(svm_fair_model_pipeline.score(X_fair,y_fair))}\n')
+        f.write(f'XGB fair model: {str(xgb_fair_model_pipeline.score(X_fair,y_fair))}\n')
+    
+    print(f'######### Inizio salvataggio modelli #########')
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_bank_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_bank_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_fairlearn_bank_model.sav','wb'))
@@ -240,7 +246,8 @@ def load_dataset():
     pickle.dump(rf_threshold,open('./output_models/postop_models/threshold_rf_fairlearn_bank_model.sav','wb'))
     pickle.dump(svm_threshold,open('./output_models/postop_models/threshold_svm_fairlearn_bank_model.sav','wb'))
     pickle.dump(xgb_threshold,open('./output_models/postop_models/threshold_xgb_fairlearn_bank_model.sav','wb'))
-
+    
+    print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 
 def fairness_preprocess_op(dataset,protected_features_names):
     features_names = dataset.columns.tolist()
@@ -313,14 +320,14 @@ def validate_postop(ml_model,model_type,index,X_test,y_test,g_test):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/postop_models/{model_type}_bank_matrix_report.txt",open_type) as f:
+    with open(f"./reports/postop_models/fairlearn/bank/{model_type}_bank_matrix_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write(f"Matrice di confusione:\n")
         f.write(str(matrix))
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with open(f"./reports/postop_models/{model_type}_bank_metrics_report.txt",open_type) as f:
+    with open(f"./reports/postop_models/fairlearn/bank{model_type}_bank_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
