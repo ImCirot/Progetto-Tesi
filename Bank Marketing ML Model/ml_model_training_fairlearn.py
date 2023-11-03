@@ -327,7 +327,7 @@ def validate_postop(ml_model,model_type,index,X_test,y_test,g_test):
         f.write('\n\n')
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with open(f"./reports/postop_models/fairlearn/bank{model_type}_bank_metrics_report.txt",open_type) as f:
+    with open(f"./reports/postop_models/fairlearn/bank/{model_type}_bank_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
         f.write("Metriche di valutazione:")
         f.write(str(report))
