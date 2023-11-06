@@ -1,40 +1,40 @@
-1 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
-1 iter: Gender DI pre inprocessing: 0.8746460108857929
-1 iter: Gender Mean difference post inprocessing: -0.12405619707850946
-1 iter: Gender DI post inprocessing: 0.8419645861506326
-2 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
-2 iter: Gender DI pre inprocessing: 0.8746460108857929
-2 iter: Gender Mean difference post inprocessing: -0.16471385639742642
-2 iter: Gender DI post inprocessing: 0.7597516828286058
-3 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
-3 iter: Gender DI pre inprocessing: 0.8746460108857929
-3 iter: Gender Mean difference post inprocessing: -0.14225695361598
-3 iter: Gender DI post inprocessing: 0.8029980951329265
-4 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
-4 iter: Gender DI pre inprocessing: 0.8746460108857929
-4 iter: Gender Mean difference post inprocessing: -0.10448490164514512
-4 iter: Gender DI post inprocessing: 0.8724973848736224
-5 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
-5 iter: Gender DI pre inprocessing: 0.8746460108857929
-5 iter: Gender Mean difference post inprocessing: -0.11597250948163729
-5 iter: Gender DI post inprocessing: 0.8411820911820912
-6 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
-6 iter: Gender DI pre inprocessing: 0.8746460108857929
-6 iter: Gender Mean difference post inprocessing: -0.11139740145825339
-6 iter: Gender DI post inprocessing: 0.8716847688810305
-7 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
-7 iter: Gender DI pre inprocessing: 0.8746460108857929
-7 iter: Gender Mean difference post inprocessing: -0.16968268286726707
-7 iter: Gender DI post inprocessing: 0.7786942786942787
-8 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
-8 iter: Gender DI pre inprocessing: 0.8746460108857929
-8 iter: Gender Mean difference post inprocessing: -0.09074462624158364
-8 iter: Gender DI post inprocessing: 0.8800613921257353
-9 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
-9 iter: Gender DI pre inprocessing: 0.8746460108857929
-9 iter: Gender Mean difference post inprocessing: -0.12862632132409013
-9 iter: Gender DI post inprocessing: 0.8434252434252434
+1 iter: Gender Mean difference pre inprocessing: -0.07827876185364102
+1 iter: Gender DI pre inprocessing: 0.8928352725045928
+1 iter: Gender Mean difference post inprocessing: -0.0870459831812489
+1 iter: Gender DI post inprocessing: 0.8770222446916076
+2 iter: Gender Mean difference pre inprocessing: -0.0718754212620637
+2 iter: Gender DI pre inprocessing: 0.9021312757061762
+2 iter: Gender Mean difference post inprocessing: -0.15490461378693998
+2 iter: Gender DI post inprocessing: 0.8020884497375086
+3 iter: Gender Mean difference pre inprocessing: -0.06942516382308606
+3 iter: Gender DI pre inprocessing: 0.904099138108788
+3 iter: Gender Mean difference post inprocessing: -0.071395518934814
+3 iter: Gender DI post inprocessing: 0.906651313478278
+4 iter: Gender Mean difference pre inprocessing: -0.07250000000000001
+4 iter: Gender DI pre inprocessing: 0.9006849315068493
+4 iter: Gender Mean difference post inprocessing: -0.119
+4 iter: Gender DI post inprocessing: 0.8207831325301205
+5 iter: Gender Mean difference pre inprocessing: -0.0582902651868169
+5 iter: Gender DI pre inprocessing: 0.9195039195039195
+5 iter: Gender Mean difference post inprocessing: -0.04863170380411763
+5 iter: Gender DI post inprocessing: 0.9386817647687212
+6 iter: Gender Mean difference pre inprocessing: -0.07650368713521827
+6 iter: Gender DI pre inprocessing: 0.8975139285547076
+6 iter: Gender Mean difference post inprocessing: -0.06879989615110016
+6 iter: Gender DI post inprocessing: 0.921394141638858
+7 iter: Gender Mean difference pre inprocessing: -0.06893601782587933
+7 iter: Gender DI pre inprocessing: 0.9057681324957167
+7 iter: Gender Mean difference post inprocessing: -0.156812032468566
+7 iter: Gender DI post inprocessing: 0.7681082671373933
+8 iter: Gender Mean difference pre inprocessing: -0.06738195924929236
+8 iter: Gender DI pre inprocessing: 0.9079977094865431
+8 iter: Gender Mean difference post inprocessing: -0.0543109775276972
+8 iter: Gender DI post inprocessing: 0.9346427219581949
+9 iter: Gender Mean difference pre inprocessing: -0.08584409373505497
+9 iter: Gender DI pre inprocessing: 0.8836493274995949
+9 iter: Gender Mean difference post inprocessing: -0.10832137733142033
+9 iter: Gender DI post inprocessing: 0.8677565318931544
 10 iter: Gender Mean difference pre inprocessing: -0.09331625558806089
 10 iter: Gender DI pre inprocessing: 0.8746460108857929
-10 iter: Gender Mean difference post inprocessing: -0.18316878560286265
-10 iter: Gender DI post inprocessing: 0.7477591863066724
+10 iter: Gender Mean difference post inprocessing: -0.15388410723096313
+10 iter: Gender DI post inprocessing: 0.7944041602578189
