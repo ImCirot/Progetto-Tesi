@@ -13,9 +13,8 @@ import xgboost as xgb
 from datetime import datetime
 
 @track_emissions(offline=True, country_iso_code="ITA")
-def traning_and_testing_model():
-    ## Funzione per il training e testing del modello scelto
-
+def load_dataset():
+    ## funzione di load del dataset
     df = pd.read_csv("./German Credit Dataset/dataset_modificato.csv")
 
     # Drop delle colonne superflue
@@ -25,6 +24,12 @@ def traning_and_testing_model():
     # operazione necessaria ai fini di utilizzo del toolkit
     df['Target'] = df['Target'].replace(2,0)
 
+    for i in range(10):
+        print(f'########################### {i+1} esecuzione ###########################')
+        traning_and_testing_model(df)
+
+def traning_and_testing_model(df):
+    ## Funzione per il training e testing del modello scelto
     features = df.columns.tolist()
     features.remove('Target')
 
@@ -32,12 +37,6 @@ def traning_and_testing_model():
 
     X = df[features]
     y = df[target]
-
-    # Si crea un array del dataframe utile per la KFold
-    df_array = np.array(df)
-
-    # inizializiamo contatore i
-    i = 0
 
     # Creiamo due pipeline che effettuano delle ulteriori operazioni di scaling dei dati per addestriare il modello
     # in particolare la pipeline standard sarà addestrata sui dati as-is
@@ -49,36 +48,23 @@ def traning_and_testing_model():
     xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     # Strategia KFold
-    for i in range(10):
-        
-        i = i+1
-        
-        print(f'\n######### Inizio {i} iterazione #########\n')
-
-        X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=i)
-
-        # fit del modello sul training set dell'i-esima iterazione
-        lr_model_pipeline.fit(X_train,y_train.values.ravel())
-        rf_model_pipeline.fit(X_train,y_train.values.ravel())
-        svm_model_pipeline.fit(X_train,y_train.values.ravel())
-        xgb_model_pipeline.fit(X_train,y_train.values.ravel())
-
-        # Stampiamo metriche di valutazione per il modello
-        validate(lr_model_pipeline, i, "std_models", 'lr', X_test, y_test)
-        validate(rf_model_pipeline,i,'std_models','rf',X_test,y_test)
-        validate(svm_model_pipeline,i,'std_models','svm',X_test,y_test)
-        validate(xgb_model_pipeline,i,'std_models','xgb',X_test,y_test)
-
-        print(f'\n######### Fine {i} iterazione #########\n')
-
-    print(f'######### Inizio stesura report finale #########')
-    with open('./reports/final_scores/std/credit_scores.txt','w') as f:
-        f.write(f'LR std model: {str(lr_model_pipeline.score(X,y))}\n')
-        f.write(f'RF std model: {str(rf_model_pipeline.score(X,y))}\n')
-        f.write(f'SVM std model: {str(svm_model_pipeline.score(X,y))}\n')
-        f.write(f'XGB std model: {str(xgb_model_pipeline.score(X,y))}\n')
+    X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=42)
     
-    print(f'######### Inizio salvataggio modelli #########')
+    print(f'######### Fase di training #########')
+    # fit del modello sul training set dell'i-esima iterazione
+    lr_model_pipeline.fit(X_train,y_train.values.ravel())
+    rf_model_pipeline.fit(X_train,y_train.values.ravel())
+    svm_model_pipeline.fit(X_train,y_train.values.ravel())
+    xgb_model_pipeline.fit(X_train,y_train.values.ravel())
+
+    # Stampiamo metriche di valutazione per il modello
+    print(f'######### Fase di testing #########')
+    validate(lr_model_pipeline,'lr', X_test, y_test,True)
+    validate(rf_model_pipeline,'rf',X_test,y_test)
+    validate(svm_model_pipeline,'svm',X_test,y_test)
+    validate(xgb_model_pipeline,'xgb',X_test,y_test)
+
+    print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_credit_model.sav','wb'))
     pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_credit_model.sav','wb'))
     pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_credit_model.sav','wb'))
@@ -86,25 +72,22 @@ def traning_and_testing_model():
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
             
-def validate(ml_model,index,model_vers,model_type,X_test,y_test):
+def validate(ml_model,model_type,X_test,y_test,first=False):
     ## funzione utile a calcolare le metriche di valutazione del modello passato in input
-
-    pred = ml_model.predict(X_test)
-
     accuracy = ml_model.score(X_test,y_test)
 
     y_proba = ml_model.predict_proba(X_test)[::,1]
 
     auc_score = roc_auc_score(y_test,y_proba)
 
-    if index == 1:
+    if first:
         open_type = "w"
     else:
         open_type = "a"
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/{model_vers}/credit/{model_type}_credit_metrics_report.txt",open_type) as f:
-        f.write(f"{index} iterazione:\n")
+    with  open(f"./reports/std_models/credit_metrics_report.txt",open_type) as f:
+        f.write(f'{model_type}\n')
         f.write(f"Accuracy: {accuracy}")
         f.write(f'\nAUC ROC score: {auc_score}\n')
         f.write('\n')
@@ -115,7 +98,7 @@ def print_time(time):
 
 # Chiamata funzione inizale di training e testing
 start = datetime.now()
-traning_and_testing_model()
+load_dataset()
 end = datetime.now()
 
 elapsed = (end - start).total_seconds()

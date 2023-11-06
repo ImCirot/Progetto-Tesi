@@ -1,4 +1,4 @@
 LR std model: 0.66
-RF std model: 0.955
+RF std model: 0.953
 SVM std model: 0.862
 XGB std model: 0.958
