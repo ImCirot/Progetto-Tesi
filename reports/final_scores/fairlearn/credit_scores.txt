@@ -1,4 +1,0 @@
-LR fair model: 0.66
-RF fair model: 0.951
-SVM fair model: 0.839
-XGB fair model: 0.953

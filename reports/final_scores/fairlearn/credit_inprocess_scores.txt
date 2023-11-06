@@ -1,4 +1,0 @@
-LR postop model: 0.66
-RF postop model: 0.954
-SVM postop model: 0.862
-XGB postop model: 0.958
