@@ -97,14 +97,14 @@ def training_model(dataset):
 
     X_fair_train, X_fair_test, y_fair_train, y_fair_test = train_test_split(X_fair,y_fair,test_size=0.2,random_state=42)
 
-    print(f'\n######### Fase di training #########\n')
+    print(f'######### Training modelli #########')
     lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
     rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
     svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
     xgb_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
 
     # validiamo i risultati prodotti dal modello chiamando una funzione che realizza metriche di valutazione
-    print(f'\n######### Fase di testing #########\n')
+    print(f'######### Testing modelli #########')
     validate(lr_fair_model_pipeline,'lr',X_fair_test,y_fair_test,True)
     validate(rf_fair_model_pipeline,'rf',X_fair_test,y_fair_test)
     validate(svm_fair_model_pipeline,'svm',X_fair_test,y_fair_test)
@@ -148,14 +148,7 @@ def training_model(dataset):
         with open('./reports/fairness_reports/preprocessing/fairlearn/credit_report.txt',open_type) as f:
             f.write(f'{name}_sex DI: {sex_DI}\n')
 
-    print(f'######### Inizio stesura report finale #########')
-    with open('./reports/final_scores/fairlearn/credit_scores.txt','w') as f:
-        f.write(f'LR fair model: {str(lr_fair_model_pipeline.score(X_fair,y_fair))}\n')
-        f.write(f'RF fair model: {str(rf_fair_model_pipeline.score(X_fair,y_fair))}\n')
-        f.write(f'SVM fair model: {str(svm_fair_model_pipeline.score(X_fair,y_fair))}\n')
-        f.write(f'XGB fair model: {str(xgb_fair_model_pipeline.score(X_fair,y_fair))}\n')
-
-    print(f'######### Inizio salvataggio modelli #########')
+    print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_credit_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_credit_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_credit_model.sav','wb'))
@@ -179,7 +172,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
     with  open(f"./reports/fair_models/fairlearn/credit_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {accuracy}")
-        f.write(f'\nAUC ROC score: {auc_score}\n')
+        f.write(f'\nROC-AUC score: {auc_score}\n')
         f.write('\n')
 
 @track_emissions(country_iso_code='ITA',offline=True)

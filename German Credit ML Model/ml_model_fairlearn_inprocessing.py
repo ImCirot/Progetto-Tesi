@@ -78,12 +78,15 @@ def training_model(dataset):
     X_train, X_test, y_train, y_test,g_train,g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
 
     # modifichiamo i modelli con postop di fairness
+
+    print(f'######### Training modelli #########')
     lr_threshold.fit(X_train,y_train,sensitive_features=g_train)
     rf_threshold.fit(X_train,y_train,sensitive_features=g_train)
     svm_threshold.fit(X_train,y_train,sensitive_features=g_train)
     xgb_threshold.fit(X_train,y_train,sensitive_features=g_train)
 
-    # validiamo i nuovi modelli prodotti
+    # validiamo i nuovi modelli 
+    print(f'######### Testing modelli #########')
     validate(lr_threshold,'lr',X_test,y_test,g_test,True)
     validate(rf_threshold,'rf',X_test,y_test,g_test)
     validate(svm_threshold,'svm',X_test,y_test,g_test)
@@ -95,7 +98,7 @@ def training_model(dataset):
     # plot_threshold_optimizer(svm_threshold)
     # plot_threshold_optimizer(xgb_threshold)
 
-
+    
     lr_std_pred = lr_model_pipeline.predict(X)
     lr_threshold_pred = lr_threshold.predict(X,sensitive_features=g)
 
@@ -134,14 +137,7 @@ def training_model(dataset):
         with open('./reports/fairness_reports/inprocessing/fairlearn/credit_model.txt',open_type) as f:
             f.write(f'{name}_sex DI: {sex_DI}\n')
 
-    print(f'######### Inizio stesura report finale #########')
-    with open('./reports/final_scores/fairlearn/credit_inprocess_scores.txt','w') as f:
-        f.write(f'LR postop model: {str(lr_threshold.estimator.score(X,y))}\n')
-        f.write(f'RF postop model: {str(rf_threshold.estimator.score(X,y))}\n')
-        f.write(f'SVM postop model: {str(svm_threshold.estimator.score(X,y))}\n')
-        f.write(f'XGB postop model: {str(xgb_threshold.estimator.score(X,y))}\n')
-
-    print(f'######### Inizio salvataggio modelli #########')
+    print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_threshold,open('./output_models/inprocess_models/threshold_lr_fairlearn_credit_model.sav','wb'))
     pickle.dump(rf_threshold,open('./output_models/inprocess_models/threshold_rf_fairlearn_credit_model.sav','wb'))
     pickle.dump(svm_threshold,open('./output_models/inprocess_models/threshold_svm_fairlearn_credit_model.sav','wb'))
@@ -169,7 +165,7 @@ def validate(ml_model,model_type,X_test,y_test,g_test,first=False):
     with  open(f'./reports/inprocessing_models/fairlearn/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {accuracy}")
-        f.write(f'\nAUC ROC score: {auc_score}\n')
+        f.write(f'\nROC-AUC score: {auc_score}\n')
         f.write('\n')
 
 @track_emissions(country_iso_code='ITA',offline=True)
