@@ -1,40 +1,40 @@
 1 iterazione:
-Accuracy: 0.73
-AUC ROC score: 0.7564010097367471
+Accuracy: 0.79
+AUC ROC score: 0.8263012381295829
 
 2 iterazione:
-Accuracy: 0.73
-AUC ROC score: 0.7623506433823529
+Accuracy: 0.77
+AUC ROC score: 0.8141002524341867
 
 3 iterazione:
 Accuracy: 0.775
-AUC ROC score: 0.7856468923222077
+AUC ROC score: 0.8237768962615698
 
 4 iterazione:
-Accuracy: 0.75
-AUC ROC score: 0.8011179228272628
+Accuracy: 0.77
+AUC ROC score: 0.8252193773290059
 
 5 iterazione:
-Accuracy: 0.76
-AUC ROC score: 0.7155257936507936
+Accuracy: 0.775
+AUC ROC score: 0.8177064551027768
 
 6 iterazione:
-Accuracy: 0.72
-AUC ROC score: 0.7611396011396011
+Accuracy: 0.775
+AUC ROC score: 0.8185479023921144
 
 7 iterazione:
-Accuracy: 0.82
-AUC ROC score: 0.850901434399263
+Accuracy: 0.77
+AUC ROC score: 0.8116961173217935
 
 8 iterazione:
 Accuracy: 0.785
-AUC ROC score: 0.7990962808481057
+AUC ROC score: 0.8329126096886644
 
 9 iterazione:
-Accuracy: 0.81
-AUC ROC score: 0.8247736180564941
+Accuracy: 0.78
+AUC ROC score: 0.820531313859839
 
 10 iterazione:
-Accuracy: 0.76
-AUC ROC score: 0.7862903225806451
+Accuracy: 0.775
+AUC ROC score: 0.8264214448852025
 
