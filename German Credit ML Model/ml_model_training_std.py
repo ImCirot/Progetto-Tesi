@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import KFold
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import *
 from sklearn.linear_model import LogisticRegression
 from codecarbon import track_emissions
@@ -36,9 +36,6 @@ def traning_and_testing_model():
     # Si crea un array del dataframe utile per la KFold
     df_array = np.array(df)
 
-    # Settiamo il numero di gruppi della strategia KFold a 10
-    kf = KFold(n_splits=10)
-
     # inizializiamo contatore i
     i = 0
 
@@ -52,19 +49,13 @@ def traning_and_testing_model():
     xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     # Strategia KFold
-    for train_index, test_index in kf.split(df_array):
+    for i in range(10):
         
         i = i+1
         
         print(f'\n######### Inizio {i} iterazione #########\n')
 
-        # setting del training set dell'i-esima iterazione 
-        X_train = X.loc[train_index]
-        y_train = y.loc[train_index]
-
-        # setting del test set dell'i-esima iterazione 
-        X_test = X.loc[test_index]
-        y_test = y.loc[test_index]
+        X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=i)
 
         # fit del modello sul training set dell'i-esima iterazione
         lr_model_pipeline.fit(X_train,y_train.values.ravel())
@@ -100,9 +91,7 @@ def validate(ml_model,index,model_vers,model_type,X_test,y_test):
 
     pred = ml_model.predict(X_test)
 
-    matrix = confusion_matrix(y_test, pred)
-
-    report = classification_report(y_test, pred)
+    accuracy = ml_model.score(X_test,y_test)
 
     y_proba = ml_model.predict_proba(X_test)[::,1]
 
@@ -113,18 +102,10 @@ def validate(ml_model,index,model_vers,model_type,X_test,y_test):
     else:
         open_type = "a"
     
-    #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/{model_vers}/credit/{model_type}_credit_matrix_report.txt",open_type) as f:
-        f.write(f"{index} iterazione:\n")
-        f.write(f"Matrice di confusione:\n")
-        f.write(str(matrix))
-        f.write('\n\n')
-    
     #scriviamo su un file le metriche di valutazione ottenute
     with  open(f"./reports/{model_vers}/credit/{model_type}_credit_metrics_report.txt",open_type) as f:
         f.write(f"{index} iterazione:\n")
-        f.write("Metriche di valutazione:")
-        f.write(str(report))
+        f.write(f"Accuracy: {accuracy}")
         f.write(f'\nAUC ROC score: {auc_score}\n')
         f.write('\n')
 
