@@ -1,4 +1,4 @@
 Gender Mean difference pre inprocessing: -0.08863636363636362
 Gender DI pre inprocessing: 0.88
-Gender Mean difference post inprocessing: -0.08257575757575764
-Gender DI post inprocessing: 0.8987929433611884
+Gender Mean difference post inprocessing: -0.09141414141414139
+Gender DI post inprocessing: 0.8719037508846427

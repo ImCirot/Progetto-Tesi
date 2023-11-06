@@ -3,14 +3,14 @@ Accuracy: 0.745
 ROC-AUC score: 0.8023800937612694
 
 rf
-Accuracy: 0.76
+Accuracy: 0.77
 ROC-AUC score: 0.8257603077292944
 
 svm
-Accuracy: 0.785
+Accuracy: 0.795
 ROC-AUC score: 0.8020194734944104
 
 xgb
-Accuracy: 0.76
+Accuracy: 0.77
 ROC-AUC score: 0.8313499218656089
 
