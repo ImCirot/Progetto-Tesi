@@ -195,7 +195,7 @@ def load_dataset():
     
 
 def print_time(time):
-    with open('./reports/time_reports/fairlearn/credit_report.txt','w') as f:
+    with open('./reports/time_reports/fairlearn/credit_preprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()
