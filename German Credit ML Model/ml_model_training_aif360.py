@@ -15,6 +15,7 @@ from aif360.algorithms.inprocessing import MetaFairClassifier
 from sklearn.svm import SVC
 import pickle
 import xgboost as xgb
+from datetime import datetime
 
 @track_emissions(offline=True, country_iso_code="ITA")
 def traning_and_testing_model():
@@ -61,14 +62,6 @@ def traning_and_testing_model():
     # inizializiamo contatore i
     i = 0
 
-    # Creiamo due pipeline che effettuano delle ulteriori operazioni di scaling dei dati per addestriare il modello
-    # in particolare la pipeline standard sarà addestrata sui dati as-is
-    # mentre la fair pipeline verrà addestrata su dati sui vengono applicate strategie di fairness
-    # volte a rimuovere discriminazione e bias nel dataset di training
-    lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
-    rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
-    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
-    xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     post_lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
     post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
@@ -94,30 +87,6 @@ def traning_and_testing_model():
         ('scaler', StandardScaler()),
         ('model', xgb.XGBClassifier(objective='binary:logistic', random_state=42))
     ])
-
-    # Strategia KFold
-    for train_index, test_index in kf.split(df_array):
-        i = i+1
-
-        # setting del training set dell'i-esima iterazione 
-        X_train = X.loc[train_index]
-        y_train = y.loc[train_index]
-
-        # setting del test set dell'i-esima iterazione 
-        X_test = X.loc[test_index]
-        y_test = y.loc[test_index]
-
-        # fit del modello sul training set dell'i-esima iterazione
-        lr_model_pipeline.fit(X_train,y_train.values.ravel())
-        rf_model_pipeline.fit(X_train,y_train.values.ravel())
-        svm_model_pipeline.fit(X_train,y_train.values.ravel())
-        xgb_model_pipeline.fit(X_train,y_train.values.ravel())
-
-        # Stampiamo metriche di valutazione per il modello
-        validate(lr_model_pipeline, i, "std_models", 'lr', X_test, y_test)
-        validate(rf_model_pipeline,i,'std_models','rf',X_test,y_test)
-        validate(svm_model_pipeline,i,'std_models','svm',X_test,y_test)
-        validate(xgb_model_pipeline,i,'std_models','xgb',X_test,y_test)
     
     # costruiamo array dal dataset ricalibrato per attuare strategia KFold
     fair_array = np.asarray(fair_dataset)
@@ -150,6 +119,18 @@ def traning_and_testing_model():
         validate(rf_fair_model_pipeline,i,'fair_models','rf',X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
         validate(xgb_fair_model_pipeline,i,'fair_models','xgb',X_fair_test,y_fair_test)
+        print(f'\n######### Fine {i} iterazione #########\n')
+
+    i = 0
+
+    for train_index,test_index in kf.split(df_array):
+        i = i + 1
+        print(f'\n######### Inizio {i} iterazione #########\n')
+        X_train = X.iloc[train_index]
+        y_train = y.iloc[train_index]
+
+        X_test = X.iloc[test_index]
+        y_test = y.iloc[test_index]
 
         processed_train = processing_fairness(df,X_train,y_train,protected_attribute_names,i)
 
@@ -169,11 +150,6 @@ def traning_and_testing_model():
 
     print(f'######### Inizio stesura report finale #########')
     with open('./reports/final_scores/aif360/credit_scores.txt','w') as f:
-        f.write(f'LR std model: {str(lr_model_pipeline.score(X,y))}\n')
-        f.write(f'RF std model: {str(rf_model_pipeline.score(X,y))}\n')
-        f.write(f'SVM std model: {str(svm_model_pipeline.score(X,y))}\n')
-        f.write(f'XGB std model: {str(xgb_model_pipeline.score(X,y))}\n')
-        
         f.write(f'LR fair model: {str(lr_fair_model_pipeline.score(X_fair,y_fair))}\n')
         f.write(f'RF fair model: {str(rf_fair_model_pipeline.score(X_fair,y_fair))}\n')
         f.write(f'SVM fair model: {str(svm_fair_model_pipeline.score(X_fair,y_fair))}\n')
@@ -185,13 +161,9 @@ def traning_and_testing_model():
         f.write(f'XGB post model: {str(post_xgb_model_pipeline.score(X,y))}\n')
     
     print(f'######### Inizio salvataggio modelli #########')
-    pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_credit_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_credit_model.sav','wb'))
-    pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_credit_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_aif360_credit_model.sav','wb'))
-    pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_aif360_credit_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_credit_model.sav','wb'))
-    pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_aif360_credit_model.sav','wb'))
     pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_aif360_credit_model.sav','wb'))
     pickle.dump(post_lr_model_pipeline,open('./output_models/postop_models/lr_aif360_credit_model.sav','wb'))
     pickle.dump(post_rf_model_pipeline,open('./output_models/postop_models/rf_aif360_credit_model.sav','wb'))
@@ -378,5 +350,14 @@ def print_fairness_metrics(metric, message, first_message=False):
         f.write(f"{message}: {metric}")
         f.write('\n')
 
+def print_time(time):
+    with open('./reports/time_reports/aif360/credit_report.txt','w') as f:
+        f.write(f'Elapsed time: {time} seconds.\n')
+
 # Chiamata funzione inizale di training e testing
+start = datetime.now()
 traning_and_testing_model()
+end = datetime.now()
+
+elapsed = (end - start).total_seconds()
+print_time(elapsed)

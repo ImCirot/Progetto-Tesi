@@ -16,6 +16,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from codecarbon import track_emissions
 import xgboost as xgb
+from datetime import datetime
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def training_model(dataset):
@@ -56,37 +57,38 @@ def training_model(dataset):
 
     # Creiamo una pipeline contenente il modello basato su regressione logistica e uno scaler per poter scalare i dati correttamente per poter
     # utilizzare correttamente il modello
-    lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
-    rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
-    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True, class_weight={1:1,0:5}))
-    xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
+
+    lr_model_pipeline = pickle.load(open('./output_models/std_models/lr_credit_model.sav','rb'))
+    rf_model_pipeline = pickle.load(open('./output_models/std_models/rf_credit_model.sav','rb'))
+    svm_model_pipeline = pickle.load(open('./output_models/std_models/svm_credit_model.sav','rb'))
+    xgb_model_pipeline = pickle.load(open('./output_models/std_models/xgb_credit_model.sav','rb'))
 
     lr_threshold = ThresholdOptimizer(
         estimator=lr_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
-        prefit=True
+        prefit=False         
     )
 
     rf_threshold = ThresholdOptimizer(
         estimator=rf_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
-        prefit=True
+        prefit=False
     )
 
     svm_threshold = ThresholdOptimizer(
         estimator=svm_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
-        prefit=True
+        prefit=False
     )
 
     xgb_threshold = ThresholdOptimizer(
         estimator=xgb_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
-        prefit=True
+        prefit=False
     )
 
     # proviamo a rimuovere eventuali correlazioni esistenti fra i dati e le features sensibli
@@ -136,28 +138,6 @@ def training_model(dataset):
 
         print(f'\n######### Inizio {i} iterazione #########\n')
 
-        # estraiamo parte di training dal dataset per il ciclo i-esimo
-        X_train = X.loc[train_index]
-        y_train = y.loc[train_index]
-        sex_train = sex.loc[train_index]
-
-        # estraiamo parte di training dal dataset per il ciclo i-esimo
-        X_test = X.loc[test_index]
-        y_test = y.loc[test_index]
-        sex_test = sex.loc[test_index]
-
-        # fitting del modello sui dati di training per l'iterazione i-esima
-        lr_model_pipeline.fit(X_train,y_train.values.ravel())
-        rf_model_pipeline.fit(X_train,y_train.values.ravel())
-        svm_model_pipeline.fit(X_train,y_train.values.ravel())
-        xgb_model_pipeline.fit(X_train,y_train.values.ravel())
-
-        # validiamo i risultati prodotti dal modello all'iterazione i-esima chiamando una funzione che realizza metriche di valutazione
-        validate(lr_model_pipeline,"std_models",'lr',i,X_test,y_test)
-        validate(rf_model_pipeline,'std_models','rf',i,X_test,y_test)
-        validate(svm_model_pipeline,'std_models','svm',i,X_test,y_test)
-        validate(xgb_model_pipeline,'std_models','xgb',i,X_test,y_test)
-
         X_fair_train = X_fair.iloc[train_index]
         y_fair_train = y_fair.iloc[train_index]
 
@@ -175,6 +155,25 @@ def training_model(dataset):
         validate(rf_fair_model_pipeline,'fair_models','rf',i,X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,'fair_models','svm',i,X_fair_test,y_fair_test)
         validate(xgb_fair_model_pipeline,'fair_models','xgb',i,X_fair_test,y_fair_test)
+
+        print(f'\n######### Fine {i} iterazione #########\n')
+
+    i = 0
+    
+    for train_index,test_index in kf.split(df_array):
+        i = i + 1
+
+        print(f'\n######### Inizio {i} iterazione #########\n')
+
+        # estraiamo parte di training dal dataset per il ciclo i-esimo
+        X_train = X.loc[train_index]
+        y_train = y.loc[train_index]
+        sex_train = sex.loc[train_index]
+
+        # estraiamo parte di training dal dataset per il ciclo i-esimo
+        X_test = X.loc[test_index]
+        y_test = y.loc[test_index]
+        sex_test = sex.loc[test_index]
 
         # modifichiamo i modelli con postop di fairness
         lr_threshold.fit(X_train,y_train,sensitive_features=sex_train)
@@ -244,24 +243,15 @@ def training_model(dataset):
 
     print(f'######### Inizio stesura report finale #########')
     with open('./reports/final_scores/fairlearn/credit_scores.txt','w') as f:
-        f.write(f'LR std model: {str(lr_model_pipeline.score(X,y))}\n')
-        f.write(f'RF std model: {str(rf_model_pipeline.score(X,y))}\n')
-        f.write(f'SVM std model: {str(svm_model_pipeline.score(X,y))}\n')
-        f.write(f'XGB std model: {str(xgb_model_pipeline.score(X,y))}\n')
-        
         f.write(f'LR fair model: {str(lr_fair_model_pipeline.score(X_fair,y_fair))}\n')
         f.write(f'RF fair model: {str(rf_fair_model_pipeline.score(X_fair,y_fair))}\n')
         f.write(f'SVM fair model: {str(svm_fair_model_pipeline.score(X_fair,y_fair))}\n')
         f.write(f'XGB fair model: {str(xgb_fair_model_pipeline.score(X_fair,y_fair))}\n')
 
     print(f'######### Inizio salvataggio modelli #########')
-    pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_fairlearn_credit_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_fairlearn_credit_model.sav','wb'))
-    pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_fairlearn_credit_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_fairlearn_credit_model.sav','wb'))
-    pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_fairlearn_credit_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_fairlearn_credit_model.sav','wb'))
-    pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_fairlearn_credit_model.sav','wb'))
     pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_fairlearn_credit_model.sav','wb'))
     pickle.dump(lr_threshold,open('./output_models/postop_models/threshold_lr_fairlearn_credit_model.sav','wb'))
     pickle.dump(rf_threshold,open('./output_models/postop_models/threshold_rf_fairlearn_credit_model.sav','wb'))
@@ -337,5 +327,13 @@ def load_dataset():
 
     training_model(df)
 
+def print_time(time):
+    with open('./reports/time_reports/fairlearn/credit_report.txt','w') as f:
+        f.write(f'Elapsed time: {time} seconds.\n')
 
+start = datetime.now()
 load_dataset()
+end = datetime.now()
+
+elapsed = (end - start).total_seconds()
+print_time(elapsed)
