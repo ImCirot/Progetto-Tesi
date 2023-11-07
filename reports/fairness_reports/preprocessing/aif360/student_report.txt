@@ -1,0 +1,20 @@
+Gender mean_difference before: 0.227
+Gender DI before: 1.644
+Gender mean_difference after: 0.0
+Gender DI after: 1.0
+Special Needs mean_difference before: -0.072
+Special Needs DI before: 0.856
+Special Needs mean_difference after: 0.0
+Special Needs DI after: 1.0
+Age mean_difference before: -0.168
+Age DI before: 0.679
+Age mean_difference after: 0.0
+Age DI after: 1.0
+International mean_difference before: -0.034
+International DI before: 0.932
+International mean_difference after: 0.0
+International DI after: 1.0
+Grade mean_difference before: -0.103
+Grade DI before: 0.813
+Grade mean_difference after: 0.0
+Grade DI after: 1.0
