@@ -1,8 +1,0 @@
-lr_std_sex DI: 0.5277037037037037
-lr_threshold_sex DI: 0.8429824561403508
-rf_std_sex DI: 0.900096618357488
-rf_threshold_sex DI: 0.9046605260108911
-svm_std_sex DI: 0.738876404494382
-svm_threshold_sex DI: 0.9763440860215055
-xgb_std_sex DI: 0.8058823529411765
-xgb_threshold_sex DI: 0.9389583582625344
