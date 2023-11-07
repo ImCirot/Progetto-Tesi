@@ -151,7 +151,7 @@ def validate_postop(ml_model,model_type,X_test,y_test,first=False):
         f.write('\n')
             
 def print_time(time):
-    with open('./reports/time_reports/aif360/credit_postprocessing_report.txt','w') as f:
+    with open('./reports/time_reports/aif360/credit_inprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 # Chiamata funzione inizale di training e testing
