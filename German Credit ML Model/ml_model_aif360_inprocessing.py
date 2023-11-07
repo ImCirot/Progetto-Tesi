@@ -68,10 +68,10 @@ def training_and_testing_model(df):
     post_xgb_model_pipeline.fit(X_postop_train,y_postop_train)
 
     print(f'######### Testing modelli #########')
-    validate_postop(post_lr_model_pipeline,'lr',X_test,y_test,True)
-    validate_postop(post_rf_model_pipeline,'rf',X_test,y_test)
-    validate_postop(post_svm_model_pipeline,'svm',X_test,y_test)
-    validate_postop(post_xgb_model_pipeline,'xgb',X_test,y_test)
+    validate(post_lr_model_pipeline,'lr',X_test,y_test,True)
+    validate(post_rf_model_pipeline,'rf',X_test,y_test)
+    validate(post_svm_model_pipeline,'svm',X_test,y_test)
+    validate(post_xgb_model_pipeline,'xgb',X_test,y_test)
     
     print(f'######### Salvataggio modelli #########')
     pickle.dump(post_lr_model_pipeline,open('./output_models/inprocess_models/lr_aif360_credit_model.sav','wb'))
@@ -129,7 +129,7 @@ def print_inproc_metrics(metric, message, first_message=False):
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
-def validate_postop(ml_model,model_type,X_test,y_test,first=False):
+def validate(ml_model,model_type,X_test,y_test,first=False):
     pred = ml_model.predict(X_test)
 
     accuracy = ml_model.score(X_test,y_test)
