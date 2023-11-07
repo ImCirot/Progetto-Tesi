@@ -1,8 +1,8 @@
-lr_std_sex DI: 0.5277037037037037
-lr_fair_sex DI: 0.5277037037037037
-rf_std_sex DI: 0.8777828259881871
-rf_fair_sex DI: 0.8330641330166271
-svm_std_sex DI: 0.738876404494382
-svm_fair_sex DI: 0.7759292035398229
-xgb_std_sex DI: 0.8058823529411765
-xgb_fair_sex DI: 0.7828571428571428
+lr_std_sex DI: 0.528
+lr_fair_sex DI: 0.528
+rf_std_sex DI: 0.815
+rf_fair_sex DI: 0.894
+svm_std_sex DI: 0.739
+svm_fair_sex DI: 0.776
+xgb_std_sex DI: 0.806
+xgb_fair_sex DI: 0.783

@@ -146,7 +146,7 @@ def training_model(dataset):
             open_type = 'a'
 
         with open('./reports/fairness_reports/preprocessing/fairlearn/credit_report.txt',open_type) as f:
-            f.write(f'{name}_sex DI: {sex_DI}\n')
+            f.write(f'{name}_sex DI: {round(sex_DI,3)}\n')
 
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_fairlearn_credit_model.sav','wb'))
@@ -171,8 +171,8 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
     #scriviamo su un file le metriche di valutazione ottenute
     with  open(f"./reports/preprocessing_models/fairlearn/credit_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
-        f.write(f"Accuracy: {accuracy}")
-        f.write(f'\nROC-AUC score: {auc_score}\n')
+        f.write(f"Accuracy: {round(accuracy,3)}")
+        f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
         f.write('\n')
 
 @track_emissions(country_iso_code='ITA',offline=True)

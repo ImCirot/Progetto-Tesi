@@ -1,8 +1,8 @@
-Mean_difference value before: -0.07428460693753636
-DI value before: 0.8987364064632589
+Mean_difference value before: -0.074
+DI value before: 0.899
 Mean_difference value after: 0.0
 DI value after: 1.0
 Num. of positive instances of priv_group before: 402.0
 Num. of positive instances of unpriv_group before: 298.0
 Num. of positive instances of priv_group after: 383.6
-Num. of positive instances of unpriv_group after: 316.40000000000003
+Num. of positive instances of unpriv_group after: 316.4

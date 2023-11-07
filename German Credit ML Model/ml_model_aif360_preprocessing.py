@@ -119,8 +119,8 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
     #scriviamo su un file matrice di confusione ottenuta
     with open(f"./reports/preprocessing_models/aif360/credit_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
-        f.write(f"Accuracy: {accuracy}\n")
-        f.write(f'ROC-AUC Score: {auc_score}\n')
+        f.write(f"Accuracy: {round(accuracy,3)}\n")
+        f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
         f.write('\n')
 
 def test_fairness(dataset):
@@ -190,7 +190,7 @@ def print_fairness_metrics(metric, message, first_message=False):
     
     #scriviamo su un file la metrica passata
     with open(f"./reports/fairness_reports/preprocessing/aif360/credit_report.txt",open_type) as f:
-        f.write(f"{message}: {metric}")
+        f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
 def print_time(time):

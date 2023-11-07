@@ -126,7 +126,7 @@ def print_inproc_metrics(metric, message, first_message=False):
     
     #scriviamo su un file la metrica passata
     with open(f"./reports/fairness_reports/inprocessing/aif360/credit_report.txt",open_type) as f:
-        f.write(f"{message}: {metric}")
+        f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
 def validate_postop(ml_model,model_type,X_test,y_test,first=False):
@@ -146,8 +146,8 @@ def validate_postop(ml_model,model_type,X_test,y_test,first=False):
     #scriviamo su un file le metriche di valutazione ottenute
     with  open(f'./reports/inprocessing_models/aif360/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
-        f.write(f"Accuracy: {accuracy}")
-        f.write(f'\nROC-AUC score: {auc_score}\n')
+        f.write(f"Accuracy: {round(accuracy,3)}")
+        f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
         f.write('\n')
             
 def print_time(time):
