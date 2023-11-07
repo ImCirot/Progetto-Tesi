@@ -1,0 +1,20 @@
+Gender Mean difference pre inprocessing: 0.213
+Gender DI pre inprocessing: 1.577
+Gender Mean difference post inprocessing: 0.177
+Gender DI post inprocessing: 1.37
+Sp. Needs Mean difference pre inprocessing: -0.057
+Sp. Needs DI pre inprocessing: 0.888
+Sp. Needs Mean difference post inprocessing: -0.042
+Sp. Needs DI post inprocessing: 0.929
+International Mean difference pre inprocessing: -0.0
+International DI pre inprocessing: 0.999
+International Mean difference post inprocessing: 0.03
+International DI post inprocessing: 1.05
+Age Mean difference pre inprocessing: -0.18
+Age DI pre inprocessing: 0.662
+Age Mean difference post inprocessing: -0.231
+Age DI post inprocessing: 0.631
+Grade Mean difference pre inprocessing: -0.093
+Grade DI pre inprocessing: 0.832
+Grade Mean difference post inprocessing: 0.103
+Grade DI post inprocessing: 1.191
