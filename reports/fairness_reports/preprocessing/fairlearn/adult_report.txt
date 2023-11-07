@@ -1,0 +1,16 @@
+lr_std_sex DI: 0.307
+lr_std_race DI: 0.161
+lr_fair_sex DI: 0.572
+lr_fair_race DI: 0.496
+rf_std_sex DI: 0.356
+rf_std_race DI: 0.316
+rf_fair_sex DI: 0.547
+rf_fair_race DI: 0.391
+svm_std_sex DI: 0.299
+svm_std_race DI: 0.116
+svm_fair_sex DI: 0.231
+svm_fair_race DI: 0.011
+xgb_std_sex DI: 0.324
+xgb_std_race DI: 0.29
+xgb_fair_sex DI: 0.815
+xgb_fair_race DI: 0.506
