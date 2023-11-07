@@ -26,9 +26,9 @@ def load_dataset():
 
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
-        traning_and_testing_model(df)
+        training_and_testing_model(df)
 
-def traning_and_testing_model(df):
+def training_and_testing_model(df):
     ## Funzione per il training e testing del modello scelto
     features = df.columns.tolist()
     features.remove('Target')
@@ -50,7 +50,7 @@ def traning_and_testing_model(df):
     # Strategia KFold
     X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=42)
     
-    print(f'######### Fase di training #########')
+    print(f'######### Training modelli #########')
     # fit del modello sul training set dell'i-esima iterazione
     lr_model_pipeline.fit(X_train,y_train.values.ravel())
     rf_model_pipeline.fit(X_train,y_train.values.ravel())
@@ -58,7 +58,7 @@ def traning_and_testing_model(df):
     xgb_model_pipeline.fit(X_train,y_train.values.ravel())
 
     # Stampiamo metriche di valutazione per il modello
-    print(f'######### Fase di testing #########')
+    print(f'######### Testing modelli #########')
     validate(lr_model_pipeline,'lr', X_test, y_test,True)
     validate(rf_model_pipeline,'rf',X_test,y_test)
     validate(svm_model_pipeline,'svm',X_test,y_test)
@@ -89,7 +89,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
     with  open(f"./reports/std_models/credit_metrics_report.txt",open_type) as f:
         f.write(f'{model_type}\n')
         f.write(f"Accuracy: {accuracy}")
-        f.write(f'\nAUC ROC score: {auc_score}\n')
+        f.write(f'\nROC-AUC score: {auc_score}\n')
         f.write('\n')
 
 def print_time(time):
