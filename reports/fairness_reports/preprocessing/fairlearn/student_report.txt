@@ -1,8 +1,8 @@
-lr_std DI: 0.33985594237695077
-lr_fair DI: 0.33947557758413943
-rf_std DI: 0.36391293169937444
-rf_fair DI: 0.36478824843226526
-svm_std DI: 0.44224009997656794
-svm_fair DI: 0.3325892857142857
-xgb_std DI: 0.365447504302926
-xgb_fair DI: 0.36038961038961037
+lr_std DI: 0.34
+lr_fair DI: 0.339
+rf_std DI: 0.364
+rf_fair DI: 0.366
+svm_std DI: 0.442
+svm_fair DI: 0.333
+xgb_std DI: 0.365
+xgb_fair DI: 0.36

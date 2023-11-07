@@ -128,7 +128,7 @@ def training_model(dataset):
             open_type = 'a'
 
         with open('./reports/fairness_reports/preprocessing/fairlearn/student_report.txt',open_type) as f:
-            f.write(f'{name} DI: {DI_score}\n')
+            f.write(f'{name} DI: {round(DI_score,3)}\n')
     
     # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
     # plot_threshold_optimizer(lr_threshold)
@@ -162,8 +162,8 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
     #scriviamo su un file le metriche di valutazione ottenute
     with  open(f"./reports/preprocessing_models/fairlearn/student_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
-        f.write(f"Accuracy: {accuracy}")
-        f.write(f'\nROC-AUC score: {auc_score}\n')
+        f.write(f"Accuracy: {round(accuracy,3)}")
+        f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
         f.write('\n')
 
 

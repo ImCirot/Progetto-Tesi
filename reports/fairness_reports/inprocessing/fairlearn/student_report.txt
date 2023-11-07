@@ -1,8 +1,8 @@
-lr_std DI: 0.33985594237695077
-lr_threshold DI: 0.9249999999999999
-rf_std DI: 0.36391293169937444
-rf_threshold DI: 0.8806744487678339
-svm_std DI: 0.44224009997656794
-svm_threshold DI: 0.5285714285714285
-xgb_std DI: 0.365447504302926
-xgb_threshold DI: 0.8125044154009183
+lr_std DI: 0.34
+lr_threshold DI: 0.925
+rf_std DI: 0.364
+rf_threshold DI: 0.795
+svm_std DI: 0.442
+svm_threshold DI: 0.892
+xgb_std DI: 0.365
+xgb_threshold DI: 0.771
