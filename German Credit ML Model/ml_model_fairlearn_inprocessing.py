@@ -51,28 +51,32 @@ def training_model(dataset):
         estimator=lr_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
-        prefit=True         
+        prefit=True,   
+        objective='accuracy_score'      
     )
 
     rf_threshold = ThresholdOptimizer(
         estimator=rf_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
-        prefit=True
+        prefit=True,
+        objective='accuracy_score'
     )
 
     svm_threshold = ThresholdOptimizer(
         estimator=svm_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
-        prefit=True
+        prefit=True,
+        objective='accuracy_score'
     )
 
     xgb_threshold = ThresholdOptimizer(
         estimator=xgb_model_pipeline,
         constraints='demographic_parity',
         predict_method='predict_proba',
-        prefit=True
+        prefit=True,
+        objective='accuracy_score'
     )
 
     X_train, X_test, y_train, y_test,g_train,g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
@@ -134,7 +138,7 @@ def training_model(dataset):
         else:
             open_type = 'a'
 
-        with open('./reports/fairness_reports/inprocessing/fairlearn/credit_model.txt',open_type) as f:
+        with open('./reports/fairness_reports/inprocessing/fairlearn/credit_report.txt',open_type) as f:
             f.write(f'{name}_sex DI: {sex_DI}\n')
 
     print(f'######### Salvataggio modelli #########')
