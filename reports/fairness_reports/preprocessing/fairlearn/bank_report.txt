@@ -1,0 +1,16 @@
+lr_std_marital DI: 0.61
+lr_std_education DI: 0.554
+lr_fair_marital DI: 0.725
+lr_fair_education DI: 0.496
+rf_std_marital DI: 0.677
+rf_std_education DI: 0.572
+rf_fair_marital DI: 0.841
+rf_fair_education DI: 0.759
+svm_std_marital DI: 0.591
+svm_std_education DI: 0.448
+svm_fair_marital DI: 0.0
+svm_fair_education DI: 0.0
+xgb_std_marital DI: 0.642
+xgb_std_education DI: 0.527
+xgb_fair_marital DI: 0.933
+xgb_fair_education DI: 0.839

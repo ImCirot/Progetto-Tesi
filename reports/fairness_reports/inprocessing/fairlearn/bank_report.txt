@@ -1,0 +1,16 @@
+lr_std_marital DI: 0.61
+lr_std_education DI: 0.554
+lr_threshold_marital DI: 0.983
+lr_threshold_education DI: 0.962
+rf_std_marital DI: 0.677
+rf_std_education DI: 0.572
+rf_threshold_marital DI: 0.917
+rf_threshold_education DI: 0.84
+svm_std_marital DI: 0.591
+svm_std_education DI: 0.448
+svm_threshold_marital DI: 0.974
+svm_threshold_education DI: 0.981
+xgb_std_marital DI: 0.642
+xgb_std_education DI: 0.527
+xgb_threshold_marital DI: 0.971
+xgb_threshold_education DI: 0.959
