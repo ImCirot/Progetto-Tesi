@@ -1,0 +1,8 @@
+Marital Mean difference pre inprocessing: 0.004
+Marital DI pre inprocessing: 1.036
+Marital Mean difference post inprocessing: 0.068
+Marital DI post inprocessing: 1.518
+Education Mean difference pre inprocessing: 0.035
+Education DI pre inprocessing: 1.405
+Education Mean difference post inprocessing: 0.027
+Education DI post inprocessing: 1.229
