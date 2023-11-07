@@ -15,7 +15,9 @@ from datetime import datetime
 def load_dataset():
     df = pd.read_csv('./Bank Marketing Dataset/dataset.csv')
 
-    training_and_testing_models(df)
+    for i in range(10):
+        print(f'########################### {i+1} esecuzione ###########################')
+        training_and_testing_models(df)
 
 def training_and_testing_models(df):
     feature_names = df.columns.tolist()
