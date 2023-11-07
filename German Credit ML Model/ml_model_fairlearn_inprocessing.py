@@ -15,9 +15,6 @@ from datetime import datetime
 def training_model(dataset):
     ## funzione che addestra il modello sul dataset utilizzando strategia KFold
 
-    # trasformiamo dataset in array per usare indici strategia KFold
-    df_array = np.asarray(dataset)
-
     # evidenziamo le features utili alla predizione
     features = dataset.columns.tolist()
 
@@ -102,7 +99,7 @@ def training_model(dataset):
     # plot_threshold_optimizer(svm_threshold)
     # plot_threshold_optimizer(xgb_threshold)
 
-    
+    print(f'######### Testing Fairness #########')
     lr_std_pred = lr_model_pipeline.predict(X)
     lr_threshold_pred = lr_threshold.predict(X,sensitive_features=g)
 

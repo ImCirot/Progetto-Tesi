@@ -110,6 +110,7 @@ def training_model(dataset):
     validate(svm_fair_model_pipeline,'svm',X_fair_test,y_fair_test)
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
 
+    print(f'######### Testing Fairness #########')
     lr_std_pred = lr_model_pipeline.predict(X)
     lr_fair_pred = lr_fair_model_pipeline.predict(X_fair)
 
