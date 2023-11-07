@@ -22,8 +22,10 @@ def load_dataset():
     ## funzione di load del dataset
 
     df = pd.read_csv('./Adult Dataset/adult_modificato.csv')
-
-    training_model(df)
+    
+    for i in range(10):
+        print(f'########################### {i+1} esecuzione ###########################')
+        training_model(df)
 
 def training_model(dataset):
     ## funzione di sviluppo del modello
