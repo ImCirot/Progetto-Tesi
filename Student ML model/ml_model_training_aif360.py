@@ -15,6 +15,7 @@ from aif360.algorithms.preprocessing import Reweighing
 from aif360.algorithms.inprocessing import *
 from fairlearn.reductions import DemographicParity
 import pickle
+from datetime import datetime
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
@@ -55,12 +56,6 @@ def training_testing_models(dataset):
     y_fair = fair_dataset['Target']
     weights = fair_dataset['weights']
 
-    # settiamo i nostri modelli sul dataset originale
-    lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
-    rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
-    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
-    xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic',random_state=42))
-
     post_lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
     post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
     post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
@@ -98,29 +93,13 @@ def training_testing_models(dataset):
 
         print(f'\n######### Inizio {i} iterazione #########\n')
 
-        X_train = X.iloc[train_index]
-        y_train = y.iloc[train_index]
-
         X_fair_train = X_fair.iloc[train_index]
         y_fair_train = y_fair.iloc[train_index]
         weights_train = weights.iloc[train_index]
 
-        X_test = X.iloc[test_index]
-        y_test = y.iloc[test_index]
-
         X_fair_test = X_fair.iloc[test_index]
         y_fair_test = y_fair.iloc[test_index]
         weights_test = weights.iloc[test_index]
-
-        lr_model_pipeline.fit(X_train,y_train.values.ravel())
-        rf_model_pipeline.fit(X_train,y_train.values.ravel())
-        svm_model_pipeline.fit(X_train,y_train.values.ravel())
-        xgb_model_pipeline.fit(X_train,y_train.values.ravel())
-
-        validate(lr_model_pipeline, i, "std_models", 'lr', X_test, y_test)
-        validate(rf_model_pipeline,i,'std_models','rf',X_test,y_test)
-        validate(svm_model_pipeline,i,'std_models','svm',X_test,y_test)
-        validate(xgb_model_pipeline,i,'std_models','xgb',X_test,y_test)
 
         lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=weights_train)
         rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=weights_train)
@@ -131,6 +110,20 @@ def training_testing_models(dataset):
         validate(rf_fair_model_pipeline,i,'fair_models','rf',X_fair_test,y_fair_test)
         validate(svm_fair_model_pipeline,i,'fair_models','svm',X_fair_test,y_fair_test)
         validate(xgb_fair_model_pipeline,i,'fair_models','xgb',X_fair_test,y_fair_test)
+        
+        print(f'\n######### Fine {i} iterazione #########\n')
+
+    i = 0
+
+    for train_index,test_index in kf.split(df_array):
+        i = i + 1  
+        print(f'\n######### Inizio {i} iterazione #########\n')
+
+        X_train = X.iloc[train_index]
+        y_train = y.iloc[train_index]
+
+        X_test = X.iloc[test_index]
+        y_test = y.iloc[test_index]
 
         processed_train = processing_fairness(dataset,X_train,y_train,sensible_features_names,i)
 
@@ -150,12 +143,7 @@ def training_testing_models(dataset):
         print(f'\n######### Fine {i} iterazione #########\n')
     
     print(f'######### Inizio stesura report finale #########')
-    with open('./reports/final_scores/aif360/student_scores.txt','w') as f:
-        f.write(f'LR std model: {str(lr_model_pipeline.score(X,y))}\n')
-        f.write(f'RF std model: {str(rf_model_pipeline.score(X,y))}\n')
-        f.write(f'SVM std model: {str(svm_model_pipeline.score(X,y))}\n')
-        f.write(f'XGB std model: {str(xgb_model_pipeline.score(X,y))}\n')
-        
+    with open('./reports/final_scores/aif360/student_scores.txt','w') as f:  
         f.write(f'LR fair model: {str(lr_fair_model_pipeline.score(X_fair,y_fair))}\n')
         f.write(f'RF fair model: {str(rf_fair_model_pipeline.score(X_fair,y_fair))}\n')
         f.write(f'SVM fair model: {str(svm_fair_model_pipeline.score(X_fair,y_fair))}\n')
@@ -167,13 +155,9 @@ def training_testing_models(dataset):
         f.write(f'XGB post model: {str(post_xgb_model_pipeline.score(X,y))}\n')
     
     print(f'######### Inizio salvataggio modelli #########')
-    pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_aif360_student_model.sav','wb'))
     pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_student_model.sav','wb'))
-    pickle.dump(rf_model_pipeline,open('./output_models/std_models/rf_aif360_student_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_aif360_student_model.sav','wb'))
-    pickle.dump(svm_model_pipeline,open('./output_models/std_models/svm_aif360_student_model.sav','wb'))
     pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_student_model.sav','wb'))
-    pickle.dump(xgb_model_pipeline,open('./output_models/std_models/xgb_aif360_student_model.sav','wb'))
     pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_aif360_student_model.sav','wb'))
     pickle.dump(post_lr_model_pipeline,open('./output_models/postop_models/lr_aif360_student_model.sav','wb'))
     pickle.dump(post_rf_model_pipeline,open('./output_models/postop_models/rf_aif360_student_model.sav','wb'))
@@ -623,4 +607,13 @@ def print_postop_metrics(metric, message, first_message=False):
         f.write(f"{message}: {metric}")
         f.write('\n')
 
+def print_time(time):
+    with open('./reports/time_reports/aif360/student_report.txt','w') as f:
+        f.write(f'Elapsed time: {time} seconds.\n')
+
+start = datetime.now()
 load_dataset()
+end = datetime.now()
+
+elapsed = (end - start).total_seconds()
+print_time(elapsed)

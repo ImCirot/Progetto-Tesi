@@ -203,7 +203,7 @@ def show_correlation_heatmap(dataset,title):
     plt.show()
 
 def print_time(time):
-    with open('./reports/time_reports/fairlearn/student_report.txt','w') as f:
+    with open('./reports/time_reports/fairlearn/student_preprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()
