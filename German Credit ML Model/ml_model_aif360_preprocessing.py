@@ -94,10 +94,10 @@ def training_and_testing_model(df):
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
 
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_fair_model_pipeline,open('./output_models/fair_models/lr_aif360_credit_model.sav','wb'))
-    pickle.dump(rf_fair_model_pipeline,open('./output_models/fair_models/rf_aif360_credit_model.sav','wb'))
-    pickle.dump(svm_fair_model_pipeline,open('./output_models/fair_models/svm_aif360_credit_model.sav','wb'))
-    pickle.dump(xgb_fair_model_pipeline,open('./output_models/fair_models/xgb_aif360_credit_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_aif360_credit_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/rf_aif360_credit_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/svm_aif360_credit_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/xgb_aif360_credit_model.sav','wb'))
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 
 def validate(ml_model,model_type,X_test,y_test,first=False):
@@ -117,7 +117,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/fair_models/aif360/credit_metrics_report.txt",open_type) as f:
+    with open(f"./reports/preprocessing_models/aif360/credit_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {accuracy}\n")
         f.write(f'ROC-AUC Score: {auc_score}\n')
