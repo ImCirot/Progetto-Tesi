@@ -16,8 +16,8 @@ from sklearn.svm import SVC
 import pickle
 import warnings
 from datetime import datetime
+from time import sleep
 
-@track_emissions(country_iso_code='ITA',offline=True)
 def load_dataset():
     ## funzione di load del dataset e drop features superflue
 
@@ -28,9 +28,17 @@ def load_dataset():
 
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
+        start = datetime.now()
         training_model(df)
+        end = datetime.now()
+        elapsed = (end - start).total_seconds()
+        print_time(elapsed,i)
+        if(i < 9):
+            print('########################### IDLE TIME START ###########################')
+            sleep(300)
+            print('########################### IDLE TIME FINISH ###########################')
 
-
+@track_emissions(country_iso_code='ITA',offline=True)
 def training_model(dataset):
     ## funzione di apprendimento del modello sul dataset
 
@@ -169,15 +177,14 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
         f.write('\n')
 
+def print_time(time,index):
+    if index == 0:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+
+    with open('./reports/time_reports/aif360/adult_inprocessing_report.txt',open_type) as f:
+        f.write(f'{index+1} iter. elapsed time: {time} seconds.\n')
+
 warnings.filterwarnings("ignore", category=RuntimeWarning)
-def print_time(time):
-    with open('./reports/time_reports/aif360/adult_inprocessing_report.txt','w') as f:
-        f.write(f'Elapsed time: {time} seconds.\n')
-
-
-start = datetime.now()
 load_dataset()
-end = datetime.now()
-
-elapsed = (end - start).total_seconds()
-print_time(elapsed)
