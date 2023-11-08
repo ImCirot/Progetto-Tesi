@@ -19,10 +19,11 @@ Sono necessari i seguenti PythonPackages:
 - CodeCarbon
 - FairLearn
 - XGBoost
+- Tensorflow-hub
 ```
 È possibile installare le ultime versioni di questi pacchetti tramite il comando:
 ```
-pip install numpy pandas seaborn matplotlib sklearn aif360 codecarbon fairlearn xgboost
+pip install numpy pandas seaborn matplotlib sklearn aif360 codecarbon fairlearn xgboost tensorflow-hub
 ```
 Per l'installazione di TensorFlow, riferirsi alla guida ufficiale [qui](https://www.tensorflow.org/install).
 
@@ -42,20 +43,25 @@ Il progetto è organizzato in diverse directory. Di seguito la struttura del pro
 - **Student ML Model**: contiene script python per realizzare modelli sulla base dello Student dropout and accademic success dataset, sfruttando ognuno una delle librerie di fairness citate.
 - **Gender Recognition Model**: contiene script python per realizzare modelli di gender recognition sfruttando il dataset UTKFace.
 - **reports**: contiene tutti i report generati dagli script durante la fase di training e testing.
-  - **fair_models**: contiene metriche di valutazione (matrice di confusione/accuracy/f1 score...) per i modelli addestrati su dataset che hanno subito operazioni di fairness.
+  - **preprocessing_models**: contiene metriche di valutazione (matrice di confusione/accuracy/f1 score...) per i modelli addestrati su dataset che hanno subito operazioni di fairness.
     - **aif360**: contiene metriche di valutazione sui modelli addestrati su dataset su cui è stata utilizzata la libreria aif360 per valutare fairness e mitigare possibili disciminazioni.
-      - **adult**: contiene metriche di valutazione sui modelli addestrati su dataset Adult.
-      - **bank**: contiene metriche di valutazione sui modelli addestrati su dataset Bank Marketing.
-      - **credit**: contiene metriche di valutazione sui modelli addestrati su dataset German Credit.
-      - **student**: contiene metriche di valutazione sui modelli addestrati su dataset Student dropout and accademic success.
     - **fairlearn**: contiene metriche di valutazione sui modelli addestrati su dataset su cui è stata utilizzata la libreria fairlearn per valutare fairness e mitigare possibili disciminazioni.
-      - **adult**: contiene metriche di valutazione sui modelli addestrati su dataset Adult.
-      - **bank**: contiene metriche di valutazione sui modelli addestrati su dataset Bank Marketing.
-      - **credit**: contiene metriche di valutazione sui modelli addestrati su dataset German Credit.
-      - **student**: contiene metriche di valutazione sui modelli addestrati su dataset Student dropout and accademic success.
   - **std_models**: stessa struttura della directory precedente. Contiene metriche di valutazione sui modelli addestrati sui dataset originali.
   - **fairness_reports**: contiene reports di metriche di fairness dei diversi datasets.
-  - **postop_models**: contiene metriche di valutazione dei modelli ottenuti tramite operazioni di postprocessing sui modelli standard.
+    - **preprocessing**: contiene tutti i reports di fairness ottenuti dalle operazioni di inprocessing effettuate
+      - **aif360**: contiene i reports delle operazioni di preprocessing della libreria AIF360
+      - **fairlearn**: contiene i reports delle operazioni di preprocessing della libreria Fairlearn
+      - **gender**: contiene i reports delle operazioni di preprocessing sui modelli di DL
+    - **inprocessing**: contiene tutti i reports di fairness ottenuti dalle operazioni di inprocessing effettuate
+      - **aif360**: contiene i reports delle operazioni di inprocessing della libreria AIF360
+      - **fairlearn**: contiene i reports delle operazioni di inprocessing della libreria Fairlearn
+  - **inprocessing_models**: contiene metriche di valutazione dei modelli ottenuti tramite operazioni di inprocessing sui modelli standard.
+    - **aif360**: contiene metriche di valutazione sui modelli addestrati su dataset su cui è stata utilizzata la libreria aif360 per valutare fairness e mitigare possibili disciminazioni.
+    - **fairlearn**: contiene metriche di valutazione sui modelli addestrati su dataset su cui è stata utilizzata la libreria fairlearn per valutare fairness e mitigare possibili disciminazioni.
+  - **time_reports**: contiene tutti i report di tempo di computazione richiesto per l'esecuzione dei vari scripts
+    - **aif360**: contiene informazioni sui tempi necessari ad eseguire gli scripts della libreria AIF360
+    - **fairlearn**:contiene informazioni sui tempi necessari ad eseguire gli scripts della libreria Fairlearn
+    - **gender**: contiene informazioni sui tempi necessari ad eseguire gli scripts dei modelli di DL
 - **output_models**: contiene tutti i modelli generati salvati.<br>
   **IMPORTANTE: cartella non presente nella repository per via delle dimensioni, è necessario crearla per evitare errori di directory mancante**
 - **emission.csv**: file generato dalla libreria CodeCarbon che contiene le valutazioni energetiche e di consumo di diverse esecuzioni di codice.
