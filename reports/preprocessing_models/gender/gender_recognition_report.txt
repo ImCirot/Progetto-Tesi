@@ -1,0 +1,6 @@
+EfficentNet Model
+Accuracy: 0.525
+AUC-ROC: 0.525
+ResnetV2 model
+Accuracy: 0.598
+AUC-ROC: 0.634
