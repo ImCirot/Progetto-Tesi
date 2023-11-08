@@ -1,7 +1,7 @@
 lr_std_sex DI: 0.528
 lr_fair_sex DI: 0.528
-rf_std_sex DI: 0.815
-rf_fair_sex DI: 0.894
+rf_std_sex DI: 0.9
+rf_fair_sex DI: 0.886
 svm_std_sex DI: 0.739
 svm_fair_sex DI: 0.776
 xgb_std_sex DI: 0.806

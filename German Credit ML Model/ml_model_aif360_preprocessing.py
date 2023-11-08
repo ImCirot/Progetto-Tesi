@@ -15,8 +15,8 @@ from sklearn.svm import SVC
 import pickle
 import xgboost as xgb
 from datetime import datetime
+from time import sleep
 
-@track_emissions(offline=True, country_iso_code="ITA")
 def load_dataset():
 
     df = pd.read_csv("./German Credit Dataset/dataset_modificato.csv")
@@ -30,8 +30,17 @@ def load_dataset():
 
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
+        start = datetime.now()
         training_and_testing_model(df)
-
+        end = datetime.now()
+        elapsed = (end - start).total_seconds()
+        print_time(elapsed,i)
+        if(i < 9):
+            print('########################### IDLE TIME START ###########################')
+            sleep(1)
+            print('########################### IDLE TIME FINISH ###########################')
+    
+@track_emissions(offline=True, country_iso_code="ITA")
 def training_and_testing_model(df):
     ## Funzione per il training e testing del modello scelto
 
@@ -193,14 +202,14 @@ def print_fairness_metrics(metric, message, first_message=False):
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
-def print_time(time):
-    with open('./reports/time_reports/aif360/credit_preprocessing_report.txt','w') as f:
-        f.write(f'Elapsed time: {time} seconds.\n')
+def print_time(time,index):
+    if index == 0:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+
+    with open('./reports/time_reports/aif360/credit_preprocessing_report.txt',open_type) as f:
+        f.write(f'{index+1} iter. elapsed time: {time} seconds.\n')
 
 # Chiamata funzione inizale di training e testing
-start = datetime.now()
 load_dataset()
-end = datetime.now()
-
-elapsed = (end - start).total_seconds()
-print_time(elapsed)

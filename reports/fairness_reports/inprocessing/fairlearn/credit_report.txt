@@ -1,8 +1,8 @@
 lr_std_sex DI: 0.528
-lr_threshold_sex DI: 0.87
-rf_std_sex DI: 0.815
-rf_threshold_sex DI: 0.91
+lr_threshold_sex DI: 0.881
+rf_std_sex DI: 0.9
+rf_threshold_sex DI: 0.945
 svm_std_sex DI: 0.739
-svm_threshold_sex DI: 0.936
+svm_threshold_sex DI: 0.879
 xgb_std_sex DI: 0.806
-xgb_threshold_sex DI: 0.955
+xgb_threshold_sex DI: 0.947
