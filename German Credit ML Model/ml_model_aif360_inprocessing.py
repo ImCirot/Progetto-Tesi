@@ -114,16 +114,16 @@ def processing_fairness(dataset,X_set,y_set,protected_features):
     print_inproc_metrics(metrics_og.mean_difference(),f'Gender Mean difference pre inprocessing',first_message=True)
     print_inproc_metrics(metrics_og.disparate_impact(),f'Gender DI pre inprocessing')
 
-    fair_postop_df = fair_classifier.fit_predict(dataset=aif_train)
+    fair_df = fair_classifier.fit_predict(dataset=aif_train)
 
-    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
 
     print_inproc_metrics(metrics_trans.mean_difference(),f'Gender Mean difference post inprocessing')
     print_inproc_metrics(metrics_trans.disparate_impact(),f'Gender DI post inprocessing')
 
-    postop_train = fair_postop_df.convert_to_dataframe()[0]
+    df_train = fair_df.convert_to_dataframe()[0]
     
-    return postop_train
+    return df_train
 
 def print_inproc_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
@@ -134,7 +134,7 @@ def print_inproc_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/inprocessing/aif360/credit_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/inprocessing/credit_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
@@ -153,7 +153,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = "a"
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f'./reports/inprocessing_models/aif360/credit_metrics_report.txt',open_type) as f:
+    with  open(f'./reports/inprocessing_models/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
         f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')

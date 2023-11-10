@@ -1,3 +1,0 @@
-EfficentNet Model
-Accuracy: 0.525
-AUC-ROC: 0.525

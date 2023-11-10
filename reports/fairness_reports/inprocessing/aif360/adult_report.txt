@@ -1,8 +1,0 @@
-Race Mean difference pre inprocessing: -0.105
-Race DI pre inprocessing: 0.599
-Race Mean difference post inprocessing: -0.052
-Race DI post inprocessing: 0.863
-Gender Mean difference pre inprocessing: -0.198
-Gender DI pre inprocessing: 0.365
-Gender Mean difference post inprocessing: 0.026
-Gender DI post inprocessing: 1.072

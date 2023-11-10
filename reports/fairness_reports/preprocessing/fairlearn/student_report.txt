@@ -1,8 +1,0 @@
-lr_std DI: 0.34
-lr_fair DI: 0.339
-rf_std DI: 0.364
-rf_fair DI: 0.366
-svm_std DI: 0.442
-svm_fair DI: 0.333
-xgb_std DI: 0.365
-xgb_fair DI: 0.36

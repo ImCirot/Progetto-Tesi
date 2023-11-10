@@ -7,7 +7,8 @@ from codecarbon import track_emissions
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline, Pipeline
 from aif360.metrics import BinaryLabelDatasetMetric
-from aif360.algorithms.preprocessing import Reweighing
+from aif360.algorithms.postprocessing import CalibratedEqOddsPostprocessing
+from aif360.sklearn.metrics import *
 from aif360.datasets import StandardDataset
 from aif360.datasets import BinaryLabelDataset
 from sklearn.ensemble import RandomForestClassifier
@@ -44,81 +45,67 @@ def load_dataset():
 def training_and_testing_model(df):
     ## Funzione per il training e testing del modello scelto
 
-    fair_dataset = df.copy(deep=True)
-
-    sample_weights = test_fairness(df)
-
-    fair_dataset['weights'] = sample_weights
-
     features = df.columns.tolist()
     features.remove('Target')
 
     target = ['Target']
 
     X = df[features]
-    X_fair = fair_dataset[features]
 
     y = df[target]
-    y_fair = df[target]
 
-    sample_weights = fair_dataset['weights']
 
     protected_attribute_names = [
         'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
     ]
 
-    lr_fair_model_pipeline = Pipeline(steps=[
-        ('scaler',StandardScaler()), 
-        ('model',LogisticRegression(class_weight={1:1,0:5}))
-    ])
-
-    rf_fair_model_pipeline = Pipeline(steps=[
-        ('scaler',StandardScaler()), 
-        ('model',RandomForestClassifier(class_weight={1:1,0:5}))
-    ])
-
-    svm_fair_model_pipeline = Pipeline(steps=[
-        ('scaler',StandardScaler()), 
-        ('model',SVC(probability=True,class_weight={1:1,0:5}))
-    ])
-
-    xgb_fair_model_pipeline = Pipeline(steps=[
-        ('scaler', StandardScaler()),
-        ('model', xgb.XGBClassifier(objective='binary:logistic', random_state=42))
-    ])
+    lr_model = pickle.load(open('./output_models/std_models/lr_credit_model.sav','rb'))
+    rf_model = pickle.load(open('./output_models/std_models/rf_credit_model.sav','rb'))
+    svm_model = pickle.load(open('./output_models/std_models/svm_credit_model.sav','rb'))
+    xgb_model = pickle.load(open('./output_models/std_models/xgb_credit_model.sav','rb'))
     
-    X_fair_train, X_fair_test, y_fair_train, y_fair_test, sample_weights_train, sample_weights_test = train_test_split(X_fair,y_fair,sample_weights,test_size=0.2,random_state=42)
-    
-    print(f'######### Training modelli #########')
-    lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=sample_weights_train)
-    rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=sample_weights_train)
-    svm_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=sample_weights_train)
-    xgb_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=sample_weights_train)
+    df_train, df_test, X_train,X_test,y_train,y_test = train_test_split(df,X,y,test_size=0.2,random_state=42)
+
+    lr_pred = lr_model.predict(X_test)
+    lr_df = X_test.copy(deep=True)
+    lr_df['Target'] = lr_pred
+
+    rf_pred = rf_model.predict(X_test)
+    print(accuracy_score(y_test,rf_pred))
+    rf_df = X_test.copy(deep=True)
+    rf_df['Target'] = rf_pred
+
+    svm_pred = svm_model.predict(X_test)
+    svm_df = X_test.copy(deep=True)
+    svm_df['Target'] = svm_pred
+
+    xgb_pred = xgb_model.predict(X_test)
+    xgb_df = X_test.copy(deep=True)
+    xgb_df['Target'] = xgb_pred
+
+    print(f'######### Testing Fairness #########')
+    lr_post_pred = test_fairness(df_test,lr_df)
+    rf_post_pred = test_fairness(df_test,rf_df)
+    svm_post_pred = test_fairness(df_test,svm_df)
+    xgb_post_pred = test_fairness(df_test,xgb_df)
+
 
     # Stampiamo metriche di valutazione per il modello
-    print(f'######### Testing modelli #########')
-    validate(lr_fair_model_pipeline,'lr', X_fair_test, y_fair_test,True)
-    validate(rf_fair_model_pipeline,'rf',X_fair_test,y_fair_test)
-    validate(svm_fair_model_pipeline,'svm',X_fair_test,y_fair_test)
-    validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
-
-    print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_aif360_credit_model.sav','wb'))
-    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/rf_aif360_credit_model.sav','wb'))
-    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/svm_aif360_credit_model.sav','wb'))
-    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/xgb_aif360_credit_model.sav','wb'))
+    print(f'######### Testing risultati #########')
+    validate(lr_model,lr_post_pred['Target'],'lr', X_test, y_test,True)
+    validate(rf_model,rf_post_pred['Target'],'rf',X_test,y_test)
+    validate(svm_model,svm_post_pred['Target'],'svm',X_test,y_test)
+    validate(xgb_model,xgb_post_pred['Target'],'xgb',X_test,y_test)
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 
-def validate(ml_model,model_type,X_test,y_test,first=False):
+def validate(model,fair_pred,model_type,X,y,first=False):
     ## funzione utile a calcolare le metriche di valutazione del modello passato in input
 
-    pred = ml_model.predict(X_test)
+    accuracy = accuracy_score(y_pred=fair_pred,y_true=y)
 
-    accuracy = ml_model.score(X_test,y_test)
+    y_proba = model.predict_proba(X)[::,1]
 
-    y_proba = ml_model.predict_proba(X_test)[::,1]
-
-    auc_score = roc_auc_score(y_test,y_proba)
+    auc_score = roc_auc_score(y,y_proba)
 
     if first:
         open_type = "w"
@@ -126,14 +113,16 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/preprocessing_models/credit_metrics_report.txt",open_type) as f:
+    with open(f"./reports/postprocessing_models/credit_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
         f.write('\n')
 
-def test_fairness(dataset):
+def test_fairness(dataset,pred):
     ## Funzione che presenta alcune metriche di fairness sul dataset utilizzato e applica processi per ridurre/azzerrare il bias
+
+     ## Funzione che presenta alcune metriche di fairness sul dataset utilizzato e applica processi per ridurre/azzerrare il bias
 
     # Attributi sensibili
     protected_attribute_names = [
@@ -142,6 +131,14 @@ def test_fairness(dataset):
 
     aif360_dataset = BinaryLabelDataset(
         df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_attribute_names,
+    )
+
+    aif360_pred = BinaryLabelDataset(
+        df=pred,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['Target'],
@@ -158,11 +155,12 @@ def test_fairness(dataset):
     # Calcolo della metrica sul dataset originale
     metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)    
     
-    # Utilizzamo un operatore di bilanciamento offerto dall'API AIF360
-    RW = Reweighing(privileged_groups=privileged_groups, unprivileged_groups=unprivileged_groups)
+
+    eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='weighted',privileged_groups=privileged_groups, unprivileged_groups=unprivileged_groups,seed=42)
 
     # Bilanciamo il dataset
-    dataset_transformed = RW.fit_transform(aif360_dataset)
+    eqoddspost.fit(dataset_true=aif360_dataset,dataset_pred=aif360_pred)
+    dataset_transformed =  eqoddspost.predict(aif360_pred,threshold=0.8)
     # Ricalcoliamo la metrica
     metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
 
@@ -183,9 +181,12 @@ def test_fairness(dataset):
     print_fairness_metrics(metric_transformed.num_positives(privileged=False),'Num. of positive instances of unpriv_group after')
 
     # otteniamo i nuovi pesi forniti dall'oggetto che mitigano i problemi di fairness
-    sample_weights = dataset_transformed.instance_weights
+    post_pred = dataset_transformed.convert_to_dataframe()[0]
 
-    return sample_weights
+    return post_pred
+
+
+
     
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
@@ -196,7 +197,7 @@ def print_fairness_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/preprocessing/credit_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/postprocessing/credit_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
@@ -206,7 +207,7 @@ def print_time(time,index):
     else:
         open_type = 'a'
 
-    with open('./reports/time_reports/aif360/credit_preprocessing_report.txt',open_type) as f:
+    with open('./reports/time_reports/aif360/credit_postrocessing_report.txt',open_type) as f:
         f.write(f'{index+1} iter. elapsed time: {time} seconds.\n')
 
 # Chiamata funzione inizale di training e testing
