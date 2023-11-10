@@ -183,7 +183,7 @@ def validate(ml_model,ml_type,X_test,y_test,first=False):
     else:
         open_type = "a"
 
-    with  open(f"./reports/preprocessing_models/aif360/bank_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/preprocessing_models/bank_metrics_report.txt",open_type) as f:
         f.write(f"{ml_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
@@ -199,7 +199,7 @@ def print_fairness_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/preprocessing/aif360/bank_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/preprocessing/bank_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
