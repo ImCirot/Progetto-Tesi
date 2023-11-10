@@ -243,14 +243,6 @@ def test_fairness(original_dataset):
     print_fairness_metrics(sex_metric_transformed.mean_difference(),'Sex mean_difference value after')
     print_fairness_metrics(sex_metric_transformed.disparate_impact(),'Sex DI value after')
 
-    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
-    print_fairness_metrics(sex_metric_original.num_positives(privileged=True),'(SEX) Num. of positive instances of priv_group before')
-    print_fairness_metrics(sex_metric_original.num_positives(privileged=False),'(SEX) Num. of positive instances of unpriv_group before')
-
-    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
-    print_fairness_metrics(sex_metric_transformed.num_positives(privileged=True),'(SEX) Num. of positive instances of priv_group after')
-    print_fairness_metrics(sex_metric_transformed.num_positives(privileged=False),'(SEX) Num. of positive instances of unpriv_group after')
-
     sample_weights = sex_dataset_transformed.instance_weights
 
     return sample_weights
