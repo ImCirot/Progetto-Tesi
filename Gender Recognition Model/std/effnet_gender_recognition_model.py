@@ -114,7 +114,7 @@ def training_and_testing_model(df):
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
     
-    model_name = "effnet_model.keras"
+    model_name = "effnet_model.h5"
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
         monitor="val_loss",
         mode="min",
@@ -157,6 +157,11 @@ def training_and_testing_model(df):
     plt.savefig('./figs/std_effnet_accuracy.png')
 
     effnet_loss, effnet_accuracy, effnet_auc = effnet_model.evaluate(validation_generator)
+
+    effnet_model.predict(validation_generator)
+    pred = np.argmax(pred,axis=1)
+    df_pred = pd.DataFrame(pred,columns=['gender'])
+    df_pred.to_csv('./reports/predictions/effnet_prediction.txt',index_label='ID')
 
     with open('./reports/std_models/effnet_gender_recognition_report.txt','w') as f:
         f.write('EfficentNet Model\n')

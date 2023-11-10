@@ -125,7 +125,7 @@ def training_and_testing_model(df):
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
 
-    model_name = "effnet_model.keras"
+    model_name = "effnet_model.h5"
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
         monitor="val_loss",
         mode="min",

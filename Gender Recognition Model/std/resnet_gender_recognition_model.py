@@ -114,7 +114,7 @@ def training_and_testing_model(df):
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
 
-    model_name = "resnet_v2_model.keras"
+    model_name = "resnet_v2_model.h5"
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
         monitor="val_loss",
         mode="min",
@@ -135,7 +135,7 @@ def training_and_testing_model(df):
     resnet_history = resnet_google.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
-        epochs=epochs, 
+        epochs=1, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
         callbacks=[checkpoint,reduce_lr]
@@ -156,6 +156,11 @@ def training_and_testing_model(df):
     plt.savefig('./figs/std_resnet_accuracy.png')
 
     resnet_loss, resnet_accuracy, resnet_auc = resnet_google.evaluate(validation_generator)
+
+    pred = resnet_google.predict(validation_generator)
+    pred = np.argmax(pred,axis=1)
+    df_pred = pd.DataFrame(pred,columns=['gender'])
+    df_pred.to_csv('./reports/predictions/resnet_prediction.txt',index_label='ID')
 
     with open('./reports/std_models/resnet_gender_recognition_report.txt','w') as f:
         f.write('ResnetV2 model\n')
