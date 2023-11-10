@@ -71,7 +71,6 @@ def training_and_testing_model(df):
     lr_df['Target'] = lr_pred
 
     rf_pred = rf_model.predict(X_test)
-    print(accuracy_score(y_test,rf_pred))
     rf_df = X_test.copy(deep=True)
     rf_df['Target'] = rf_pred
 
@@ -185,9 +184,6 @@ def test_fairness(dataset,pred):
 
     return post_pred
 
-
-
-    
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
 
