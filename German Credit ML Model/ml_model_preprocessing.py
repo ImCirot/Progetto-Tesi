@@ -173,14 +173,6 @@ def test_fairness(dataset):
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
     print_fairness_metrics(metric_transformed.mean_difference(),'Mean_difference value after')
     print_fairness_metrics(metric_transformed.disparate_impact(),'DI value after')
-    
-    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
-    print_fairness_metrics(metric_original.num_positives(privileged=True),'Num. of positive instances of priv_group before')
-    print_fairness_metrics(metric_original.num_positives(privileged=False),'Num. of positive instances of unpriv_group before')
-
-    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
-    print_fairness_metrics(metric_transformed.num_positives(privileged=True),'Num. of positive instances of priv_group after')
-    print_fairness_metrics(metric_transformed.num_positives(privileged=False),'Num. of positive instances of unpriv_group after')
 
     # otteniamo i nuovi pesi forniti dall'oggetto che mitigano i problemi di fairness
     sample_weights = dataset_transformed.instance_weights
