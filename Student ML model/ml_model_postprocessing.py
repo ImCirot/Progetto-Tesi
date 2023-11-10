@@ -186,7 +186,7 @@ def test_fairness(dataset,pred):
 
     sn_trans_dataset = eqoddspost.fit_predict(sn_aif_dataset,sn_aif_pred,threshold=0.8)
 
-    sn_metric_trans = BinaryLabelDatasetMetric(dataset=sn_trans_dataset,unprivileged_groups=sn_unprivileged_group, privileged_groups=sn_privileged_group)
+    sn_metric_trans = BinaryLabelDatasetMetric(dataset=sn_trans_dataset,unprivileged_groups=sn_privileged_group, privileged_groups=sn_unprivileged_group)
 
     print_fairness_metrics(sn_metric_trans.mean_difference(),'Special Needs mean_difference after')
     print_fairness_metrics(sn_metric_trans.disparate_impact(),"Special Needs DI after")
