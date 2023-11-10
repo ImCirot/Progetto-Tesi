@@ -1,3 +1,3 @@
 ResnetV2 model
-Accuracy: 0.586
-AUC-ROC: 0.623
+Accuracy: 0.545
+AUC-ROC: 0.571

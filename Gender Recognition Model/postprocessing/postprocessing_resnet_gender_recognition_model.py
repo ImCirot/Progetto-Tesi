@@ -5,6 +5,12 @@ import pandas as pd
 import os
 from codecarbon import track_emissions
 import glob
+from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.datasets import BinaryLabelDataset
+from aif360.datasets import StandardDataset
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from aif360.algorithms.postprocessing import CalibratedEqOddsPostprocessing
 import tensorflow_hub as hub
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -60,26 +66,26 @@ def load_dataset():
     # creiamo un dataframe contenente il nome del file, l'età, genere e razza di ogni sample all'interno del dataset
     std_df = pd.DataFrame(data={"filename": data, "age": age_label, "gender": gender_label, 'race': race_label})
 
-    # addestriamo più modelli standard sul dataset originale
-    training_and_testing_model(std_df)
+    prediction = pd.read_csv('./reports/predictions/resnet_prediction.txt')
 
+    prediction = prediction.drop('ID',axis=1)
 
-def training_and_testing_model(df):
-    ## funzione di apprendimento e validazione del modello
+    # valutiamo la postprocessing modello sul dataset 
+    postop_model(std_df,prediction)
+
+def postop_model(df,prediction):
+    ## funzione di postprocessing dei risultati dle modello
 
     # setting dimensioni immagine
     image_size = (48, 48)
     
     # setting dimensione del batch per ogni iterazione
     batch_size = 64
-    
-    # setting numero di epoche richieste
-    # (numero di iterazioni per cui viene ripetuto training e testing del modello)
-    epochs = 15
 
     # settiamo l'oggetto offerto da TensorFLow che ci permette di caricare immagini e creare un dataset su quest'ultime
     # settiamo la divisione come 80/20 training/testing come standard
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2, horizontal_flip=True)
+    
 
     # creiamo il dataset di training del modello
     train_generator = train_datagen.flow_from_dataframe(
@@ -89,7 +95,7 @@ def training_and_testing_model(df):
         target_size=image_size,
         batch_size=batch_size,
         subset='training',
-        class_mode='categorical'
+        class_mode='categorical',
     )
 
     # creiamo il dataset di testing del modello
@@ -100,75 +106,89 @@ def training_and_testing_model(df):
         target_size=image_size,
         batch_size=batch_size,
         subset='validation',
-        class_mode='categorical'
+        class_mode='categorical',
     )
 
-    model_URL = "https://www.kaggle.com/models/google/resnet-v2/frameworks/TensorFlow2/variations/50-classification/versions/2"
-    resnet_google = tf.keras.Sequential(
-        [
-            tf.keras.layers.Rescaling(1./255, input_shape=(48,48, 3)),
-            hub.KerasLayer(model_URL),
-            tf.keras.layers.Dense(2, activation="softmax")
-        ])
+    features = df.columns.tolist()
+    features.remove('gender') 
 
-    # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+    df_train = df[df['filename'].isin(train_generator.filenames)]
+    df_test = df[df['filename'].isin(validation_generator.filenames)]
 
-    model_name = "resnet_v2_model.h5"
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        monitor="val_loss",
-        mode="min",
-        save_best_only = True,
-        verbose=1,
-        filepath=f'./output_models/std_models/{model_name}'
-    )
+    X_train = df_train[features]
+    y_train = df_train['gender'].astype(int)
 
-    earlystopping = tf.keras.callbacks.EarlyStopping(
-        monitor='val_loss',min_delta = 0, patience = 5,
-        verbose = 1, restore_best_weights=True
-        )
+    X_test = df_test[features]
+    y_test = df_test['gender'].astype(int)
 
-    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
-        monitor='val_loss', factor=0.2,
-        patience=5, min_lr=0.0001)
+    prediction[features] = df_test[features]
 
-    resnet_history = resnet_google.fit(
-        train_generator, 
-        steps_per_epoch=train_generator.samples//batch_size, 
-        epochs=epochs, 
-        validation_data=validation_generator, 
-        validation_steps=validation_generator.samples//batch_size,
-        callbacks=[checkpoint,reduce_lr]
-    )
+    fair_pred = test_fairness(df_test,prediction)
 
-    plt.figure(figsize=(20,8))
-    plt.plot(resnet_history.history['auc'])
-    plt.title('model AUC')
-    plt.ylabel('AUC')
-    plt.xlabel('epoch')
-    plt.savefig('./figs/std_resnet_roc-auc.png')
-
-    plt.figure(figsize=(20,8))
-    plt.plot(resnet_history.history['accuracy'])
-    plt.title('model accuracy')
-    plt.ylabel('accuracy')
-    plt.xlabel('epoch')
-    plt.savefig('./figs/std_resnet_accuracy.png')
-
-    resnet_loss, resnet_accuracy, resnet_auc = resnet_google.evaluate(validation_generator)
-
-    pred = resnet_google.predict(validation_generator)
-    pred = np.argmax(pred,axis=1)
-    df_pred = pd.DataFrame(pred,columns=['gender'])
-    df_pred.to_csv('./reports/predictions/resnet_prediction.txt',index_label='ID')
-
-    with open('./reports/std_models/resnet_gender_recognition_report.txt','w') as f:
+    resnet_accuracy = accuracy_score(y_true=y_test,y_pred=fair_pred['gender'])
+    
+    with open('./reports/postprocessing_models/resnet_gender_recognition_report.txt','w') as f:
         f.write('ResnetV2 model\n')
         f.write(f"Accuracy: {round(resnet_accuracy,3)}\n")
-        f.write(f'AUC-ROC: {round(resnet_auc,3)}\n')
+
+def test_fairness(dataset,pred):
+    ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
+
+    dataset = dataset.drop('filename',axis=1)
+    pred = pred.drop('filename',axis=1)
+
+    dataset= dataset.astype(int)
+    pred = pred.astype(int)
+
+    race_aif_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=0,
+        unfavorable_label=1,
+        label_names=['gender'],
+        protected_attribute_names=['race'],
+    )
+
+    race_aif_pred = BinaryLabelDataset(
+        df=pred,
+        favorable_label=0,
+        unfavorable_label=1,
+        label_names=['gender'],
+        protected_attribute_names=['race'],
+    )
+
+    race_privileged_groups = [{'race': 0},{'race':2},{'race':3}]
+    race_unprivileged_groups = [{'race': 1},{'race':4}]
+
+    race_metric_original = BinaryLabelDatasetMetric(dataset=race_aif_dataset, privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups)
+    print_metrics('mean_difference before', race_metric_original.mean_difference(),first_message=True)
+    print_metrics('DI before', race_metric_original.disparate_impact())
+
+    eqoods = CalibratedEqOddsPostprocessing(unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups,cost_constraint='fpr',seed=42)
+
+    race_transformed = eqoods.fit_predict(race_aif_dataset,race_aif_pred,threshold=0.8)
+
+    race_metric_transformed = BinaryLabelDatasetMetric(dataset=race_transformed, privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups)
+
+    print_metrics('mean_difference after', race_metric_transformed.mean_difference())
+    print_metrics('DI after', race_metric_transformed.disparate_impact())
+
+    fair_dataset = race_transformed.convert_to_dataframe()[0]
+
+    fair_dataset = fair_dataset.astype(int)
+
+    return fair_dataset
+
+def print_metrics(message,metric,first_message=False):
+    if first_message:
+        open_type = 'w'
+    else:
+        open_type = 'a'
+
+    with open('./reports/fairness_reports/postprocessing/resnet_gender_report.txt',open_type) as f:
+        f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
-    with open('./reports/time_reports/gender/std_resnet_report.txt','w') as f:
+    with open('./reports/time_reports/gender/resnet_postprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()

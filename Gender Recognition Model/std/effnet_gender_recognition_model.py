@@ -136,7 +136,7 @@ def training_and_testing_model(df):
     effnet_history = effnet_model.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
-        epochs=epochs, 
+        epochs=1, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
         callbacks=[checkpoint,reduce_lr]
@@ -158,7 +158,7 @@ def training_and_testing_model(df):
 
     effnet_loss, effnet_accuracy, effnet_auc = effnet_model.evaluate(validation_generator)
 
-    effnet_model.predict(validation_generator)
+    pred = effnet_model.predict(validation_generator)
     pred = np.argmax(pred,axis=1)
     df_pred = pd.DataFrame(pred,columns=['gender'])
     df_pred.to_csv('./reports/predictions/effnet_prediction.txt',index_label='ID')
