@@ -114,8 +114,8 @@ def training_and_testing_model(df):
         weight_col='weights'
     )
 
-    model_URL = "https://www.kaggle.com/models/tensorflow/efficientnet/frameworks/TensorFlow2/variations/b7-classification/versions/1"
-    effnet_model = tf.keras.Sequential(
+    model_URL = "https://www.kaggle.com/models/google/resnet-v2/frameworks/TensorFlow2/variations/50-classification/versions/2"
+    resnet_google = tf.keras.Sequential(
         [
             tf.keras.layers.Rescaling(1./255, input_shape=(48,48, 3)),
             hub.KerasLayer(model_URL),
@@ -123,9 +123,9 @@ def training_and_testing_model(df):
         ])
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+    resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
 
-    model_name = "effnet_model.h5"
+    model_name = "resnet_v2_model.keras"
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
         monitor="val_loss",
         mode="min",
@@ -142,39 +142,36 @@ def training_and_testing_model(df):
     reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
         monitor='val_loss', factor=0.2,
         patience=5, min_lr=0.0001)
-    
-    # addestriamo il modello EfficientNet
-    effnet_history = effnet_model.fit(
+
+    resnet_history = resnet_google.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
-        epochs=1, 
+        epochs=epochs, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
         callbacks=[checkpoint,reduce_lr]
     )
 
     plt.figure(figsize=(20,8))
-    plt.plot(effnet_history.history['auc'])
+    plt.plot(resnet_history.history['auc'])
     plt.title('model AUC')
     plt.ylabel('AUC')
     plt.xlabel('epoch')
-    plt.legend()
-    plt.savefig('./figs/fair_effnet_roc-auc.png')
+    plt.savefig('./figs/preprocessing_resnet_roc-auc.png')
 
     plt.figure(figsize=(20,8))
-    plt.plot(effnet_history.history['accuracy'])
+    plt.plot(resnet_history.history['accuracy'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
-    plt.legend()
-    plt.savefig('./figs/fair_effnet_accuracy.png')
+    plt.savefig('./figs/preprocessing_resnet_accuracy.png')
 
-    effnet_loss, effnet_accuracy, effnet_auc = effnet_model.evaluate(validation_generator)
+    resnet_loss, resnet_accuracy, resnet_auc = resnet_google.evaluate(validation_generator)
 
-    with open('./reports/preprocessing_models/gender/effnet_gender_recognition_report.txt','w') as f:
-        f.write('EfficentNet Model\n')
-        f.write(f"Accuracy: {round(effnet_accuracy,3)}\n")
-        f.write(f'AUC-ROC: {round(effnet_auc,3)}\n')
+    with open('./reports/preprocessing_models/resnet_gender_recognition_report.txt','w') as f:
+        f.write('ResnetV2 model\n')
+        f.write(f"Accuracy: {round(resnet_accuracy,3)}\n")
+        f.write(f'AUC-ROC: {round(resnet_auc,3)}\n')
 
 def test_fairness(dataset):
     ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
@@ -220,11 +217,11 @@ def print_metrics(message,metric,first_message=False):
     else:
         open_type = 'a'
 
-    with open('./reports/fairness_reports/preprocessing/gender/effnet_gender_report.txt',open_type) as f:
+    with open('./reports/fairness_reports/preprocessing/resnet_gender_report.txt',open_type) as f:
         f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
-    with open('./reports/time_reports/gender/effnet_fair_report.txt','w') as f:
+    with open('./reports/time_reports/gender/resnet_fair_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()
