@@ -114,6 +114,24 @@ def training_and_testing_model(df):
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
     
+    model_name = "effnet_model.keras"
+    checkpoint = tf.keras.callbacks.ModelCheckpoint(
+        monitor="val_loss",
+        mode="min",
+        save_best_only = True,
+        verbose=1,
+        filepath=f'./output_models/std_models/{model_name}'
+    )
+
+    earlystopping = tf.keras.callbacks.EarlyStopping(
+        monitor='val_loss',min_delta = 0, patience = 5,
+        verbose = 1, restore_best_weights=True
+        )
+
+    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
+        monitor='val_loss', factor=0.2,
+        patience=5, min_lr=0.0001)
+    
     # addestriamo il modello EfficientNet
     effnet_history = effnet_model.fit(
         train_generator, 
@@ -121,6 +139,7 @@ def training_and_testing_model(df):
         epochs=epochs, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
+        callbacks=[checkpoint,reduce_lr]
     )
 
     plt.figure(figsize=(20,8))
@@ -138,8 +157,6 @@ def training_and_testing_model(df):
     plt.savefig('./figs/std_effnet_accuracy.png')
 
     effnet_loss, effnet_accuracy, effnet_auc = effnet_model.evaluate(validation_generator)
-
-    effnet_model.save('./output_models/std_models/effnet_model.keras')
 
     with open('./reports/std_models/effnet_gender_recognition_report.txt','w') as f:
         f.write('EfficentNet Model\n')
