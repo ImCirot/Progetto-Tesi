@@ -143,7 +143,7 @@ def training_model(dataset):
 
         with open('./reports/fairness_reports/postprocessing/fairlearn/credit_report.txt',open_type) as f:
             f.write(f'{name}_sex DI: {round(sex_DI,3)}\n')
-            f.write(f'{name}_ed_odds_diff: {round(sex_eq_odss,3)}\n')
+            f.write(f'{name}_eq_odds_diff: {round(sex_eq_odss,3)}\n')
             f.write(f'{name}_mean_diff: {round(sex_mean_diff,3)}\n')
 
     print(f'######### Salvataggio modelli #########')
