@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from aif360.datasets import BinaryLabelDataset, StandardDataset
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from aif360.algorithms.inprocessing import MetaFairClassifier
 import numpy as np
 import pandas as pd
@@ -15,6 +15,7 @@ import pickle
 import xgboost as xgb
 from datetime import datetime
 from time import sleep
+import warnings
 
 def load_dataset():
 
@@ -46,6 +47,12 @@ def training_and_testing_models(df):
     X = df[feature_names]
     y = df['y']
 
+    lr_model_pipeline = pickle.load(open('./output_models/std_models/lr_bank_model.sav','rb'))
+    rf_model_pipeline = pickle.load(open('./output_models/std_models/rf_bank_model.sav','rb'))
+    svm_model_pipeline = pickle.load(open('./output_models/std_models/svm_bank_model.sav','rb'))
+    xgb_model_pipeline = pickle.load(open('./output_models/std_models/xgb_bank_model.sav','rb'))
+
+
     post_lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
     post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
     post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
@@ -69,6 +76,44 @@ def training_and_testing_models(df):
     validate(post_rf_model_pipeline,'rf',X_test,y_test)
     validate(post_svm_model_pipeline,'svm',X_test,y_test)
     validate(post_xgb_model_pipeline,'xgb',X_test,y_test)
+
+    print(f'######### Testing Fairness #########')
+    X_test_df = X_test.copy(deep=True)
+    X_test_df['y'] = y_test
+
+    lr_inproc_pred = X_test.copy(deep=True)
+    lr_inproc_pred['y'] = post_lr_model_pipeline.predict(X_test)
+
+    rf_inproc_pred =  X_test.copy(deep=True)
+    rf_inproc_pred['y'] = post_rf_model_pipeline.predict(X_test)
+
+    svm_inproc_pred =  X_test.copy(deep=True)
+    svm_inproc_pred['y'] = post_svm_model_pipeline.predict(X_test)
+
+    xgb_inproc_pred =  X_test.copy(deep=True)
+    xgb_inproc_pred['y'] = post_xgb_model_pipeline.predict(X_test)
+
+    lr_pred = X_test.copy(deep=True)
+    lr_pred['y'] = lr_model_pipeline.predict(X_test)
+
+    rf_pred =  X_test.copy(deep=True)
+    rf_pred['y'] = rf_model_pipeline.predict(X_test)
+
+    svm_pred =  X_test.copy(deep=True)
+    svm_pred['y'] = svm_model_pipeline.predict(X_test)
+
+    xgb_pred =  X_test.copy(deep=True)
+    xgb_pred['y'] = xgb_model_pipeline.predict(X_test)
+
+    eq_odds_fair_report(X_test_df,lr_pred,'lr')
+    eq_odds_fair_report(X_test_df,rf_pred,'rf')
+    eq_odds_fair_report(X_test_df,svm_pred,'svm')
+    eq_odds_fair_report(X_test_df,xgb_pred,'xgb')
+
+    eq_odds_fair_report(X_test_df,lr_inproc_pred,'lr_inprocessing')
+    eq_odds_fair_report(X_test_df,rf_inproc_pred,'rf_inprocessing')
+    eq_odds_fair_report(X_test_df,svm_inproc_pred,'svm_inprocessing')
+    eq_odds_fair_report(X_test_df,xgb_inproc_pred,'xgb_inprocessing')
 
 
     print(f'######### Salvataggio modelli #########')
@@ -127,6 +172,63 @@ def processing_fairness(dataset,X_set,y_set,protected_features):
     
     return postop_train
 
+def eq_odds_fair_report(dataset,prediction,name):
+    # Attributi sensibili
+    maritial_features = [
+        'marital_divorced','marital_married','marital_single'
+    ]
+
+    education_features = [
+        'education_primary','education_secondary','education_tertiary'
+    ]
+
+    marital_df_aif360 = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=maritial_features
+    )
+
+    marital_pred_aif360 = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=maritial_features
+    )
+
+    marital_privileged_groups = [{'marital_single': 1},{'marital_married': 1}]
+    marital_unprivileged_groups = [{'marital_divorced': 1}]
+
+    metrics = ClassificationMetric(dataset=marital_df_aif360,classified_dataset=marital_pred_aif360,privileged_groups=marital_privileged_groups,unprivileged_groups=marital_unprivileged_groups)
+
+    print_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Marital Eq. Odds difference')
+
+    ed_df_aif360 = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=education_features,
+    )
+
+    ed_pred_aif360 = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=education_features,
+    )
+
+    ed_privileged_groups = [{'education_primary': 1}]
+    ed_unprivileged_groups = [{'education_primary': 0}]
+
+    metrics = ClassificationMetric(dataset=ed_df_aif360,classified_dataset=ed_pred_aif360,privileged_groups=ed_privileged_groups,unprivileged_groups=ed_unprivileged_groups)
+
+    print_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Education Eq. Odds difference')
+    
+
 def validate(ml_model,model_type,X_test,y_test,first=False):
     pred = ml_model.predict(X_test)
 
@@ -142,7 +244,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = 'a'
 
     # scriviamo su un file le metriche di valutazione ottenute
-    with open(f'./reports/inprocessing_models/bank_metrics_report.txt',open_type) as f:
+    with open(f'./reports/inprocessing_models/aif360/bank_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
         f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
@@ -157,7 +259,7 @@ def print_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/inprocessing/bank_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/inprocessing/aif360/bank_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
@@ -170,4 +272,5 @@ def print_time(time,index):
     with open('./reports/time_reports/aif360/bank_inprocessing_report.txt',open_type) as f:
         f.write(f'{index+1} elapsed time: {time} seconds.\n')
 
+warnings.filterwarnings('ignore',category=RuntimeWarning)
 load_dataset()

@@ -1,0 +1,24 @@
+Marital Mean difference pre inprocessing: 0.004
+Marital DI pre inprocessing: 1.036
+Marital Mean difference post inprocessing: 0.068
+Marital DI post inprocessing: 1.518
+Education Mean difference pre inprocessing: 0.035
+Education DI pre inprocessing: 1.405
+Education Mean difference post inprocessing: 0.027
+Education DI post inprocessing: 1.229
+lr_model Marital Eq. Odds difference: 0.048
+lr_model Education Eq. Odds difference: 0.0
+rf_model Marital Eq. Odds difference: -0.027
+rf_model Education Eq. Odds difference: 0.0
+svm_model Marital Eq. Odds difference: 0.058
+svm_model Education Eq. Odds difference: 0.0
+xgb_model Marital Eq. Odds difference: 0.028
+xgb_model Education Eq. Odds difference: 0.0
+lr_inprocessing_model Marital Eq. Odds difference: 0.144
+lr_inprocessing_model Education Eq. Odds difference: 0.0
+rf_inprocessing_model Marital Eq. Odds difference: 0.147
+rf_inprocessing_model Education Eq. Odds difference: 0.0
+svm_inprocessing_model Marital Eq. Odds difference: 0.155
+svm_inprocessing_model Education Eq. Odds difference: 0.0
+xgb_inprocessing_model Marital Eq. Odds difference: 0.142
+xgb_inprocessing_model Education Eq. Odds difference: 0.0

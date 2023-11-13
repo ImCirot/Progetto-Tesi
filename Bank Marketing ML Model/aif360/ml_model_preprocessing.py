@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from aif360.datasets import BinaryLabelDataset, StandardDataset
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from aif360.algorithms.preprocessing import Reweighing
 import numpy as np
 import pandas as pd
@@ -75,7 +75,7 @@ def training_and_testing_models(df):
         ('model', xgb.XGBClassifier(objective='binary:logistic', random_state=42))
     ])
 
-
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
     X_fair_train, X_fair_test, y_fair_train, y_fair_test, sample_weights_train, sample_weights_test = train_test_split(X,y,sample_weights,test_size=0.2,random_state=42)
 
     print(f'######### Training modelli #########')
@@ -89,6 +89,58 @@ def training_and_testing_models(df):
     validate(rf_fair_model_pipeline,'rf',X_fair_test,y_fair_test)
     validate(svm_fair_model_pipeline,'svm',X_fair_test,y_fair_test)
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
+
+    print('######### Testing Fairness #########')
+    X_test_fair_df = X_fair_test.copy(deep=True)
+    X_test_fair_df['y'] = y_fair_test
+
+    X_test_df = X_test.copy(deep=True)
+    X_test_df['y'] = y_test
+
+    lr_fair_pred = X_fair_test.copy(deep=True)
+    lr_fair_pred['y'] = lr_fair_model_pipeline.predict(X_fair_test)
+
+    rf_fair_pred =  X_fair_test.copy(deep=True)
+    rf_fair_pred['y'] = rf_fair_model_pipeline.predict(X_fair_test)
+
+    svm_fair_pred =  X_fair_test.copy(deep=True)
+    svm_fair_pred['y'] = svm_fair_model_pipeline.predict(X_fair_test)
+
+    xgb_fair_pred =  X_fair_test.copy(deep=True)
+    xgb_fair_pred['y'] = xgb_fair_model_pipeline.predict(X_fair_test)
+
+    lr_pred = X_test_df.copy(deep=True)
+    lr_pred['y'] = lr_fair_model_pipeline.predict(X_test)
+
+    rf_pred =  X_test_df.copy(deep=True)
+    rf_pred['y'] = rf_fair_model_pipeline.predict(X_test)
+
+    svm_pred =  X_test_df.copy(deep=True)
+    svm_pred['y'] = svm_fair_model_pipeline.predict(X_test)
+
+    xgb_pred =  X_test_df.copy(deep=True)
+    xgb_pred['y'] = xgb_fair_model_pipeline.predict(X_test)
+
+    std_predictions = {
+        'lr_std':lr_pred,
+        'rf_std': rf_pred,
+        'svm_std': svm_pred,
+        'xgb_std': xgb_pred,
+    }
+
+    fair_prediction = {
+        'lr_fair': lr_fair_pred,
+        'rf_fair':rf_fair_pred,
+        'svm_fair': svm_fair_pred,
+        'xgb_fair': xgb_fair_pred
+    }
+
+
+    for name,prediction in std_predictions.items():
+        eq_odds_fair_report(X_test_df,prediction,name)
+
+    for name,prediction in fair_prediction.items():
+        eq_odds_fair_report(X_test_fair_df,prediction,name)
 
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_aif360_bank_model.sav','wb'))
@@ -168,6 +220,62 @@ def test_fairness(dataset):
 
     return sample_weights
 
+def eq_odds_fair_report(dataset,prediction,name):
+    # Attributi sensibili
+    maritial_features = [
+        'marital_divorced','marital_married','marital_single'
+    ]
+
+    education_features = [
+        'education_primary','education_secondary','education_tertiary'
+    ]
+
+    marital_df_aif360 = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=maritial_features
+    )
+
+    marital_pred_aif360 = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=maritial_features
+    )
+
+    marital_privileged_groups = [{'marital_single': 1},{'marital_married': 1}]
+    marital_unprivileged_groups = [{'marital_divorced': 1}]
+
+    metrics = ClassificationMetric(dataset=marital_df_aif360,classified_dataset=marital_pred_aif360,privileged_groups=marital_privileged_groups,unprivileged_groups=marital_unprivileged_groups)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Marital Eq. Odds difference')
+
+    ed_df_aif360 = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=education_features,
+    )
+
+    ed_pred_aif360 = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=education_features,
+    )
+
+    ed_privileged_groups = [{'education_primary': 1}]
+    ed_unprivileged_groups = [{'education_primary': 0}]
+
+    metrics = ClassificationMetric(dataset=ed_df_aif360,classified_dataset=ed_pred_aif360,privileged_groups=ed_privileged_groups,unprivileged_groups=ed_unprivileged_groups)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Education Eq. Odds difference')
+    
 
 def validate(ml_model,ml_type,X_test,y_test,first=False):
     pred = ml_model.predict(X_test)
@@ -183,7 +291,7 @@ def validate(ml_model,ml_type,X_test,y_test,first=False):
     else:
         open_type = "a"
 
-    with  open(f"./reports/preprocessing_models/bank_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/preprocessing_models/aif360/bank_metrics_report.txt",open_type) as f:
         f.write(f"{ml_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
@@ -199,7 +307,7 @@ def print_fairness_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/preprocessing/bank_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/preprocessing/aif360/bank_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 

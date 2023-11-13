@@ -1,0 +1,48 @@
+lr_model Marital DI before: 0.979
+lr_model Marital mean_difference before: -0.003
+lr_model Marital DI after: 1.031
+lr_model Marital mean_difference after: 0.002
+lr_model Ed. DI before: 1.479
+lr_model Ed. Mean_difference before: 0.041
+lr_model Ed. DI after: 0.525
+lr_model Ed. Mean_difference after: -0.032
+rf_model Marital DI before: 0.979
+rf_model Marital mean_difference before: -0.003
+rf_model Marital DI after: 0.939
+rf_model Marital mean_difference after: -0.005
+rf_model Ed. DI before: 1.479
+rf_model Ed. Mean_difference before: 0.041
+rf_model Ed. DI after: 0.521
+rf_model Ed. Mean_difference after: -0.043
+svm_model Marital DI before: 0.979
+svm_model Marital mean_difference before: -0.003
+svm_model Marital DI after: 1.176
+svm_model Marital mean_difference after: 0.011
+svm_model Ed. DI before: 1.479
+svm_model Ed. Mean_difference before: 0.041
+svm_model Ed. DI after: 0.408
+svm_model Ed. Mean_difference after: -0.04
+xgb_model Marital DI before: 0.979
+xgb_model Marital mean_difference before: -0.003
+xgb_model Marital DI after: 1.086
+xgb_model Marital mean_difference after: 0.009
+xgb_model Ed. DI before: 1.479
+xgb_model Ed. Mean_difference before: 0.041
+xgb_model Ed. DI after: 0.519
+xgb_model Ed. Mean_difference after: -0.053
+lr_model Marital Eq. Odds difference: 0.048
+lr_model Education Eq. Odds difference: 0.0
+rf_model Marital Eq. Odds difference: -0.027
+rf_model Education Eq. Odds difference: 0.0
+svm_model Marital Eq. Odds difference: 0.058
+svm_model Education Eq. Odds difference: 0.0
+xgb_model Marital Eq. Odds difference: 0.028
+xgb_model Education Eq. Odds difference: 0.0
+lr_post_model Marital Eq. Odds difference: 0.023
+lr_post_model Education Eq. Odds difference: 0.0
+rf_post_model Marital Eq. Odds difference: -0.022
+rf_post_model Education Eq. Odds difference: 0.0
+svm_post_model Marital Eq. Odds difference: 0.052
+svm_post_model Education Eq. Odds difference: 0.0
+xgb_post_model Marital Eq. Odds difference: 0.019
+xgb_post_model Education Eq. Odds difference: 0.0

@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from aif360.datasets import BinaryLabelDataset, StandardDataset
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from aif360.algorithms.postprocessing import CalibratedEqOddsPostprocessing
 import numpy as np
 import pandas as pd
@@ -19,7 +19,7 @@ from time import sleep
 def load_dataset():
     df = pd.read_csv('./Bank Marketing Dataset/dataset.csv')
 
-    for i in range(10):
+    for i in range(1):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
         training_and_testing_models(df)
@@ -68,10 +68,20 @@ def training_and_testing_models(df):
     xgb_df['y'] = xgb_pred
 
     print(f'######### Testing Fairness #########')
-    lr_post_pred = test_fairness(df_test,lr_df)
-    rf_post_pred = test_fairness(df_test,rf_df)
-    svm_post_pred = test_fairness(df_test,svm_df)
-    xgb_post_pred = test_fairness(df_test,xgb_df)
+    lr_post_pred = test_fairness(df_test,lr_df,'lr',True)
+    rf_post_pred = test_fairness(df_test,rf_df,'rf')
+    svm_post_pred = test_fairness(df_test,svm_df,'svm')
+    xgb_post_pred = test_fairness(df_test,xgb_df,'xgb')
+
+    eq_odds_fair_report(df_test,lr_df,'lr')
+    eq_odds_fair_report(df_test,rf_df,'rf')
+    eq_odds_fair_report(df_test,svm_df,'svm')
+    eq_odds_fair_report(df_test,xgb_df,'xgb')
+
+    eq_odds_fair_report(df_test,lr_post_pred,'lr_post')
+    eq_odds_fair_report(df_test,rf_post_pred,'rf_post')
+    eq_odds_fair_report(df_test,svm_post_pred,'svm_post')
+    eq_odds_fair_report(df_test,xgb_post_pred,'xgb_post')
 
 
     print(f'######### Testing risultati #########')
@@ -82,7 +92,7 @@ def training_and_testing_models(df):
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 
-def test_fairness(dataset,pred):
+def test_fairness(dataset,pred,name,first_message=False):
     maritial_features = [
         'marital_divorced','marital_married','marital_single'
     ]
@@ -113,8 +123,8 @@ def test_fairness(dataset,pred):
 
     marital_metric_original = BinaryLabelDatasetMetric(dataset=marital_df_aif360,unprivileged_groups=marital_unprivileged_groups, privileged_groups=marital_privileged_groups)
 
-    print_fairness_metrics(marital_metric_original.disparate_impact(),'(Marital) DI before', first_message=True)
-    print_fairness_metrics(marital_metric_original.mean_difference(),'(Marital) mean_difference before')
+    print_fairness_metrics(marital_metric_original.disparate_impact(),f'{name}_model Marital DI before', first_message)
+    print_fairness_metrics(marital_metric_original.mean_difference(),f'{name}_model Marital mean_difference before')
 
     eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='weighted',privileged_groups=marital_privileged_groups, unprivileged_groups=marital_unprivileged_groups,seed=42)
 
@@ -122,8 +132,8 @@ def test_fairness(dataset,pred):
 
     marital_metric_trans =  BinaryLabelDatasetMetric(dataset=marital_df_trans,unprivileged_groups=marital_unprivileged_groups,privileged_groups=marital_privileged_groups)
 
-    print_fairness_metrics(marital_metric_trans.disparate_impact(),'(Marital) DI after')
-    print_fairness_metrics(marital_metric_trans.mean_difference(),'(Marital) mean_difference after')
+    print_fairness_metrics(marital_metric_trans.disparate_impact(),f'{name}_model Marital DI after')
+    print_fairness_metrics(marital_metric_trans.mean_difference(),f'{name}_model Marital mean_difference after')
 
     df_mod = marital_df_trans.convert_to_dataframe()[0]
     
@@ -148,8 +158,8 @@ def test_fairness(dataset,pred):
 
     ed_metric_original = BinaryLabelDatasetMetric(dataset=ed_df_aif360,unprivileged_groups=ed_unprivileged_groups, privileged_groups=ed_privileged_groups)
 
-    print_fairness_metrics(ed_metric_original.disparate_impact(),'(Ed.) DI before')
-    print_fairness_metrics(ed_metric_original.mean_difference(),'(Ed.) Mean_difference before')
+    print_fairness_metrics(ed_metric_original.disparate_impact(),f'{name}_model Ed. DI before')
+    print_fairness_metrics(ed_metric_original.mean_difference(),f'{name}_model Ed. Mean_difference before')
 
     eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='weighted',privileged_groups=ed_unprivileged_groups, unprivileged_groups=ed_privileged_groups,seed=42)
 
@@ -157,13 +167,69 @@ def test_fairness(dataset,pred):
 
     ed_metric_trans =  BinaryLabelDatasetMetric(dataset=ed_df_trans,unprivileged_groups=ed_privileged_groups,privileged_groups=ed_unprivileged_groups)
 
-    print_fairness_metrics(ed_metric_trans.disparate_impact(),'(Ed.) DI after')
-    print_fairness_metrics(ed_metric_trans.mean_difference(),'(Ed.) Mean_difference after')
+    print_fairness_metrics(ed_metric_trans.disparate_impact(),f'{name}_model Ed. DI after')
+    print_fairness_metrics(ed_metric_trans.mean_difference(),f'{name}_model Ed. Mean_difference after')
 
     postop_dataset = ed_df_trans.convert_to_dataframe()[0]
 
     return postop_dataset
 
+def eq_odds_fair_report(dataset,prediction,name):
+    # Attributi sensibili
+    maritial_features = [
+        'marital_divorced','marital_married','marital_single'
+    ]
+
+    education_features = [
+        'education_primary','education_secondary','education_tertiary'
+    ]
+
+    marital_df_aif360 = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=maritial_features
+    )
+
+    marital_pred_aif360 = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=maritial_features
+    )
+
+    marital_privileged_groups = [{'marital_single': 1},{'marital_married': 1}]
+    marital_unprivileged_groups = [{'marital_divorced': 1}]
+
+    metrics = ClassificationMetric(dataset=marital_df_aif360,classified_dataset=marital_pred_aif360,privileged_groups=marital_privileged_groups,unprivileged_groups=marital_unprivileged_groups)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Marital Eq. Odds difference')
+
+    ed_df_aif360 = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=education_features,
+    )
+
+    ed_pred_aif360 = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names = ['y'],
+        protected_attribute_names=education_features,
+    )
+
+    ed_privileged_groups = [{'education_primary': 1}]
+    ed_unprivileged_groups = [{'education_primary': 0}]
+
+    metrics = ClassificationMetric(dataset=ed_df_aif360,classified_dataset=ed_pred_aif360,privileged_groups=ed_privileged_groups,unprivileged_groups=ed_unprivileged_groups)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Education Eq. Odds difference')
+    
 
 def validate(model,fair_pred,model_type,X,y,first=False):
 
@@ -178,7 +244,7 @@ def validate(model,fair_pred,model_type,X,y,first=False):
     else:
         open_type = "a"
 
-    with  open(f"./reports/postprocessing_models/bank_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/postprocessing_models/aif360/bank_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
@@ -194,7 +260,7 @@ def print_fairness_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/postprocessing/bank_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/postprocessing/aif360/bank_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
