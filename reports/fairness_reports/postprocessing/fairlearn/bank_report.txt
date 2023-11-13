@@ -1,0 +1,24 @@
+lr_std DI: 0.367
+lr_std mean diff: 0.068
+lr_std eq. odds diff: 0.293
+lr_threshold DI: 0.82
+lr_threshold mean diff: 0.017
+lr_threshold eq. odds diff: 0.312
+rf_std DI: 0.404
+rf_std mean diff: 0.103
+rf_std eq. odds diff: 0.07
+rf_threshold DI: 0.739
+rf_threshold mean diff: 0.03
+rf_threshold eq. odds diff: 0.491
+svm_std DI: 0.261
+svm_std mean diff: 0.089
+svm_std eq. odds diff: 0.327
+svm_threshold DI: 0.885
+svm_threshold mean diff: 0.012
+svm_threshold eq. odds diff: 0.392
+xgb_std DI: 0.357
+xgb_std mean diff: 0.11
+xgb_std eq. odds diff: 0.191
+xgb_threshold DI: 0.897
+xgb_threshold mean diff: 0.011
+xgb_threshold eq. odds diff: 0.403

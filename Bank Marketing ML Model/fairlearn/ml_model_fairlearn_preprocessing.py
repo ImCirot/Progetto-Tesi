@@ -20,7 +20,7 @@ from time import sleep
 def load_dataset():
     df = pd.read_csv('./Bank Marketing Dataset/dataset.csv')
 
-    for i in range(10):
+    for i in range(1):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
         training_and_testing_models(df)
@@ -131,8 +131,9 @@ def training_and_testing_models(df):
 
     for name,prediction in predictions.items():
 
-        marital_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g_marital)
-        education_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g_education)
+        DI_value = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
+        mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=g)
+        eq_odds_diff = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
 
         if start is True:
             open_type = 'w'
@@ -141,8 +142,9 @@ def training_and_testing_models(df):
             open_type = 'a'
 
         with open('./reports/fairness_reports/preprocessing/fairlearn/bank_report.txt',open_type) as f:
-            f.write(f'{name}_marital DI: {round(marital_DI,3)}\n')
-            f.write(f'{name}_education DI: {round(education_DI,3)}\n')
+            f.write(f'{name} DI: {round(DI_value,3)}\n')
+            f.write(f'{name} mean diff: {round(mean_diff,3)}\n')
+            f.write(f'{name} eq. odds diff: {round(eq_odds_diff,3)}\n')
     
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_fairlearn_bank_model.sav','wb'))
