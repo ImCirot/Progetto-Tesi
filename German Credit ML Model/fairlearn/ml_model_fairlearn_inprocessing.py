@@ -132,6 +132,7 @@ def training_model(dataset):
     for name,prediction in predictions.items():
 
         sex_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
+        sex_eq_odss = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
 
         if start is True:
             open_type = 'w'
@@ -141,6 +142,7 @@ def training_model(dataset):
 
         with open('./reports/fairness_reports/inprocessing/fairlearn/credit_report.txt',open_type) as f:
             f.write(f'{name}_sex DI: {round(sex_DI,3)}\n')
+            f.write(f'{name}_ed_odds_diff: {round(sex_eq_odss,3)}\n')
 
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_threshold,open('./output_models/inprocess_models/threshold_lr_fairlearn_credit_model.sav','wb'))

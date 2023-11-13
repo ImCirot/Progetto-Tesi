@@ -1,0 +1,16 @@
+lr_std_sex DI: 0.528
+lr_std_eq_odds_diff: 0.219
+lr_fair_sex DI: 0.528
+lr_fair_eq_odds_diff: 0.219
+rf_std_sex DI: 0.9
+rf_std_eq_odds_diff: 0.134
+rf_fair_sex DI: 0.865
+rf_fair_eq_odds_diff: 0.199
+svm_std_sex DI: 0.739
+svm_std_eq_odds_diff: 0.1
+svm_fair_sex DI: 0.776
+svm_fair_eq_odds_diff: 0.067
+xgb_std_sex DI: 0.806
+xgb_std_eq_odds_diff: 0.057
+xgb_fair_sex DI: 0.783
+xgb_fair_eq_odds_diff: 0.113

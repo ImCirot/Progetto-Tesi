@@ -1,0 +1,8 @@
+Gender Mean difference pre inprocessing: -0.089
+Gender DI pre inprocessing: 0.88
+Gender Mean difference post inprocessing: -0.093
+Gender DI post inprocessing: 0.884
+Eq. Odds difference from fair classifier: 0.028
+Eq. Odds difference from fair classifier: -0.018
+Eq. Odds difference from fair classifier: -0.004
+Eq. Odds difference from fair classifier: 0.123

@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from codecarbon import track_emissions
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline, Pipeline
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from aif360.algorithms.preprocessing import Reweighing
 from aif360.datasets import StandardDataset
 from aif360.datasets import BinaryLabelDataset
@@ -58,9 +58,9 @@ def training_and_testing_model(df):
         'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
     ]
 
-    post_lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
-    post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
-    post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
+    post_lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5},random_state=42))
+    post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5},random_state=42))
+    post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5},random_state=42))
     post_xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
@@ -81,6 +81,27 @@ def training_and_testing_model(df):
     validate(post_rf_model_pipeline,'rf',X_test,y_test)
     validate(post_svm_model_pipeline,'svm',X_test,y_test)
     validate(post_xgb_model_pipeline,'xgb',X_test,y_test)
+
+    print(f'######### Testing Fairness #########')
+    X_test_df = X_test.copy(deep=True)
+    X_test_df['Target'] = y_test['Target']
+
+    lr_pred = X_test.copy(deep=True)
+    lr_pred['Target'] = post_lr_model_pipeline.predict(X_test)
+
+    rf_pred =  X_test.copy(deep=True)
+    rf_pred['Target'] = post_rf_model_pipeline.predict(X_test)
+
+    svm_pred =  X_test.copy(deep=True)
+    svm_pred['Target'] = post_svm_model_pipeline.predict(X_test)
+
+    xgb_pred =  X_test.copy(deep=True)
+    xgb_pred['Target'] = post_xgb_model_pipeline.predict(X_test)
+
+    eq_odds_fair_report(X_test_df,lr_pred)
+    eq_odds_fair_report(X_test_df,rf_pred)
+    eq_odds_fair_report(X_test_df,svm_pred)
+    eq_odds_fair_report(X_test_df,xgb_pred)
     
     print(f'######### Salvataggio modelli #########')
     pickle.dump(post_lr_model_pipeline,open('./output_models/inprocess_models/lr_aif360_credit_model.sav','wb'))
@@ -125,6 +146,39 @@ def processing_fairness(dataset,X_set,y_set,protected_features):
     
     return df_train
 
+def eq_odds_fair_report(dataset,prediction,first_message=False):
+    # Attributi sensibili
+    protected_attribute_names = [
+        'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
+    ]
+
+    aif360_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_attribute_names,
+    )
+
+    aif360_pred = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_attribute_names,
+    )
+
+    # Setting dei gruppi privilegiati e non
+    # In questo caso si è scelto di trattare come gruppo privilegiato tutte le entrate che presentano la feature 'Sex_A94' = 1, ovvero tutte le entrate
+    # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_94' != 1,
+    # ovvero tutti gli altri individui.
+    privileged_groups = [{'sex_A93': 1}]
+    unprivileged_groups = [{'sex_A93': 0}]
+
+    metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    print_inproc_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),'Eq. Odds difference from fair classifier')
+
 def print_inproc_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
 
@@ -134,7 +188,7 @@ def print_inproc_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/inprocessing/credit_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/inprocessing/aif360/credit_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
@@ -153,7 +207,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = "a"
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f'./reports/inprocessing_models/credit_metrics_report.txt',open_type) as f:
+    with  open(f'./reports/inprocessing_models/aif360/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
         f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')

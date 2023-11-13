@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from codecarbon import track_emissions
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline, Pipeline
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from aif360.algorithms.preprocessing import Reweighing
 from aif360.datasets import StandardDataset
 from aif360.datasets import BinaryLabelDataset
@@ -102,6 +102,27 @@ def training_and_testing_model(df):
     validate(svm_fair_model_pipeline,'svm',X_fair_test,y_fair_test)
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
 
+    print('######### Testing Fairness #########')
+    X_test = X_fair_test.copy(deep=True)
+    X_test['Target'] = y_fair_test['Target']
+
+    lr_pred = X_fair_test.copy(deep=True)
+    lr_pred['Target'] = lr_fair_model_pipeline.predict(X_fair_test)
+
+    rf_pred =  X_fair_test.copy(deep=True)
+    rf_pred['Target'] = rf_fair_model_pipeline.predict(X_fair_test)
+
+    svm_pred =  X_fair_test.copy(deep=True)
+    svm_pred['Target'] = svm_fair_model_pipeline.predict(X_fair_test)
+
+    xgb_pred =  X_fair_test.copy(deep=True)
+    xgb_pred['Target'] = xgb_fair_model_pipeline.predict(X_fair_test)
+
+    eq_odds_fair_report(X_test,lr_pred)
+    eq_odds_fair_report(X_test,rf_pred)
+    eq_odds_fair_report(X_test,svm_pred)
+    eq_odds_fair_report(X_test,xgb_pred)
+
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_aif360_credit_model.sav','wb'))
     pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/rf_aif360_credit_model.sav','wb'))
@@ -126,7 +147,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/preprocessing_models/credit_metrics_report.txt",open_type) as f:
+    with open(f"./reports/preprocessing_models/aif360/credit_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
@@ -156,8 +177,8 @@ def test_fairness(dataset):
     unprivileged_groups = [{'sex_A93': 0}]
 
     # Calcolo della metrica sul dataset originale
-    metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)    
-    
+    metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)  
+
     # Utilizzamo un operatore di bilanciamento offerto dall'API AIF360
     RW = Reweighing(privileged_groups=privileged_groups, unprivileged_groups=unprivileged_groups)
 
@@ -178,6 +199,40 @@ def test_fairness(dataset):
     sample_weights = dataset_transformed.instance_weights
 
     return sample_weights
+
+def eq_odds_fair_report(dataset,prediction):
+    # Attributi sensibili
+    protected_attribute_names = [
+        'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
+    ]
+
+    aif360_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_attribute_names,
+    )
+
+    aif360_pred = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=protected_attribute_names,
+    )
+
+    # Setting dei gruppi privilegiati e non
+    # In questo caso si è scelto di trattare come gruppo privilegiato tutte le entrate che presentano la feature 'Sex_A94' = 1, ovvero tutte le entrate
+    # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_94' != 1,
+    # ovvero tutti gli altri individui.
+    privileged_groups = [{'sex_A93': 1}]
+    unprivileged_groups = [{'sex_A93': 0}]
+
+    metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),'Eq. Odds difference from fair classifier')
+
     
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
@@ -188,7 +243,7 @@ def print_fairness_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/preprocessing/credit_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/preprocessing/aif360/credit_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 

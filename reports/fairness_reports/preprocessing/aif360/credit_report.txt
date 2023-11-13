@@ -1,0 +1,8 @@
+Mean_difference value before: -0.074
+DI value before: 0.899
+Mean_difference value after: 0.0
+DI value after: 1.0
+Eq. Odds difference from fair classifier: 0.097
+Eq. Odds difference from fair classifier: -0.074
+Eq. Odds difference from fair classifier: -0.134
+Eq. Odds difference from fair classifier: -0.186
