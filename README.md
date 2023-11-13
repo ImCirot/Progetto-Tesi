@@ -23,7 +23,7 @@ Sono necessari i seguenti PythonPackages:
 ```
 È possibile installare le ultime versioni di questi pacchetti tramite il comando:
 ```
-pip install numpy pandas seaborn matplotlib sklearn aif360 codecarbon fairlearn xgboost tensorflow-hub
+pip install numpy pandas seaborn matplotlib scikit-learn aif360 codecarbon fairlearn xgboost tensorflow-hub
 ```
 Per l'installazione di TensorFlow, riferirsi alla guida ufficiale [qui](https://www.tensorflow.org/install).
 
