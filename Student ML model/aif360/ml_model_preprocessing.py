@@ -10,7 +10,7 @@ import xgboost as xgb
 import numpy as np
 import pandas as pd
 from aif360.datasets import StandardDataset, BinaryLabelDataset
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from aif360.algorithms.preprocessing import Reweighing
 import pickle
 from datetime import datetime
@@ -87,8 +87,10 @@ def training_testing_models(dataset):
         ('model',xgb.XGBClassifier(objective='binary:logistic',random_state=42))
     ])
 
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
     X_fair_train, X_fair_test, y_fair_train, y_fair_test, weights_train, weights_test = train_test_split(X_fair,y_fair,weights,test_size=0.2,random_state=42)
 
+    print(X_fair_test)
     print(f'######### Training modelli #########')
     lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=weights_train)
     rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=weights_train)
@@ -101,6 +103,57 @@ def training_testing_models(dataset):
     validate(svm_fair_model_pipeline,'svm',X_fair_test,y_fair_test)
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
 
+    print('######### Testing Fairness #########')
+    X_test_fair_df = X_fair_test.copy(deep=True)
+    X_test_fair_df['Target'] = y_fair_test
+
+    X_test_df = X_test.copy(deep=True)
+    X_test_df['Target'] = y_test
+
+    lr_fair_pred = X_fair_test.copy(deep=True)
+    lr_fair_pred['Target'] = lr_fair_model_pipeline.predict(X_fair_test)
+
+    rf_fair_pred =  X_fair_test.copy(deep=True)
+    rf_fair_pred['Target'] = rf_fair_model_pipeline.predict(X_fair_test)
+
+    svm_fair_pred =  X_fair_test.copy(deep=True)
+    svm_fair_pred['Target'] = svm_fair_model_pipeline.predict(X_fair_test)
+
+    xgb_fair_pred =  X_fair_test.copy(deep=True)
+    xgb_fair_pred['Target'] = xgb_fair_model_pipeline.predict(X_fair_test)
+
+    lr_pred = X_test_df.copy(deep=True)
+    lr_pred['Target'] = lr_fair_model_pipeline.predict(X_test)
+
+    rf_pred =  X_test_df.copy(deep=True)
+    rf_pred['Target'] = rf_fair_model_pipeline.predict(X_test)
+
+    svm_pred =  X_test_df.copy(deep=True)
+    svm_pred['Target'] = svm_fair_model_pipeline.predict(X_test)
+
+    xgb_pred =  X_test_df.copy(deep=True)
+    xgb_pred['Target'] = xgb_fair_model_pipeline.predict(X_test)
+
+    std_predictions = {
+        'lr_std':lr_pred,
+        'rf_std': rf_pred,
+        'svm_std': svm_pred,
+        'xgb_std': xgb_pred,
+    }
+
+    fair_prediction = {
+        'lr_fair': lr_fair_pred,
+        'rf_fair':rf_fair_pred,
+        'svm_fair': svm_fair_pred,
+        'xgb_fair': xgb_fair_pred
+    }
+
+
+    for name,prediction in std_predictions.items():
+        eq_odds_fair_report(X_test_df,prediction,name)
+
+    for name,prediction in fair_prediction.items():
+        eq_odds_fair_report(X_test_fair_df,prediction,name)
     
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_aif360_student_model.sav','wb'))
@@ -127,7 +180,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = "a"
         
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/preprocessing_models/student_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/preprocessing_models/aif360/student_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
@@ -334,6 +387,169 @@ def test_fairness(dataset):
     return sample_weights
 
 
+def eq_odds_fair_report(dataset,prediction,name):
+    ## funzione che testa fairness del dataset sulla base degli attributi sensibili
+
+    aif_gender_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Gender']
+    )
+
+    aif_gender_prediction = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Gender']
+    )
+
+    # cerchiamo di stabilire se le donne sono o meno svantaggiate nella predizione positiva
+    gender_privileged_group = [{'Gender': 1}]
+    gender_unprivileged_group = [{'Gender': 0}]
+
+    metrics = ClassificationMetric(dataset=aif_gender_dataset,classified_dataset=aif_gender_prediction,unprivileged_groups=gender_unprivileged_group,privileged_groups=gender_privileged_group)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Gender Eq. Odds difference')
+
+    # verifichiamo se gli studenti normodotati ricevono predizioni positive maggiori rispetto
+    # agli studenti con disabilità
+    sn_aif_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Educational special needs'],
+    )
+
+    sn_aif_prediction = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Educational special needs'],
+    )
+
+    sn_privileged_group = [{'Educational special needs': 0}]
+    sn_unprivileged_group = [{'Educational special needs': 1}]
+
+    metrics = ClassificationMetric(dataset=sn_aif_dataset,classified_dataset=sn_aif_prediction,unprivileged_groups=sn_unprivileged_group,privileged_groups=sn_privileged_group)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Special Needs Eq. Odds difference')
+
+
+    # valutiamo ora eventuale disparità nelle età degli studenti
+    # cerchiamo di valutare se uno studente con meno di 30 anni sia favorito rispetto a studenti in età più avanzata
+    std_age_aif_dataset = StandardDataset(
+        df=dataset,
+        label_name='Target',
+        favorable_classes=[1],
+        protected_attribute_names=['Age at enrollment'],
+        privileged_classes=[lambda x: x <= 30]
+    )
+
+    std_age_aif_prediction = StandardDataset(
+        df=prediction,
+        label_name='Target',
+        favorable_classes=[1],
+        protected_attribute_names=['Age at enrollment'],
+        privileged_classes=[lambda x: x <= 30]
+    )
+
+    age_aif_dataset = BinaryLabelDataset(
+        df=std_age_aif_dataset.convert_to_dataframe()[0],
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Age at enrollment'],
+    )
+
+    age_aif_prediction = BinaryLabelDataset(
+        df=std_age_aif_prediction.convert_to_dataframe()[0],
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Age at enrollment'],
+    )
+
+    age_privileged_group = [{'Age at enrollment': 1}]
+    age_unprivileged_group = [{'Age at enrollment': 0}]
+
+    metrics = ClassificationMetric(dataset=age_aif_dataset,classified_dataset=age_aif_prediction,privileged_groups=age_privileged_group,unprivileged_groups=age_unprivileged_group)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Age Eq. Odds difference')
+
+    # cerchiamo ora di stabilire se gli studenti internazionali sono svantaggiati
+    int_aif_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['International'],
+    )
+
+    int_aif_prediction = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['International'],
+    )
+
+    int_privileged_group = [{'International': 0}]
+    int_unprivileged_group = [{'International': 1}]
+
+    metrics = ClassificationMetric(dataset=int_aif_dataset,classified_dataset=int_aif_prediction,privileged_groups=int_privileged_group,unprivileged_groups=int_unprivileged_group)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model International Eq. Odds difference')
+
+    mean_grade = dataset['Admission grade'].mean()
+    
+    # infine, cerchiamo di valutare se gli studenti con un basso voto di ammissione siano sfavoriti per predizione positiva
+    # selezioniamo appunto come favoriti tutti gli studenti il cui voto di ammissione supera il voto medio di ammissione
+    std_grade_dataset = StandardDataset(
+        df=dataset,
+        label_name='Target',
+        favorable_classes=[1],
+        protected_attribute_names=['Admission grade'],
+        privileged_classes=[lambda x: x >= mean_grade]
+    )
+
+    std_grade_prediction = StandardDataset(
+        df=prediction,
+        label_name='Target',
+        favorable_classes=[1],
+        protected_attribute_names=['Admission grade'],
+        privileged_classes=[lambda x: x >= mean_grade]
+    )
+
+
+    # costruiamo dataset binario per testare fairness della nostra scelta
+    grade_aif_dataset = BinaryLabelDataset(
+        df=std_grade_dataset.convert_to_dataframe()[0],
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Admission grade'],
+    )
+
+    grade_aif_prediction = BinaryLabelDataset(
+        df=std_grade_prediction.convert_to_dataframe()[0],
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Admission grade'],
+    )
+
+    grade_privileged_group = [{'Admission grade': 1}]
+    grade_unprivileged_group = [{'Admission grade': 0}]
+
+    metrics = ClassificationMetric(dataset=grade_aif_dataset,classified_dataset=grade_aif_prediction,unprivileged_groups=grade_unprivileged_group,privileged_groups=grade_privileged_group)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Grade Eq. Odds difference')
+
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
 
@@ -343,7 +559,7 @@ def print_fairness_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/preprocessing/student_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/preprocessing/aif360/student_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 

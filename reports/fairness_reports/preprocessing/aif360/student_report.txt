@@ -1,0 +1,60 @@
+Gender mean_difference before: 0.227
+Gender DI before: 1.644
+Gender mean_difference after: 0.0
+Gender DI after: 1.0
+Special Needs mean_difference before: -0.072
+Special Needs DI before: 0.856
+Special Needs mean_difference after: 0.0
+Special Needs DI after: 1.0
+Age mean_difference before: -0.168
+Age DI before: 0.679
+Age mean_difference after: 0.0
+Age DI after: 1.0
+International mean_difference before: -0.034
+International DI before: 0.932
+International mean_difference after: 0.0
+International DI after: 1.0
+Grade mean_difference before: -0.103
+Grade DI before: 0.813
+Grade mean_difference after: 0.0
+Grade DI after: 1.0
+lr_std_model Gender Eq. Odds difference: -0.033
+lr_std_model Special Needs Eq. Odds difference: -0.2
+lr_std_model Age Eq. Odds difference: 0.085
+lr_std_model International Eq. Odds difference: 0.029
+lr_std_model Grade Eq. Odds difference: -0.027
+rf_std_model Gender Eq. Odds difference: 0.003
+rf_std_model Special Needs Eq. Odds difference: 0.183
+rf_std_model Age Eq. Odds difference: -0.059
+rf_std_model International Eq. Odds difference: -0.007
+rf_std_model Grade Eq. Odds difference: 0.004
+svm_std_model Gender Eq. Odds difference: -0.077
+svm_std_model Special Needs Eq. Odds difference: -0.217
+svm_std_model Age Eq. Odds difference: 0.054
+svm_std_model International Eq. Odds difference: -0.012
+svm_std_model Grade Eq. Odds difference: -0.02
+xgb_std_model Gender Eq. Odds difference: -0.0
+xgb_std_model Special Needs Eq. Odds difference: 0.139
+xgb_std_model Age Eq. Odds difference: -0.123
+xgb_std_model International Eq. Odds difference: 0.154
+xgb_std_model Grade Eq. Odds difference: 0.05
+lr_fair_model Gender Eq. Odds difference: -0.033
+lr_fair_model Special Needs Eq. Odds difference: -0.2
+lr_fair_model Age Eq. Odds difference: 0.085
+lr_fair_model International Eq. Odds difference: 0.029
+lr_fair_model Grade Eq. Odds difference: -0.027
+rf_fair_model Gender Eq. Odds difference: 0.003
+rf_fair_model Special Needs Eq. Odds difference: 0.183
+rf_fair_model Age Eq. Odds difference: -0.059
+rf_fair_model International Eq. Odds difference: -0.007
+rf_fair_model Grade Eq. Odds difference: 0.004
+svm_fair_model Gender Eq. Odds difference: -0.077
+svm_fair_model Special Needs Eq. Odds difference: -0.217
+svm_fair_model Age Eq. Odds difference: 0.054
+svm_fair_model International Eq. Odds difference: -0.012
+svm_fair_model Grade Eq. Odds difference: -0.02
+xgb_fair_model Gender Eq. Odds difference: -0.0
+xgb_fair_model Special Needs Eq. Odds difference: 0.139
+xgb_fair_model Age Eq. Odds difference: -0.123
+xgb_fair_model International Eq. Odds difference: 0.154
+xgb_fair_model Grade Eq. Odds difference: 0.05
