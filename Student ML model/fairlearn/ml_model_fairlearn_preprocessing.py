@@ -130,6 +130,8 @@ def training_model(dataset):
     for name,prediction in predictions.items():
 
         DI_score = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
+        sex_eqodds = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
+        sex_mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=g)
 
         if start is True:
             open_type = 'w'
@@ -139,6 +141,8 @@ def training_model(dataset):
 
         with open('./reports/fairness_reports/preprocessing/fairlearn/student_report.txt',open_type) as f:
             f.write(f'{name} DI: {round(DI_score,3)}\n')
+            f.write(f'{name}_eq_odds_diff: {round(sex_eqodds,3)}\n')
+            f.write(f'{name}_mean_diff: {round(sex_mean_diff,3)}\n')
     
     # linea di codice per plottare il accuracy e selection_rate del modello con operazione di postop
     # plot_threshold_optimizer(lr_threshold)

@@ -1,0 +1,24 @@
+lr_std DI: 0.34
+lr_std_eq_odds_diff: 0.243
+lr_std_mean_diff: 0.416
+lr_fair DI: 0.339
+lr_fair_eq_odds_diff: 0.244
+lr_fair_mean_diff: 0.417
+rf_std DI: 0.365
+rf_std_eq_odds_diff: 0.059
+rf_std_mean_diff: 0.373
+rf_fair DI: 0.365
+rf_fair_eq_odds_diff: 0.059
+rf_fair_mean_diff: 0.373
+svm_std DI: 0.442
+svm_std_eq_odds_diff: 0.15
+svm_std_mean_diff: 0.36
+svm_fair DI: 0.333
+svm_fair_eq_odds_diff: 0.266
+svm_fair_mean_diff: 0.43
+xgb_std DI: 0.365
+xgb_std_eq_odds_diff: 0.059
+xgb_std_mean_diff: 0.372
+xgb_fair DI: 0.36
+xgb_fair_eq_odds_diff: 0.176
+xgb_fair_mean_diff: 0.38

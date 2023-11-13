@@ -1,0 +1,24 @@
+lr_std DI: 0.34
+lr_std_eq_odds_diff: 0.243
+lr_std_mean_diff: 0.416
+lr_threshold DI: 0.812
+lr_threshold_eq_odds_diff: 0.214
+lr_threshold_mean_diff: 0.099
+rf_std DI: 0.365
+rf_std_eq_odds_diff: 0.059
+rf_std_mean_diff: 0.373
+rf_threshold DI: 0.795
+rf_threshold_eq_odds_diff: 0.589
+rf_threshold_mean_diff: 0.147
+svm_std DI: 0.442
+svm_std_eq_odds_diff: 0.15
+svm_std_mean_diff: 0.36
+svm_threshold DI: 0.755
+svm_threshold_eq_odds_diff: 0.197
+svm_threshold_mean_diff: 0.139
+xgb_std DI: 0.365
+xgb_std_eq_odds_diff: 0.059
+xgb_std_mean_diff: 0.372
+xgb_threshold DI: 0.575
+xgb_threshold_eq_odds_diff: 0.312
+xgb_threshold_mean_diff: 0.264
