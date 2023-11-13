@@ -83,7 +83,7 @@ def training_and_testing_model(df):
     xgb_df['Target'] = xgb_pred
 
     print(f'######### Testing Fairness #########')
-    lr_post_pred = test_fairness(df_test,lr_df)
+    lr_post_pred = test_fairness(df_test,lr_df,True)
     rf_post_pred = test_fairness(df_test,rf_df)
     svm_post_pred = test_fairness(df_test,svm_df)
     xgb_post_pred = test_fairness(df_test,xgb_df)
@@ -122,7 +122,7 @@ def validate(model,fair_pred,model_type,X,y,first=False):
         f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
         f.write('\n')
 
-def test_fairness(dataset,pred):
+def test_fairness(dataset,pred,first_message=False):
     ## Funzione che presenta alcune metriche di fairness sul dataset utilizzato e applica processi per ridurre/azzerrare il bias
 
      ## Funzione che presenta alcune metriche di fairness sul dataset utilizzato e applica processi per ridurre/azzerrare il bias
@@ -168,7 +168,7 @@ def test_fairness(dataset,pred):
     metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
 
     # stampa della mean_difference del modello originale
-    print_fairness_metrics(metric_original.mean_difference(),'Mean_difference value before', first_message=True)
+    print_fairness_metrics(metric_original.mean_difference(),'Mean_difference value before', first_message)
     print_fairness_metrics(metric_original.disparate_impact(),'DI value before')
 
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
@@ -211,7 +211,7 @@ def test_eqodds(dataset,pred,first_message=False):
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),'Eq. Odds difference from fair classifier')
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),'Eq. Odds difference from postprocessing')
 
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input

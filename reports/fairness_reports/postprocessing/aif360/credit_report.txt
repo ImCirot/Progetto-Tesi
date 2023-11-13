@@ -1,11 +1,19 @@
 Mean_difference value before: -0.017
 DI value before: 0.976
+Mean_difference value after: 0.348
+DI value after: inf
+Mean_difference value before: -0.017
+DI value before: 0.976
+Mean_difference value after: 0.343
+DI value after: 1.639
+Mean_difference value before: -0.017
+DI value before: 0.976
+Mean_difference value after: 0.242
+DI value after: 2.188
+Mean_difference value before: -0.017
+DI value before: 0.976
 Mean_difference value after: 0.039
 DI value after: 1.054
-Num. of positive instances of priv_group before: 77.0
-Num. of positive instances of unpriv_group before: 64.0
-Num. of positive instances of priv_group after: 78.0
-Num. of positive instances of unpriv_group after: 70.0
 Eq. Odds difference from fair classifier: -0.051
 Eq. Odds difference from fair classifier: -0.199
 Eq. Odds difference from fair classifier: -0.111

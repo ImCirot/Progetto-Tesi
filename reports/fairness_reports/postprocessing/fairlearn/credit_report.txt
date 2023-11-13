@@ -1,0 +1,16 @@
+lr_std_sex DI: 0.528
+lr_std_ed_odds_diff: 0.219
+lr_threshold_sex DI: 0.952
+lr_threshold_ed_odds_diff: 0.082
+rf_std_sex DI: 0.9
+rf_std_ed_odds_diff: 0.134
+rf_threshold_sex DI: 0.931
+rf_threshold_ed_odds_diff: 0.333
+svm_std_sex DI: 0.739
+svm_std_ed_odds_diff: 0.1
+svm_threshold_sex DI: 0.956
+svm_threshold_ed_odds_diff: 0.313
+xgb_std_sex DI: 0.806
+xgb_std_ed_odds_diff: 0.057
+xgb_threshold_sex DI: 0.893
+xgb_threshold_ed_odds_diff: 0.296

@@ -140,15 +140,15 @@ def training_model(dataset):
         else:
             open_type = 'a'
 
-        with open('./reports/fairness_reports/inprocessing/fairlearn/credit_report.txt',open_type) as f:
+        with open('./reports/fairness_reports/postprocessing/fairlearn/credit_report.txt',open_type) as f:
             f.write(f'{name}_sex DI: {round(sex_DI,3)}\n')
             f.write(f'{name}_ed_odds_diff: {round(sex_eq_odss,3)}\n')
 
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_threshold,open('./output_models/inprocess_models/threshold_lr_fairlearn_credit_model.sav','wb'))
-    pickle.dump(rf_threshold,open('./output_models/inprocess_models/threshold_rf_fairlearn_credit_model.sav','wb'))
-    pickle.dump(svm_threshold,open('./output_models/inprocess_models/threshold_svm_fairlearn_credit_model.sav','wb'))
-    pickle.dump(xgb_threshold,open('./output_models/inprocess_models/threshold_xgb_fairlearn_credit_model.sav','wb'))
+    pickle.dump(lr_threshold,open('./output_models/postprocessing_models/threshold_lr_fairlearn_credit_model.sav','wb'))
+    pickle.dump(rf_threshold,open('./output_models/postprocessing_models/threshold_rf_fairlearn_credit_model.sav','wb'))
+    pickle.dump(svm_threshold,open('./output_models/postprocessing_models/threshold_svm_fairlearn_credit_model.sav','wb'))
+    pickle.dump(xgb_threshold,open('./output_models/postprocessing_models/threshold_xgb_fairlearn_credit_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 
@@ -169,7 +169,7 @@ def validate(ml_model,model_type,X_test,y_test,g_test,first=False):
         open_type = "a"
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f'./reports/inprocessing_models/fairlearn/credit_metrics_report.txt',open_type) as f:
+    with  open(f'./reports/postprocessing_models/fairlearn/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
         f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
@@ -199,7 +199,7 @@ def print_time(time,index):
     else:
         open_type = 'a'
 
-    with open('./reports/time_reports/fairlearn/credit_inprocessing_report.txt',open_type) as f:
+    with open('./reports/time_reports/fairlearn/credit_postprocessing_report.txt',open_type) as f:
         f.write(f'{index+1} iter. elapsed time: {time} seconds.\n')
 
 
