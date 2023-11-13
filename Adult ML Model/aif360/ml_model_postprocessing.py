@@ -4,7 +4,7 @@ from sklearn.metrics import *
 from sklearn.model_selection import train_test_split
 from aif360.datasets import BinaryLabelDataset
 from aif360.datasets import StandardDataset
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from codecarbon import track_emissions
 from aif360.algorithms.postprocessing import CalibratedEqOddsPostprocessing
 import pickle
@@ -19,19 +19,17 @@ def load_dataset():
     # drop ID dal dataset
     df.drop('ID',inplace=True,axis=1)
 
-    training_model(df)
-
-    # for i in range(10):
-    #     print(f'########################### {i+1} esecuzione ###########################')
-    #     start = datetime.now()
-    #     training_model(df)
-    #     end = datetime.now()
-    #     elapsed = (end - start).total_seconds()
-    #     print_time(elapsed,i)
-    #     if(i < 9):
-    #         print('########################### IDLE TIME START ###########################')
-    #         sleep(300)
-    #         print('########################### IDLE TIME FINISH ###########################')
+    for i in range(10):
+        print(f'########################### {i+1} esecuzione ###########################')
+        start = datetime.now()
+        training_model(df)
+        end = datetime.now()
+        elapsed = (end - start).total_seconds()
+        print_time(elapsed,i)
+        if(i < 9):
+            print('########################### IDLE TIME START ###########################')
+            sleep(300)
+            print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(country_iso_code='ITA',offline=True)
 def training_model(dataset):
@@ -81,10 +79,20 @@ def training_model(dataset):
     xgb_df['salary'] = xgb_pred
 
     print(f'######### Testing Fairness #########')
-    lr_post_pred = test_fairness(df_test,lr_df)
-    rf_post_pred = test_fairness(df_test,rf_df)
-    svm_post_pred = test_fairness(df_test,svm_df)
-    xgb_post_pred = test_fairness(df_test,xgb_df)
+    lr_post_pred = test_fairness(df_test,lr_df,'lr',True)
+    rf_post_pred = test_fairness(df_test,rf_df,'rf')
+    svm_post_pred = test_fairness(df_test,svm_df,'svm')
+    xgb_post_pred = test_fairness(df_test,xgb_df,'xgb')
+
+    eq_odds_fair_report(df_test,lr_df,'lr')
+    eq_odds_fair_report(df_test,rf_df,'rf')
+    eq_odds_fair_report(df_test,svm_df,'svm')
+    eq_odds_fair_report(df_test,xgb_df,'xgb')
+
+    eq_odds_fair_report(df_test,lr_post_pred,'lr_post')
+    eq_odds_fair_report(df_test,rf_post_pred,'rf_post')
+    eq_odds_fair_report(df_test,svm_post_pred,'svm_post')
+    eq_odds_fair_report(df_test,xgb_post_pred,'xgb_post')
 
     print(f'######### Testing risultati #########')
     validate(lr_model,lr_post_pred['salary'],'lr', X_test, y_test,True)
@@ -110,13 +118,13 @@ def validate(model,fair_pred,model_type,X,y,first=False):
         open_type = "a"
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/postprocessing_models/adult_metrics_report.txt",open_type) as f:
+    with  open(f"./reports/postprocessing_models/aif360/adult_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
         f.write('\n')
 
-def test_fairness(original_dataset,pred):
+def test_fairness(original_dataset,pred,name,first_message=False):
     ## funzione che testa la fairness del dataset tramite libreria AIF360 e restituisce un dataset fair opportunamente modificato
 
     race_features = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
@@ -150,8 +158,8 @@ def test_fairness(original_dataset,pred):
     # Calcolo della metrica sul dataset originale
     race_metric_original = BinaryLabelDatasetMetric(dataset=aif_race_dataset, unprivileged_groups=race_unprivileged_groups, privileged_groups=race_privileged_groups)    
     
-    print_fairness_metrics(race_metric_original.mean_difference(),'Race mean_difference before',first_message=True)
-    print_fairness_metrics(race_metric_original.disparate_impact(),'Race DI before')
+    print_fairness_metrics(race_metric_original.mean_difference(),f'{name}_model Race mean_difference before',first_message)
+    print_fairness_metrics(race_metric_original.disparate_impact(),f'{name}_model Race DI before')
 
     eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups,seed=42)
 
@@ -162,16 +170,8 @@ def test_fairness(original_dataset,pred):
     race_metric_transformed = BinaryLabelDatasetMetric(dataset=race_dataset_transformed,unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups)
     
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics(race_metric_transformed.mean_difference(),'Race mean_difference after')
-    print_fairness_metrics(race_metric_transformed.disparate_impact(),'Race DI after')
-
-    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi favoriti e sfavoriti prima del bilanciamento
-    print_fairness_metrics(race_metric_original.num_positives(privileged=True),'(RACE) Num. of positive instances of priv_group before')
-    print_fairness_metrics(race_metric_original.num_positives(privileged=False),'(RACE) Num. of positive instances of unpriv_group before')
-
-    # vengono stampate sul file di report della metrica anche il numero di istanze positive per i gruppi post bilanciamento
-    print_fairness_metrics(race_metric_transformed.num_positives(privileged=True),'(RACE) Num. of positive instances of priv_group after')
-    print_fairness_metrics(race_metric_transformed.num_positives(privileged=False),'(RACE) Num. of positive instances of unpriv_group after')
+    print_fairness_metrics(race_metric_transformed.mean_difference(),f'{name}_model Race mean_difference after')
+    print_fairness_metrics(race_metric_transformed.disparate_impact(),f'{name}_model Race DI after')
     
     # passiamo ora a valutare il dataset sulla base della feature legata al genere
 
@@ -210,8 +210,8 @@ def test_fairness(original_dataset,pred):
     sex_metric_original = BinaryLabelDatasetMetric(dataset=aif_sex_dataset, unprivileged_groups=sex_unprivileged_groups, privileged_groups=sex_privileged_groups) 
     
     # stampiamo la metrica mean_difference sul file di report    
-    print_fairness_metrics(sex_metric_original.mean_difference(),'Sex mean_difference before')
-    print_fairness_metrics(sex_metric_original.disparate_impact(),'Sex DI before')
+    print_fairness_metrics(sex_metric_original.mean_difference(),f'{name}_model Sex mean_difference before')
+    print_fairness_metrics(sex_metric_original.disparate_impact(),f'{name}_model Sex DI before')
     
     eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=sex_privileged_groups, unprivileged_groups=sex_unprivileged_groups,seed=42)
 
@@ -222,12 +222,68 @@ def test_fairness(original_dataset,pred):
     sex_metric_transformed = BinaryLabelDatasetMetric(dataset=sex_dataset_transformed,unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
     
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics(sex_metric_transformed.mean_difference(),'Sex mean_difference value after')
-    print_fairness_metrics(sex_metric_transformed.disparate_impact(),'Sex DI value after')
+    print_fairness_metrics(sex_metric_transformed.mean_difference(),f'{name}_model Sex mean_difference value after')
+    print_fairness_metrics(sex_metric_transformed.disparate_impact(),f'{name}_model Sex DI value after')
 
     new_dataset = sex_dataset_transformed.convert_to_dataframe()[0]
 
     return new_dataset
+
+def eq_odds_fair_report(dataset,prediction,name):
+   
+    race_features = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
+
+    aif_race_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=race_features,
+        privileged_protected_attributes=['race_White']
+    )
+
+    aif_race_pred = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=race_features,
+        privileged_protected_attributes=['race_White']
+    )
+    
+    race_privileged_groups = [{'race_White': 1}]
+    race_unprivileged_groups = [{'race_White': 0}]
+
+    metrics = ClassificationMetric(dataset=aif_race_dataset,classified_dataset=aif_race_pred,unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Race Eq. Odds difference')
+
+    sex_features = ['sex_Male','sex_Female']
+
+    aif_sex_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=sex_features,
+        privileged_protected_attributes=['sex_Male'],
+    )
+
+    aif_sex_pred = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=sex_features,
+        privileged_protected_attributes=['sex_Male'],
+    )
+
+    sex_privileged_groups = [{'sex_Male': 1}]
+    sex_unprivileged_groups = [{'sex_Female': 1}]
+
+    metrics = ClassificationMetric(dataset=aif_sex_dataset,classified_dataset=aif_sex_pred,unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Sex Eq. Odds difference')
 
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
@@ -238,7 +294,7 @@ def print_fairness_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/postprocessing/adult_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/postprocessing/aif360/adult_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 

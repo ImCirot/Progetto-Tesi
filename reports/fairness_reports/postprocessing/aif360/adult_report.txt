@@ -1,0 +1,48 @@
+lr_model Race mean_difference before: -0.107
+lr_model Race DI before: 0.604
+lr_model Race mean_difference after: -0.075
+lr_model Race DI after: 0.633
+lr_model Sex mean_difference before: -0.208
+lr_model Sex DI before: 0.352
+lr_model Sex mean_difference value after: -0.1
+lr_model Sex DI value after: 0.433
+rf_model Race mean_difference before: -0.107
+rf_model Race DI before: 0.604
+rf_model Race mean_difference after: -0.096
+rf_model Race DI after: 0.586
+rf_model Sex mean_difference before: -0.208
+rf_model Sex DI before: 0.352
+rf_model Sex mean_difference value after: -0.115
+rf_model Sex DI value after: 0.439
+svm_model Race mean_difference before: -0.107
+svm_model Race DI before: 0.604
+svm_model Race mean_difference after: -0.011
+svm_model Race DI after: 0.903
+svm_model Sex mean_difference before: -0.208
+svm_model Sex DI before: 0.352
+svm_model Sex mean_difference value after: 0.023
+svm_model Sex DI value after: 1.967
+xgb_model Race mean_difference before: -0.107
+xgb_model Race DI before: 0.604
+xgb_model Race mean_difference after: -0.069
+xgb_model Race DI after: 0.658
+xgb_model Sex mean_difference before: -0.208
+xgb_model Sex DI before: 0.352
+xgb_model Sex mean_difference value after: -0.088
+xgb_model Sex DI value after: 0.472
+lr_model Race Eq. Odds difference: 0.011
+lr_model Sex Eq. Odds difference: -0.018
+rf_model Race Eq. Odds difference: 0.044
+rf_model Sex Eq. Odds difference: -0.015
+svm_model Race Eq. Odds difference: -0.123
+svm_model Sex Eq. Odds difference: -0.048
+xgb_model Race Eq. Odds difference: -0.018
+xgb_model Sex Eq. Odds difference: -0.063
+lr_post_model Race Eq. Odds difference: 0.069
+lr_post_model Sex Eq. Odds difference: 0.131
+rf_post_model Race Eq. Odds difference: 0.028
+rf_post_model Sex Eq. Odds difference: 0.134
+svm_post_model Race Eq. Odds difference: 0.068
+svm_post_model Sex Eq. Odds difference: 0.267
+xgb_post_model Race Eq. Odds difference: 0.054
+xgb_post_model Sex Eq. Odds difference: 0.134

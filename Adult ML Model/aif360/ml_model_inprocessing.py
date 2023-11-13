@@ -7,7 +7,7 @@ from aif360.datasets import BinaryLabelDataset
 from aif360.datasets import StandardDataset
 from sklearn.pipeline import make_pipeline,Pipeline
 from sklearn.preprocessing import StandardScaler
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from codecarbon import track_emissions
 from sklearn.ensemble import RandomForestClassifier
 from aif360.algorithms.inprocessing import MetaFairClassifier
@@ -62,6 +62,11 @@ def training_model(dataset):
     # setting dataset target feature
     y = dataset[target]
 
+    lr_model_pipeline = pickle.load(open('./output_models/std_models/lr_adult_model.sav','rb'))
+    rf_model_pipeline = pickle.load(open('./output_models/std_models/rf_adult_model.sav','rb'))
+    svm_model_pipeline = pickle.load(open('./output_models/std_models/svm_adult_model.sav','rb'))
+    xgb_model_pipeline = pickle.load(open('./output_models/std_models/xgb_adult_model.sav','rb'))
+
     post_lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression(max_iter=200))
     post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
     post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
@@ -85,6 +90,44 @@ def training_model(dataset):
     validate(post_rf_model_pipeline,'rf',X_test,y_test)
     validate(post_svm_model_pipeline,'svm',X_test,y_test)
     validate(post_xgb_model_pipeline,'xgb',X_test,y_test)
+
+    print(f'######### Testing Fairness #########')
+    X_test_df = X_test.copy(deep=True)
+    X_test_df['salary'] = y_test
+
+    lr_inproc_pred = X_test.copy(deep=True)
+    lr_inproc_pred['salary'] = post_lr_model_pipeline.predict(X_test)
+
+    rf_inproc_pred =  X_test.copy(deep=True)
+    rf_inproc_pred['salary'] = post_rf_model_pipeline.predict(X_test)
+
+    svm_inproc_pred =  X_test.copy(deep=True)
+    svm_inproc_pred['salary'] = post_svm_model_pipeline.predict(X_test)
+
+    xgb_inproc_pred =  X_test.copy(deep=True)
+    xgb_inproc_pred['salary'] = post_xgb_model_pipeline.predict(X_test)
+
+    lr_pred = X_test.copy(deep=True)
+    lr_pred['salary'] = lr_model_pipeline.predict(X_test)
+
+    rf_pred =  X_test.copy(deep=True)
+    rf_pred['salary'] = rf_model_pipeline.predict(X_test)
+
+    svm_pred =  X_test.copy(deep=True)
+    svm_pred['salary'] = svm_model_pipeline.predict(X_test)
+
+    xgb_pred =  X_test.copy(deep=True)
+    xgb_pred['salary'] = xgb_model_pipeline.predict(X_test)
+
+    eq_odds_fair_report(X_test_df,lr_pred,'lr')
+    eq_odds_fair_report(X_test_df,rf_pred,'rf')
+    eq_odds_fair_report(X_test_df,svm_pred,'svm')
+    eq_odds_fair_report(X_test_df,xgb_pred,'xgb')
+
+    eq_odds_fair_report(X_test_df,lr_inproc_pred,'lr_inprocessing')
+    eq_odds_fair_report(X_test_df,rf_inproc_pred,'rf_inprocessing')
+    eq_odds_fair_report(X_test_df,svm_inproc_pred,'svm_inprocessing')
+    eq_odds_fair_report(X_test_df,xgb_inproc_pred,'xgb_inprocessing')
 
     print(f'######### Salvataggio modelli #########')
     pickle.dump(post_lr_model_pipeline,open('./output_models/inprocess_models/lr_aif360_adult_model.sav','wb'))
@@ -141,7 +184,62 @@ def processing_fairness(dataset,X_set,y_set,protected_features):
     postop_train = fair_postop_df.convert_to_dataframe()[0]
     
     return postop_train
+
+def eq_odds_fair_report(dataset,prediction,name):
+   
+    race_features = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
+
+    aif_race_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=race_features,
+        privileged_protected_attributes=['race_White']
+    )
+
+    aif_race_pred = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=race_features,
+        privileged_protected_attributes=['race_White']
+    )
     
+    race_privileged_groups = [{'race_White': 1}]
+    race_unprivileged_groups = [{'race_White': 0}]
+
+    metrics = ClassificationMetric(dataset=aif_race_dataset,classified_dataset=aif_race_pred,unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups)
+
+    print_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Race Eq. Odds difference')
+
+    sex_features = ['sex_Male','sex_Female']
+
+    aif_sex_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=sex_features,
+        privileged_protected_attributes=['sex_Male'],
+    )
+
+    aif_sex_pred = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=sex_features,
+        privileged_protected_attributes=['sex_Male'],
+    )
+
+    sex_privileged_groups = [{'sex_Male': 1}]
+    sex_unprivileged_groups = [{'sex_Female': 1}]
+
+    metrics = ClassificationMetric(dataset=aif_sex_dataset,classified_dataset=aif_sex_pred,unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
+
+    print_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Sex Eq. Odds difference')
 
 def print_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
@@ -152,7 +250,7 @@ def print_metrics(metric, message, first_message=False):
         open_type = 'a'
     
     #scriviamo su un file la metrica passata
-    with open(f"./reports/fairness_reports/inprocessing/adult_report.txt",open_type) as f:
+    with open(f"./reports/fairness_reports/inprocessing/aif360/adult_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
         f.write('\n')
 
@@ -171,7 +269,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = 'a'
 
     # scriviamo su un file le metriche di valutazione ottenute
-    with open(f'./reports/inprocessing_models/adult_metrics_report.txt',open_type) as f:
+    with open(f'./reports/inprocessing_models/aif360/adult_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
         f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')

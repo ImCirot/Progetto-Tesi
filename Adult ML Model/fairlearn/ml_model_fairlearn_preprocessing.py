@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from fairlearn.preprocessing import CorrelationRemover
-from fairlearn.metrics import MetricFrame,demographic_parity_difference,demographic_parity_ratio
+from fairlearn.metrics import MetricFrame,demographic_parity_difference,demographic_parity_ratio,equalized_odds_difference
 from sklearn.metrics import *
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -129,8 +129,9 @@ def training_model(dataset):
 
     for name,prediction in predictions.items():
 
-        sex_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g_sex)
-        race_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g_race)
+        DI_value = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
+        mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=g)
+        eq_odds_diff = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
 
         if start is True:
             open_type = 'w'
@@ -139,8 +140,9 @@ def training_model(dataset):
             open_type = 'a'
 
         with open('./reports/fairness_reports/preprocessing/fairlearn/adult_report.txt',open_type) as f:
-            f.write(f'{name}_sex DI: {round(sex_DI,3)}\n')
-            f.write(f'{name}_race DI: {round(race_DI,3)}\n')
+            f.write(f'{name} DI: {round(DI_value,3)}\n')
+            f.write(f'{name} mean_diff: {round(mean_diff,3)}\n')
+            f.write(f'{name} eq_odds_diff: {round(eq_odds_diff,3)}\n')
     
     # salviamo i modelli ottenuti
     print(f'######### Salvataggio modelli #########')
