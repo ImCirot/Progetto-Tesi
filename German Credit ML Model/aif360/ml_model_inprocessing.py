@@ -58,6 +58,11 @@ def training_and_testing_model(df):
         'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
     ]
 
+    lr_model_pipeline = pickle.load(open('./output_models/std_models/lr_credit_model.sav','rb'))
+    rf_model_pipeline = pickle.load(open('./output_models/std_models/rf_credit_model.sav','rb'))
+    svm_model_pipeline = pickle.load(open('./output_models/std_models/svm_credit_model.sav','rb'))
+    xgb_model_pipeline = pickle.load(open('./output_models/std_models/xgb_credit_model.sav','rb'))
+
     post_lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5},random_state=42))
     post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5},random_state=42))
     post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5},random_state=42))
@@ -86,22 +91,40 @@ def training_and_testing_model(df):
     X_test_df = X_test.copy(deep=True)
     X_test_df['Target'] = y_test['Target']
 
+    lr_inproc_pred = X_test.copy(deep=True)
+    lr_inproc_pred['Target'] = post_lr_model_pipeline.predict(X_test)
+
+    rf_inproc_pred =  X_test.copy(deep=True)
+    rf_inproc_pred['Target'] = post_rf_model_pipeline.predict(X_test)
+
+    svm_inproc_pred =  X_test.copy(deep=True)
+    svm_inproc_pred['Target'] = post_svm_model_pipeline.predict(X_test)
+
+    xgb_inproc_pred =  X_test.copy(deep=True)
+    xgb_inproc_pred['Target'] = post_xgb_model_pipeline.predict(X_test)
+
     lr_pred = X_test.copy(deep=True)
-    lr_pred['Target'] = post_lr_model_pipeline.predict(X_test)
+    lr_pred['Target'] = lr_model_pipeline.predict(X_test)
 
     rf_pred =  X_test.copy(deep=True)
-    rf_pred['Target'] = post_rf_model_pipeline.predict(X_test)
+    rf_pred['Target'] = rf_model_pipeline.predict(X_test)
 
     svm_pred =  X_test.copy(deep=True)
-    svm_pred['Target'] = post_svm_model_pipeline.predict(X_test)
+    svm_pred['Target'] = svm_model_pipeline.predict(X_test)
 
     xgb_pred =  X_test.copy(deep=True)
-    xgb_pred['Target'] = post_xgb_model_pipeline.predict(X_test)
+    xgb_pred['Target'] = xgb_model_pipeline.predict(X_test)
 
-    eq_odds_fair_report(X_test_df,lr_pred)
-    eq_odds_fair_report(X_test_df,rf_pred)
-    eq_odds_fair_report(X_test_df,svm_pred)
-    eq_odds_fair_report(X_test_df,xgb_pred)
+    eq_odds_fair_report(X_test_df,lr_pred,'lr')
+    eq_odds_fair_report(X_test_df,rf_pred,'rf')
+    eq_odds_fair_report(X_test_df,svm_pred,'svm')
+    eq_odds_fair_report(X_test_df,xgb_pred,'xgb')
+
+    eq_odds_fair_report(X_test_df,lr_inproc_pred,'lr_inprocessing')
+    eq_odds_fair_report(X_test_df,rf_inproc_pred,'rf_inprocessing')
+    eq_odds_fair_report(X_test_df,svm_inproc_pred,'svm_inprocessing')
+    eq_odds_fair_report(X_test_df,xgb_inproc_pred,'xgb_inprocessing')
+
     
     print(f'######### Salvataggio modelli #########')
     pickle.dump(post_lr_model_pipeline,open('./output_models/inprocess_models/lr_aif360_credit_model.sav','wb'))
@@ -146,7 +169,7 @@ def processing_fairness(dataset,X_set,y_set,protected_features):
     
     return df_train
 
-def eq_odds_fair_report(dataset,prediction,first_message=False):
+def eq_odds_fair_report(dataset,prediction,name):
     # Attributi sensibili
     protected_attribute_names = [
         'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
@@ -177,7 +200,7 @@ def eq_odds_fair_report(dataset,prediction,first_message=False):
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_inproc_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),'Eq. Odds difference from inprocessing')
+    print_inproc_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Eq. Odds difference')
 
 def print_inproc_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input

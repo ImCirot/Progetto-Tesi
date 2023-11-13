@@ -88,10 +88,15 @@ def training_and_testing_model(df):
     svm_post_pred = test_fairness(df_test,svm_df)
     xgb_post_pred = test_fairness(df_test,xgb_df)
 
-    test_eqodds(df_test,lr_df)
-    test_eqodds(df_test,rf_df)
-    test_eqodds(df_test,svm_df)
-    test_eqodds(df_test,xgb_df)
+    test_eqodds(df_test,lr_df,'lr')
+    test_eqodds(df_test,rf_df,'rf')
+    test_eqodds(df_test,svm_df,'svm')
+    test_eqodds(df_test,xgb_df,'xgb')
+
+    test_eqodds(df_test,lr_post_pred,'lr_post')
+    test_eqodds(df_test,rf_post_pred,'rf_post')
+    test_eqodds(df_test,svm_post_pred,'svm_post')
+    test_eqodds(df_test,xgb_post_pred,'xgb_post')
 
     # Stampiamo metriche di valutazione per il modello
     print(f'######### Testing risultati #########')
@@ -180,7 +185,7 @@ def test_fairness(dataset,pred,first_message=False):
 
     return post_pred
 
-def test_eqodds(dataset,pred,first_message=False):
+def test_eqodds(dataset,pred,name,first_message=False):
     # Attributi sensibili
     protected_attribute_names = [
         'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
@@ -211,7 +216,7 @@ def test_eqodds(dataset,pred,first_message=False):
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),'Eq. Odds difference from postprocessing')
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Eq. Odds difference')
 
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input

@@ -14,7 +14,11 @@ Mean_difference value before: -0.017
 DI value before: 0.976
 Mean_difference value after: 0.039
 DI value after: 1.054
-Eq. Odds difference from fair classifier: -0.051
-Eq. Odds difference from fair classifier: -0.199
-Eq. Odds difference from fair classifier: -0.111
-Eq. Odds difference from fair classifier: -0.018
+lr_model Eq. Odds difference: -0.051
+rf_model Eq. Odds difference: -0.199
+svm_model Eq. Odds difference: -0.111
+xgb_model Eq. Odds difference: -0.018
+lr_post_model Eq. Odds difference: 0.295
+rf_post_model Eq. Odds difference: -0.068
+svm_post_model Eq. Odds difference: 0.234
+xgb_post_model Eq. Odds difference: 0.002

@@ -63,6 +63,11 @@ def training_and_testing_model(df):
 
     sample_weights = fair_dataset['weights']
 
+    lr_model_pipeline = pickle.load(open('./output_models/std_models/lr_credit_model.sav','rb'))
+    rf_model_pipeline = pickle.load(open('./output_models/std_models/rf_credit_model.sav','rb'))
+    svm_model_pipeline = pickle.load(open('./output_models/std_models/svm_credit_model.sav','rb'))
+    xgb_model_pipeline = pickle.load(open('./output_models/std_models/xgb_credit_model.sav','rb'))
+
     protected_attribute_names = [
         'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
     ]
@@ -87,6 +92,7 @@ def training_and_testing_model(df):
         ('model', xgb.XGBClassifier(objective='binary:logistic', random_state=42))
     ])
     
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
     X_fair_train, X_fair_test, y_fair_train, y_fair_test, sample_weights_train, sample_weights_test = train_test_split(X_fair,y_fair,sample_weights,test_size=0.2,random_state=42)
     
     print(f'######### Training modelli #########')
@@ -103,25 +109,57 @@ def training_and_testing_model(df):
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
 
     print('######### Testing Fairness #########')
-    X_test = X_fair_test.copy(deep=True)
-    X_test['Target'] = y_fair_test['Target']
+    X_test_fair_df = X_fair_test.copy(deep=True)
+    X_test_fair_df['Target'] = y_fair_test['Target']
 
-    lr_pred = X_fair_test.copy(deep=True)
-    lr_pred['Target'] = lr_fair_model_pipeline.predict(X_fair_test)
+    X_test_df = X_test.copy(deep=True)
+    X_test_df['Target'] = y_test['Target']
 
-    rf_pred =  X_fair_test.copy(deep=True)
-    rf_pred['Target'] = rf_fair_model_pipeline.predict(X_fair_test)
+    lr_fair_pred = X_fair_test.copy(deep=True)
+    lr_fair_pred['Target'] = lr_fair_model_pipeline.predict(X_fair_test)
 
-    svm_pred =  X_fair_test.copy(deep=True)
-    svm_pred['Target'] = svm_fair_model_pipeline.predict(X_fair_test)
+    rf_fair_pred =  X_fair_test.copy(deep=True)
+    rf_fair_pred['Target'] = rf_fair_model_pipeline.predict(X_fair_test)
 
-    xgb_pred =  X_fair_test.copy(deep=True)
-    xgb_pred['Target'] = xgb_fair_model_pipeline.predict(X_fair_test)
+    svm_fair_pred =  X_fair_test.copy(deep=True)
+    svm_fair_pred['Target'] = svm_fair_model_pipeline.predict(X_fair_test)
 
-    eq_odds_fair_report(X_test,lr_pred)
-    eq_odds_fair_report(X_test,rf_pred)
-    eq_odds_fair_report(X_test,svm_pred)
-    eq_odds_fair_report(X_test,xgb_pred)
+    xgb_fair_pred =  X_fair_test.copy(deep=True)
+    xgb_fair_pred['Target'] = xgb_fair_model_pipeline.predict(X_fair_test)
+
+    lr_pred = X_test_df.copy(deep=True)
+    lr_pred['Target'] = lr_fair_model_pipeline.predict(X_test)
+
+    rf_pred =  X_test_df.copy(deep=True)
+    rf_pred['Target'] = rf_fair_model_pipeline.predict(X_test)
+
+    svm_pred =  X_test_df.copy(deep=True)
+    svm_pred['Target'] = svm_fair_model_pipeline.predict(X_test)
+
+    xgb_pred =  X_test_df.copy(deep=True)
+    xgb_pred['Target'] = xgb_fair_model_pipeline.predict(X_test)
+
+    std_predictions = {
+        'lr_std':lr_pred,
+        'rf_std': rf_pred,
+        'svm_std': svm_pred,
+        'xgb_std': xgb_pred,
+    }
+
+    fair_prediction = {
+        'lr_fair': lr_fair_pred,
+        'rf_fair':rf_fair_pred,
+        'svm_fair': svm_fair_pred,
+        'xgb_fair': xgb_fair_pred
+    }
+
+
+    for name,prediction in std_predictions.items():
+        eq_odds_fair_report(X_test_df,prediction,name)
+
+    for name,prediction in fair_prediction.items():
+        eq_odds_fair_report(X_test_fair_df,prediction,name)
+
 
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_aif360_credit_model.sav','wb'))
@@ -200,7 +238,7 @@ def test_fairness(dataset):
 
     return sample_weights
 
-def eq_odds_fair_report(dataset,prediction):
+def eq_odds_fair_report(dataset,prediction,name):
     # Attributi sensibili
     protected_attribute_names = [
         'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
@@ -231,7 +269,7 @@ def eq_odds_fair_report(dataset,prediction):
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),'Eq. Odds difference from fair classifier')
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Eq. Odds difference')
 
     
 def print_fairness_metrics(metric, message, first_message=False):
