@@ -1,0 +1,60 @@
+Gender Mean difference pre inprocessing: 0.213
+Gender DI pre inprocessing: 1.577
+Gender Mean difference post inprocessing: 0.264
+Gender DI post inprocessing: 1.521
+Sp. Needs Mean difference pre inprocessing: -0.057
+Sp. Needs DI pre inprocessing: 0.888
+Sp. Needs Mean difference post inprocessing: -0.002
+Sp. Needs DI post inprocessing: 0.997
+International Mean difference pre inprocessing: -0.0
+International DI pre inprocessing: 0.999
+International Mean difference post inprocessing: 0.001
+International DI post inprocessing: 1.001
+Age Mean difference pre inprocessing: -0.18
+Age DI pre inprocessing: 0.662
+Age Mean difference post inprocessing: -0.211
+Age DI post inprocessing: 0.702
+Grade Mean difference pre inprocessing: -0.093
+Grade DI pre inprocessing: 0.832
+Grade Mean difference post inprocessing: 0.115
+Grade DI post inprocessing: 1.184
+lr_model Gender Eq. Odds difference: -0.048
+lr_model Special Needs Eq. Odds difference: -0.198
+lr_model Age Eq. Odds difference: -0.051
+lr_model International Eq. Odds difference: 0.087
+lr_model Grade Eq. Odds difference: -0.049
+rf_model Gender Eq. Odds difference: 0.017
+rf_model Special Needs Eq. Odds difference: 0.155
+rf_model Age Eq. Odds difference: -0.147
+rf_model International Eq. Odds difference: 0.045
+rf_model Grade Eq. Odds difference: 0.044
+svm_model Gender Eq. Odds difference: -0.055
+svm_model Special Needs Eq. Odds difference: -0.204
+svm_model Age Eq. Odds difference: -0.015
+svm_model International Eq. Odds difference: -0.101
+svm_model Grade Eq. Odds difference: 0.018
+xgb_model Gender Eq. Odds difference: 0.0
+xgb_model Special Needs Eq. Odds difference: 0.153
+xgb_model Age Eq. Odds difference: -0.084
+xgb_model International Eq. Odds difference: 0.145
+xgb_model Grade Eq. Odds difference: 0.004
+lr_inprocessing_model Gender Eq. Odds difference: -0.208
+lr_inprocessing_model Special Needs Eq. Odds difference: -0.113
+lr_inprocessing_model Age Eq. Odds difference: 0.062
+lr_inprocessing_model International Eq. Odds difference: 0.083
+lr_inprocessing_model Grade Eq. Odds difference: -0.007
+rf_inprocessing_model Gender Eq. Odds difference: -0.202
+rf_inprocessing_model Special Needs Eq. Odds difference: -0.092
+rf_inprocessing_model Age Eq. Odds difference: 0.092
+rf_inprocessing_model International Eq. Odds difference: 0.183
+rf_inprocessing_model Grade Eq. Odds difference: 0.012
+svm_inprocessing_model Gender Eq. Odds difference: -0.242
+svm_inprocessing_model Special Needs Eq. Odds difference: -0.436
+svm_inprocessing_model Age Eq. Odds difference: 0.118
+svm_inprocessing_model International Eq. Odds difference: -0.06
+svm_inprocessing_model Grade Eq. Odds difference: 0.025
+xgb_inprocessing_model Gender Eq. Odds difference: -0.195
+xgb_inprocessing_model Special Needs Eq. Odds difference: -0.111
+xgb_inprocessing_model Age Eq. Odds difference: 0.049
+xgb_inprocessing_model International Eq. Odds difference: 0.085
+xgb_inprocessing_model Grade Eq. Odds difference: -0.001

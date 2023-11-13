@@ -83,10 +83,10 @@ def training_and_testing_model(df):
     xgb_df['Target'] = xgb_pred
 
     print(f'######### Testing Fairness #########')
-    lr_post_pred = test_fairness(df_test,lr_df,True)
-    rf_post_pred = test_fairness(df_test,rf_df)
-    svm_post_pred = test_fairness(df_test,svm_df)
-    xgb_post_pred = test_fairness(df_test,xgb_df)
+    lr_post_pred = test_fairness(df_test,lr_df,'lr',True)
+    rf_post_pred = test_fairness(df_test,rf_df,'rf')
+    svm_post_pred = test_fairness(df_test,svm_df,'svm')
+    xgb_post_pred = test_fairness(df_test,xgb_df,'xgb')
 
     test_eqodds(df_test,lr_df,'lr')
     test_eqodds(df_test,rf_df,'rf')
@@ -127,7 +127,7 @@ def validate(model,fair_pred,model_type,X,y,first=False):
         f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
         f.write('\n')
 
-def test_fairness(dataset,pred,first_message=False):
+def test_fairness(dataset,pred,name,first_message=False):
     ## Funzione che presenta alcune metriche di fairness sul dataset utilizzato e applica processi per ridurre/azzerrare il bias
 
      ## Funzione che presenta alcune metriche di fairness sul dataset utilizzato e applica processi per ridurre/azzerrare il bias
@@ -173,12 +173,12 @@ def test_fairness(dataset,pred,first_message=False):
     metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
 
     # stampa della mean_difference del modello originale
-    print_fairness_metrics(metric_original.mean_difference(),'Mean_difference value before', first_message)
-    print_fairness_metrics(metric_original.disparate_impact(),'DI value before')
+    print_fairness_metrics(metric_original.mean_difference(),f'{name}_model Mean_difference value before', first_message)
+    print_fairness_metrics(metric_original.disparate_impact(),f'{name}_model DI value before')
 
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics(metric_transformed.mean_difference(),'Mean_difference value after')
-    print_fairness_metrics(metric_transformed.disparate_impact(),'DI value after')
+    print_fairness_metrics(metric_transformed.mean_difference(),f'{name}_model Mean_difference value after')
+    print_fairness_metrics(metric_transformed.disparate_impact(),f'{name}_model DI value after')
 
     # otteniamo i nuovi pesi forniti dall'oggetto che mitigano i problemi di fairness
     post_pred = dataset_transformed.convert_to_dataframe()[0]

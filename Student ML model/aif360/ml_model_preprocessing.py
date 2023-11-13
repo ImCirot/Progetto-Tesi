@@ -90,7 +90,6 @@ def training_testing_models(dataset):
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
     X_fair_train, X_fair_test, y_fair_train, y_fair_test, weights_train, weights_test = train_test_split(X_fair,y_fair,weights,test_size=0.2,random_state=42)
 
-    print(X_fair_test)
     print(f'######### Training modelli #########')
     lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=weights_train)
     rf_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=weights_train)

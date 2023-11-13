@@ -23,11 +23,11 @@ lr_std_model Special Needs Eq. Odds difference: -0.2
 lr_std_model Age Eq. Odds difference: 0.085
 lr_std_model International Eq. Odds difference: 0.029
 lr_std_model Grade Eq. Odds difference: -0.027
-rf_std_model Gender Eq. Odds difference: 0.003
-rf_std_model Special Needs Eq. Odds difference: 0.183
-rf_std_model Age Eq. Odds difference: -0.059
-rf_std_model International Eq. Odds difference: -0.007
-rf_std_model Grade Eq. Odds difference: 0.004
+rf_std_model Gender Eq. Odds difference: 0.005
+rf_std_model Special Needs Eq. Odds difference: 0.16
+rf_std_model Age Eq. Odds difference: -0.086
+rf_std_model International Eq. Odds difference: 0.072
+rf_std_model Grade Eq. Odds difference: -0.0
 svm_std_model Gender Eq. Odds difference: -0.077
 svm_std_model Special Needs Eq. Odds difference: -0.217
 svm_std_model Age Eq. Odds difference: 0.054
@@ -43,11 +43,11 @@ lr_fair_model Special Needs Eq. Odds difference: -0.2
 lr_fair_model Age Eq. Odds difference: 0.085
 lr_fair_model International Eq. Odds difference: 0.029
 lr_fair_model Grade Eq. Odds difference: -0.027
-rf_fair_model Gender Eq. Odds difference: 0.003
-rf_fair_model Special Needs Eq. Odds difference: 0.183
-rf_fair_model Age Eq. Odds difference: -0.059
-rf_fair_model International Eq. Odds difference: -0.007
-rf_fair_model Grade Eq. Odds difference: 0.004
+rf_fair_model Gender Eq. Odds difference: 0.005
+rf_fair_model Special Needs Eq. Odds difference: 0.16
+rf_fair_model Age Eq. Odds difference: -0.086
+rf_fair_model International Eq. Odds difference: 0.072
+rf_fair_model Grade Eq. Odds difference: -0.0
 svm_fair_model Gender Eq. Odds difference: -0.077
 svm_fair_model Special Needs Eq. Odds difference: -0.217
 svm_fair_model Age Eq. Odds difference: 0.054
