@@ -20,7 +20,7 @@ from time import sleep
 def load_dataset():
     df = pd.read_csv('./Bank Marketing Dataset/dataset.csv')
 
-    for i in range(1):
+    for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
         training_and_testing_models(df)
