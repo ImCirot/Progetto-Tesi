@@ -80,6 +80,8 @@ def training_model(dataset):
     X_fair = fair_dataset[features_list]
     y_fair = fair_dataset['Target']
     
+    X_train, X_test, y_train, y_test, g_train, g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
+    
     # settiamo i subset di training e testing del dataset fair
     X_fair_train, X_fair_test, y_fair_train, y_fair_test = train_test_split(X_fair,y_fair,test_size=0.2,random_state=42)
 
@@ -101,17 +103,17 @@ def training_model(dataset):
     # testiamo la fairness dei modelli ottenuti confrontando i modelli standard e fair
     # sulla base dei risultati prodotti dalla predizione dell'intero set X
     print(f'######### Testing Fairness #########')
-    lr_std_pred = lr_model_pipeline.predict(X)
-    lr_fair_pred = lr_fair_model_pipeline.predict(X_fair)
+    lr_std_pred = lr_model_pipeline.predict(X_fair_test)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X_fair_test)
 
-    rf_std_pred = rf_model_pipeline.predict(X)
-    rf_fair_pred = rf_fair_model_pipeline.predict(X_fair)
+    rf_std_pred = rf_model_pipeline.predict(X_fair_test)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X_fair_test)
 
-    svm_std_pred = svm_model_pipeline.predict(X)
-    svm_fair_pred = svm_fair_model_pipeline.predict(X_fair)
+    svm_std_pred = svm_model_pipeline.predict(X_fair_test)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X_fair_test)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X)
-    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_fair)
+    xgb_std_pred = xgb_model_pipeline.predict(X_fair_test)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_fair_test)
 
     predictions = {
         'lr_std':lr_std_pred,
@@ -129,9 +131,9 @@ def training_model(dataset):
     # calcoliamo il DI di ogni modello e stampiamo su un file i risultati
     for name,prediction in predictions.items():
 
-        DI_score = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
-        sex_eqodds = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
-        sex_mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=g)
+        DI_score = demographic_parity_ratio(y_true=y_fair_test,y_pred=prediction,sensitive_features=g_test)
+        sex_eqodds = equalized_odds_difference(y_true=y_fair_test,y_pred=prediction,sensitive_features=g_test)
+        sex_mean_diff = demographic_parity_difference(y_true=y_fair_test,y_pred=prediction,sensitive_features=g_test)
 
         if start is True:
             open_type = 'w'
@@ -201,6 +203,8 @@ def fairness_preprocess_op(dataset, protected_features_names):
     # inseriamo nel nuovo dataframe le variabili sensibili rimosse in precedenza e la variabile target
     fair_dataset[protected_features_names] = dataset[protected_features_names]
     fair_dataset['Target'] = dataset['Target']
+
+    fair_dataset = fair_dataset[dataset.columns.tolist()]
 
     # stampiamo heatmap che confrontano il grado di correlazione fra gli attributi sensibili e alcuni attributi del dataset
     # show_correlation_heatmap(dataset=dataset,title='original dataset')

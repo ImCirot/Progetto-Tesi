@@ -1,24 +1,24 @@
 lr_std_sex DI: 0.529
 lr_std_eq_odds_diff: 0.321
 lr_std_mean_diff: 0.222
-lr_threshold_sex DI: 0.544
-lr_threshold_eq_odds_diff: 0.464
-lr_threshold_mean_diff: 0.366
+lr_threshold_sex DI: 0.7
+lr_threshold_eq_odds_diff: 0.645
+lr_threshold_mean_diff: 0.241
 rf_std_sex DI: 0.724
 rf_std_eq_odds_diff: 0.321
 rf_std_mean_diff: 0.262
-rf_threshold_sex DI: 0.7
-rf_threshold_eq_odds_diff: 0.571
-rf_threshold_mean_diff: 0.3
+rf_threshold_sex DI: 0.75
+rf_threshold_eq_odds_diff: 0.516
+rf_threshold_mean_diff: 0.25
 svm_std_sex DI: 0.511
 svm_std_eq_odds_diff: 0.258
 svm_std_mean_diff: 0.299
-svm_threshold_sex DI: 0.89
-svm_threshold_eq_odds_diff: 0.393
-svm_threshold_mean_diff: 0.104
+svm_threshold_sex DI: 0.792
+svm_threshold_eq_odds_diff: 0.334
+svm_threshold_mean_diff: 0.196
 xgb_std_sex DI: 0.685
 xgb_std_eq_odds_diff: 0.244
 xgb_std_mean_diff: 0.259
-xgb_threshold_sex DI: 0.66
-xgb_threshold_eq_odds_diff: 0.538
-xgb_threshold_mean_diff: 0.321
+xgb_threshold_sex DI: 0.778
+xgb_threshold_eq_odds_diff: 0.463
+xgb_threshold_mean_diff: 0.214

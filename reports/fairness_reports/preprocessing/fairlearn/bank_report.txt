@@ -1,24 +1,24 @@
-lr_std DI: 0.367
-lr_std mean diff: 0.068
-lr_std eq. odds diff: 0.293
-lr_fair DI: 0.414
-lr_fair mean diff: 0.498
-lr_fair eq. odds diff: 0.516
-rf_std DI: 0.404
-rf_std mean diff: 0.103
-rf_std eq. odds diff: 0.07
-rf_fair DI: 0.608
-rf_fair mean diff: 0.293
-rf_fair eq. odds diff: 0.313
-svm_std DI: 0.261
-svm_std mean diff: 0.089
-svm_std eq. odds diff: 0.327
+lr_std DI: 0.299
+lr_std mean diff: 0.09
+lr_std eq. odds diff: 0.456
+lr_fair DI: 0.44
+lr_fair mean diff: 0.473
+lr_fair eq. odds diff: 0.486
+rf_std DI: 0.257
+rf_std mean diff: 0.137
+rf_std eq. odds diff: 0.237
+rf_fair DI: 0.409
+rf_fair mean diff: 0.365
+rf_fair eq. odds diff: 0.377
+svm_std DI: 0.252
+svm_std mean diff: 0.083
+svm_std eq. odds diff: 0.338
 svm_fair DI: 0.0
-svm_fair mean diff: 0.017
-svm_fair eq. odds diff: 0.067
-xgb_std DI: 0.357
-xgb_std mean diff: 0.11
-xgb_std eq. odds diff: 0.191
-xgb_fair DI: 0.813
-xgb_fair mean diff: 0.158
-xgb_fair eq. odds diff: 0.156
+svm_fair mean diff: 0.014
+svm_fair eq. odds diff: 0.043
+xgb_std DI: 0.282
+xgb_std mean diff: 0.145
+xgb_std eq. odds diff: 0.304
+xgb_fair DI: 0.826
+xgb_fair mean diff: 0.148
+xgb_fair eq. odds diff: 0.189

@@ -1,1 +1,1 @@
-1 iter. elapsed time: 97.32346 seconds.
+1 iter. elapsed time: 83.238536 seconds.

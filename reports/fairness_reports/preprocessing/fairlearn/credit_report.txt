@@ -1,24 +1,24 @@
-lr_std_sex DI: 0.577
-lr_std_eq_odds_diff: 0.294
-lr_std_mean_diff: 0.183
-lr_fair_sex DI: 0.577
-lr_fair_eq_odds_diff: 0.294
-lr_fair_mean_diff: 0.183
-rf_std_sex DI: 0.883
-rf_std_eq_odds_diff: 0.186
-rf_std_mean_diff: 0.111
-rf_fair_sex DI: 0.941
-rf_fair_eq_odds_diff: 0.131
-rf_fair_mean_diff: 0.05
-svm_std_sex DI: 0.827
-svm_std_eq_odds_diff: 0.188
-svm_std_mean_diff: 0.094
-svm_fair_sex DI: 0.928
-svm_fair_eq_odds_diff: 0.118
-svm_fair_mean_diff: 0.039
-xgb_std_sex DI: 0.978
-xgb_std_eq_odds_diff: 0.092
-xgb_std_mean_diff: 0.017
-xgb_fair_sex DI: 0.893
-xgb_fair_eq_odds_diff: 0.176
-xgb_fair_mean_diff: 0.078
+lr_std_sex DI: 0.529
+lr_std_eq_odds_diff: 0.321
+lr_std_mean_diff: 0.222
+rf_std_sex DI: 0.724
+rf_std_eq_odds_diff: 0.321
+rf_std_mean_diff: 0.262
+svm_std_sex DI: 0.511
+svm_std_eq_odds_diff: 0.258
+svm_std_mean_diff: 0.299
+xgb_std_sex DI: 0.685
+xgb_std_eq_odds_diff: 0.244
+xgb_std_mean_diff: 0.259
+lr_fair_sex DI: 0.701
+lr_fair_eq_odds_diff: 0.191
+lr_fair_mean_diff: 0.122
+rf_fair_sex DI: 0.764
+rf_fair_eq_odds_diff: 0.464
+rf_fair_mean_diff: 0.213
+svm_fair_sex DI: 0.582
+svm_fair_eq_odds_diff: 0.25
+svm_fair_mean_diff: 0.225
+xgb_fair_sex DI: 0.75
+xgb_fair_eq_odds_diff: 0.23
+xgb_fair_mean_diff: 0.188
