@@ -119,17 +119,17 @@ def training_model(dataset):
     # plt.show()
 
     print(f'######### Testing Fairness #########')
-    lr_std_pred = lr_model_pipeline.predict(X_test)
-    lr_threshold_pred = lr_threshold.predict(X_test,sensitive_features=g_test)
+    lr_std_pred = lr_model_pipeline.predict(X)
+    lr_threshold_pred = lr_threshold.predict(X,sensitive_features=g)
 
-    rf_std_pred = rf_model_pipeline.predict(X_test)
-    rf_threshold_pred = rf_threshold.predict(X_test,sensitive_features=g_test)
+    rf_std_pred = rf_model_pipeline.predict(X)
+    rf_threshold_pred = rf_threshold.predict(X,sensitive_features=g)
 
-    svm_std_pred = svm_model_pipeline.predict(X_test)
-    svm_threshold_pred = svm_threshold.predict(X_test,sensitive_features=g_test)
+    svm_std_pred = svm_model_pipeline.predict(X)
+    svm_threshold_pred = svm_threshold.predict(X,sensitive_features=g)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X_test)
-    xgb_threshold_pred = xgb_threshold.predict(X_test,sensitive_features=g_test)
+    xgb_std_pred = xgb_model_pipeline.predict(X)
+    xgb_threshold_pred = xgb_threshold.predict(X,sensitive_features=g)
 
     predictions = {
         'lr_std':lr_std_pred,
@@ -146,9 +146,9 @@ def training_model(dataset):
 
     for name,prediction in predictions.items():
 
-        DI_value = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=g_test)
-        mean_diff = demographic_parity_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test)
-        eq_odds_diff = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test)
+        DI_value = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
+        mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=g)
+        eq_odds_diff = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
 
         if start is True:
             open_type = 'w'

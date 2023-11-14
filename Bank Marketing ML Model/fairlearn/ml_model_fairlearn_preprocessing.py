@@ -105,17 +105,17 @@ def training_and_testing_models(df):
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
     
     print(f'######### Testing Fairness #########')
-    lr_std_pred = lr_model_pipeline.predict(X_test)
-    lr_fair_pred = lr_fair_model_pipeline.predict(X_test)
+    lr_std_pred = lr_model_pipeline.predict(X)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X)
 
-    rf_std_pred = rf_model_pipeline.predict(X_test)
-    rf_fair_pred = rf_fair_model_pipeline.predict(X_test)
+    rf_std_pred = rf_model_pipeline.predict(X)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X)
 
-    svm_std_pred = svm_model_pipeline.predict(X_test)
-    svm_fair_pred = svm_fair_model_pipeline.predict(X_test)
+    svm_std_pred = svm_model_pipeline.predict(X)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X_test)
-    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_test)
+    xgb_std_pred = xgb_model_pipeline.predict(X)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X)
 
     predictions = {
         'lr_std':lr_std_pred,
@@ -132,9 +132,9 @@ def training_and_testing_models(df):
 
     for name,prediction in predictions.items():
 
-        DI_value = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=g_test)
-        mean_diff = demographic_parity_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test)
-        eq_odds_diff = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test)
+        DI_value = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
+        mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=g)
+        eq_odds_diff = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
 
         if start is True:
             open_type = 'w'
