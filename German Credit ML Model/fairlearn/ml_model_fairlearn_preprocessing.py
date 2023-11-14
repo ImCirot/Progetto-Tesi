@@ -96,7 +96,7 @@ def training_model(dataset):
     # sns.heatmap(fair_dataset[sens_and_target_features].corr(),annot=True,cmap='coolwarm')
     # plt.title("Modified dataset heatmap")
     # plt.show()
-
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
     X_fair_train, X_fair_test, y_fair_train, y_fair_test = train_test_split(X_fair,y_fair,test_size=0.2,random_state=42)
 
     print(f'######### Training modelli #########')
@@ -113,17 +113,17 @@ def training_model(dataset):
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
 
     print(f'######### Testing Fairness #########')
-    lr_std_pred = lr_model_pipeline.predict(X)
-    lr_fair_pred = lr_fair_model_pipeline.predict(X_fair)
+    lr_std_pred = lr_model_pipeline.predict(X_test)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X_fair_test)
 
-    rf_std_pred = rf_model_pipeline.predict(X)
-    rf_fair_pred = rf_fair_model_pipeline.predict(X_fair)
+    rf_std_pred = rf_model_pipeline.predict(X_test)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X_fair_test)
 
-    svm_std_pred = svm_model_pipeline.predict(X)
-    svm_fair_pred = svm_fair_model_pipeline.predict(X_fair)
+    svm_std_pred = svm_model_pipeline.predict(X_test)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X_fair_test)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X)
-    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_fair)
+    xgb_std_pred = xgb_model_pipeline.predict(X_test)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_fair_test)
 
     predictions = {
         'lr_std':lr_std_pred,
@@ -136,13 +136,14 @@ def training_model(dataset):
         'xgb_fair': xgb_fair_pred,
     }
 
+    sex = X_test[sex_feature]
     start = True
 
     for name,prediction in predictions.items():
 
-        sex_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=sex)
-        sex_eqodds = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=sex)
-        sex_mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=sex)
+        sex_DI = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=sex)
+        sex_eqodds = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=sex)
+        sex_mean_diff = demographic_parity_difference(y_true=y_test,y_pred=prediction,sensitive_features=sex)
 
         if start is True:
             open_type = 'w'
