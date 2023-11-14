@@ -110,43 +110,24 @@ def training_and_testing_model(df):
         class_mode='categorical',
     )
 
-    model_URL = "https://www.kaggle.com/models/google/resnet-v2/frameworks/TensorFlow2/variations/50-classification/versions/2"
-    resnet_google = tf.keras.Sequential(
-        [
-            tf.keras.layers.Rescaling(1./255, input_shape=(48,48, 3)),
-            hub.KerasLayer(model_URL),
-            tf.keras.layers.Dense(2, activation="softmax")
-        ])
+    json_file = open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
+    model.load_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
 
-    model_name = "resnet_model.keras"
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        monitor="val_loss",
-        mode="min",
-        save_best_only = True,
-        verbose=1,
-        filepath=f'./output_models/inprocessing_models/{model_name}'
-    )
+    # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
 
-    earlystopping = tf.keras.callbacks.EarlyStopping(
-        monitor='val_loss',min_delta = 0, patience = 5,
-        verbose = 1, restore_best_weights=True
-        )
-
-    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
-        monitor='val_loss', factor=0.2,
-        patience=5, min_lr=0.0001)
-    
-
-    resnet_history = resnet_google.fit(
+    resnet_history = model.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
         epochs=epochs, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
-        callbacks=[checkpoint,reduce_lr]
     )
 
     plt.figure(figsize=(20,8))
@@ -154,21 +135,27 @@ def training_and_testing_model(df):
     plt.title('model AUC')
     plt.ylabel('AUC')
     plt.xlabel('epoch')
-    plt.savefig('./figs/inprocessing_resnet_roc-auc.png')
+    plt.savefig('./figs/aif360/inprocessing_resnet_roc-auc.png')
 
     plt.figure(figsize=(20,8))
     plt.plot(resnet_history.history['accuracy'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
-    plt.savefig('./figs/inprocessing_resnet_accuracy.png')
+    plt.savefig('./figs/aif360/inprocessing_resnet_accuracy.png')
 
-    resnet_loss, resnet_accuracy, resnet_auc = resnet_google.evaluate(validation_generator)
+    resnet_loss, resnet_accuracy, resnet_auc = model.evaluate(validation_generator)
 
     with open('./reports/inprocessing_models/resnet_gender_recognition_report.txt','w') as f:
         f.write('ResnetV2 model\n')
         f.write(f"Accuracy: {round(resnet_accuracy,3)}\n")
         f.write(f'AUC-ROC: {round(resnet_auc,3)}\n')
+    
+    m_json = model.to_json()
+    with open('./output_models/inprocess_models/resnet_model/resnet_gender_recognition_model.json','w') as f:
+        f.write(m_json)
+
+    model.save_weights('./output_models/inprocess_models/resnet_model/resnet_std_weights.h5')
 
 def inprocess_op(dataset):
     ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
