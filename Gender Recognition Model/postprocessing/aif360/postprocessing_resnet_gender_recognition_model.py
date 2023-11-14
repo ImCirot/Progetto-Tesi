@@ -5,7 +5,7 @@ import pandas as pd
 import os
 from codecarbon import track_emissions
 import glob
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from aif360.datasets import BinaryLabelDataset
 from aif360.datasets import StandardDataset
 from sklearn.model_selection import train_test_split
@@ -66,14 +66,10 @@ def load_dataset():
     # creiamo un dataframe contenente il nome del file, l'età, genere e razza di ogni sample all'interno del dataset
     std_df = pd.DataFrame(data={"filename": data, "age": age_label, "gender": gender_label, 'race': race_label})
 
-    prediction = pd.read_csv('./reports/predictions/resnet_prediction.txt')
-
-    prediction = prediction.drop('ID',axis=1)
-
     # valutiamo la postprocessing modello sul dataset 
-    postop_model(std_df,prediction)
+    postop_model(std_df)
 
-def postop_model(df,prediction):
+def postop_model(df):
     ## funzione di postprocessing dei risultati dle modello
 
     # setting dimensioni immagine
@@ -121,9 +117,21 @@ def postop_model(df,prediction):
     X_test = df_test[features]
     y_test = df_test['gender'].astype(int)
 
-    prediction[features] = df_test[features]
+    json_file = open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
+    model.load_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
 
-    fair_pred = test_fairness(df_test,prediction)
+    # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+
+    pred = model.predict(validation_generator)
+    pred = np.argmax(pred,axis=1)
+    std_pred = pd.DataFrame(pred,columns=['gender'])
+    std_pred[features] = df_test[features]
+
+    fair_pred = test_fairness(df_test,std_pred)
 
     resnet_accuracy = accuracy_score(y_true=y_test,y_pred=fair_pred['gender'])
     
@@ -160,17 +168,22 @@ def test_fairness(dataset,pred):
     race_unprivileged_groups = [{'race': 1},{'race':4}]
 
     race_metric_original = BinaryLabelDatasetMetric(dataset=race_aif_dataset, privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups)
+    agg_metrics_og = ClassificationMetric(dataset=race_aif_dataset,classified_dataset=race_aif_pred,privileged_groups=race_privileged_groups,unprivileged_groups=race_unprivileged_groups)
+
     print_metrics('mean_difference before', race_metric_original.mean_difference(),first_message=True)
     print_metrics('DI before', race_metric_original.disparate_impact())
+    print_metrics('Eq. odds diff before', (agg_metrics_og.true_positive_rate_difference()-agg_metrics_og.false_positive_rate()))
 
     eqoods = CalibratedEqOddsPostprocessing(unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups,cost_constraint='fpr',seed=42)
 
     race_transformed = eqoods.fit_predict(race_aif_dataset,race_aif_pred,threshold=0.8)
 
     race_metric_transformed = BinaryLabelDatasetMetric(dataset=race_transformed, privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups)
+    agg_metrics_trans = ClassificationMetric(dataset=race_aif_dataset,classified_dataset=race_transformed,privileged_groups=race_privileged_groups,unprivileged_groups=race_unprivileged_groups)
 
     print_metrics('mean_difference after', race_metric_transformed.mean_difference())
     print_metrics('DI after', race_metric_transformed.disparate_impact())
+    print_metrics('Eq. odds diff after', (agg_metrics_trans.true_positive_rate_difference()-agg_metrics_trans.false_positive_rate()))
 
     fair_dataset = race_transformed.convert_to_dataframe()[0]
 
@@ -184,7 +197,7 @@ def print_metrics(message,metric,first_message=False):
     else:
         open_type = 'a'
 
-    with open('./reports/fairness_reports/postprocessing/resnet_gender_report.txt',open_type) as f:
+    with open('./reports/fairness_reports/postprocessing/aif360/resnet_gender_report.txt',open_type) as f:
         f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
