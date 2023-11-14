@@ -1,24 +1,48 @@
-lr_std_sex DI: 0.529
-lr_std_eq_odds_diff: 0.321
-lr_std_mean_diff: 0.222
-rf_std_sex DI: 0.724
-rf_std_eq_odds_diff: 0.321
-rf_std_mean_diff: 0.262
-svm_std_sex DI: 0.511
-svm_std_eq_odds_diff: 0.258
-svm_std_mean_diff: 0.299
-xgb_std_sex DI: 0.685
-xgb_std_eq_odds_diff: 0.244
-xgb_std_mean_diff: 0.259
-lr_fair_sex DI: 0.701
-lr_fair_eq_odds_diff: 0.191
-lr_fair_mean_diff: 0.122
-rf_fair_sex DI: 0.764
-rf_fair_eq_odds_diff: 0.464
-rf_fair_mean_diff: 0.213
-svm_fair_sex DI: 0.582
-svm_fair_eq_odds_diff: 0.25
-svm_fair_mean_diff: 0.225
-xgb_fair_sex DI: 0.75
-xgb_fair_eq_odds_diff: 0.23
-xgb_fair_mean_diff: 0.188
+lr_std sex DI: 0.424
+lr_std sex eq_odds_diff: 0.347
+lr_std sex mean_diff: 0.272
+lr_std age DI: 0.49
+lr_std age mean_diff: 0.228
+lr_std age eq_odds_diff: 0.245
+lr_fair sex DI: 0.0
+lr_fair sex eq_odds_diff: 0.026
+lr_fair sex mean_diff: 0.018
+lr_fair age DI: 0.0
+lr_fair age mean_diff: 0.012
+lr_fair age eq_odds_diff: 0.017
+rf_std sex DI: 0.833
+rf_std sex eq_odds_diff: 0.147
+rf_std sex mean_diff: 0.15
+rf_std age DI: 0.924
+rf_std age mean_diff: 0.064
+rf_std age eq_odds_diff: 0.094
+rf_fair sex DI: 1.0
+rf_fair sex eq_odds_diff: 0.0
+rf_fair sex mean_diff: 0.0
+rf_fair age DI: 1.0
+rf_fair age mean_diff: 0.0
+rf_fair age eq_odds_diff: 0.0
+svm_std sex DI: 0.391
+svm_std sex eq_odds_diff: 0.355
+svm_std sex mean_diff: 0.389
+svm_std age DI: 0.416
+svm_std age mean_diff: 0.351
+svm_std age eq_odds_diff: 0.376
+svm_fair sex DI: 0.699
+svm_fair sex eq_odds_diff: 0.274
+svm_fair sex mean_diff: 0.223
+svm_fair age DI: 0.43
+svm_fair age mean_diff: 0.414
+svm_fair age eq_odds_diff: 0.41
+xgb_std sex DI: 0.715
+xgb_std sex eq_odds_diff: 0.255
+xgb_std sex mean_diff: 0.225
+xgb_std age DI: 0.711
+xgb_std age mean_diff: 0.229
+xgb_std age eq_odds_diff: 0.29
+xgb_fair sex DI: 0.444
+xgb_fair sex eq_odds_diff: 0.639
+xgb_fair sex mean_diff: 0.312
+xgb_fair age DI: 0.332
+xgb_fair age mean_diff: 0.314
+xgb_fair age eq_odds_diff: 0.344

@@ -26,9 +26,12 @@ def training_model(dataset):
     features.remove('Target')
 
     # evidenziamo gli attributi sensibili del dataset
-    sex_features = [
-        'sex_A91','sex_A92','sex_A93','sex_A94'
+    protected_features = [
+        'sex_A91','sex_A92','sex_A93','sex_A94','Age in years'
     ]
+
+    sex_features = ['sex_A91','sex_A92','sex_A93','sex_A94']
+    age_feature = ['Age in years']
 
     # settiamo la nostra X sulle sole variabili di features
     X = dataset[features]
@@ -41,7 +44,7 @@ def training_model(dataset):
     y = dataset['Target']
 
     # settiamo un dataframe contenente solamente i valori degli attributi sensibili (utile per utilizzare il framework FairLearn)
-    g = dataset[sex_features]
+    g = dataset[protected_features]
 
     lr_model_pipeline = pickle.load(open('./output_models/std_models/lr_credit_model.sav','rb'))
     rf_model_pipeline = pickle.load(open('./output_models/std_models/rf_credit_model.sav','rb'))
@@ -80,7 +83,6 @@ def training_model(dataset):
         objective='accuracy_score'
     )
 
-    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
     X_train, X_test, y_train, y_test,g_train,g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
 
     # modifichiamo i modelli con postop di fairness
@@ -105,37 +107,40 @@ def training_model(dataset):
     # plot_threshold_optimizer(xgb_threshold)
 
     print(f'######### Testing Fairness #########')
-    g_test = X_test[sex_features]
-    lr_std_pred = lr_model_pipeline.predict(X)
-    lr_threshold_pred = lr_threshold.predict(X,sensitive_features=g)
+    lr_std_pred = lr_model_pipeline.predict(X_test)
+    lr_fair_pred = lr_threshold.predict(X_test,sensitive_features=g_test)
 
-    rf_std_pred = rf_model_pipeline.predict(X)
-    rf_threshold_pred = rf_threshold.predict(X,sensitive_features=g)
+    rf_std_pred = rf_model_pipeline.predict(X_test)
+    rf_fair_pred = rf_threshold.predict(X_test,sensitive_features=g_test)
 
-    svm_std_pred = svm_model_pipeline.predict(X)
-    svm_threshold_pred = svm_threshold.predict(X,sensitive_features=g)
+    svm_std_pred = svm_model_pipeline.predict(X_test)
+    svm_fair_pred = svm_threshold.predict(X_test,sensitive_features=g_test)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X)
-    xgb_threshold_pred = xgb_threshold.predict(X,sensitive_features=g)
+    xgb_std_pred = xgb_model_pipeline.predict(X_test)
+    xgb_fair_pred = xgb_threshold.predict(X_test,sensitive_features=g_test)
 
     predictions = {
         'lr_std':lr_std_pred,
-        'lr_threshold': lr_threshold_pred,
+        'lr_threshold': lr_fair_pred,
         'rf_std': rf_std_pred,
-        'rf_threshold':rf_threshold_pred,
+        'rf_threshold':rf_fair_pred,
         'svm_std': svm_std_pred,
-        'svm_threshold': svm_threshold_pred,
+        'svm_threshold': svm_fair_pred,
         'xgb_std': xgb_std_pred,
-        'xgb_threshold': xgb_threshold_pred
+        'xgb_threshold': xgb_fair_pred,
     }
 
     start = True
 
     for name,prediction in predictions.items():
 
-        sex_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
-        sex_eq_odss = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
-        sex_mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=g)
+        sex_DI = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=g_test[sex_features])
+        sex_eqodds = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[sex_features])
+        sex_mean = demographic_parity_difference(y_test,y_pred=prediction,sensitive_features=g_test[sex_features])
+
+        age_DI = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=g_test[age_feature])
+        age_eqodds = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[age_feature])
+        age_mean = demographic_parity_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[age_feature])
 
         if start is True:
             open_type = 'w'
@@ -144,10 +149,13 @@ def training_model(dataset):
             open_type = 'a'
 
         with open('./reports/fairness_reports/postprocessing/fairlearn/credit_report.txt',open_type) as f:
-            f.write(f'{name}_sex DI: {round(sex_DI,3)}\n')
-            f.write(f'{name}_eq_odds_diff: {round(sex_eq_odss,3)}\n')
-            f.write(f'{name}_mean_diff: {round(sex_mean_diff,3)}\n')
-
+            f.write(f'{name} sex DI: {round(sex_DI,3)}\n')
+            f.write(f'{name} sex eq_odds_diff: {round(sex_eqodds,3)}\n')
+            f.write(f'{name} sex mean_diff: {round(sex_mean,3)}\n')
+            f.write(f'{name} age DI: {round(age_DI,3)}\n')
+            f.write(f'{name} age mean_diff: {round(age_mean,3)}\n')
+            f.write(f'{name} age eq_odds_diff: {round(age_eqodds,3)}\n')
+    
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_threshold,open('./output_models/postprocessing_models/threshold_lr_fairlearn_credit_model.sav','wb'))
     pickle.dump(rf_threshold,open('./output_models/postprocessing_models/threshold_rf_fairlearn_credit_model.sav','wb'))
@@ -163,9 +171,7 @@ def validate(ml_model,model_type,X_test,y_test,g_test,first=False):
 
     accuracy = accuracy_score(y_test, pred)
 
-    y_proba = ml_model.estimator.predict_proba(X_test)[::,1]
-
-    auc_score = roc_auc_score(y_test,y_proba)
+    f1 = f1_score(y_test,pred)
 
     if first:
         open_type = "w"
@@ -176,7 +182,7 @@ def validate(ml_model,model_type,X_test,y_test,g_test,first=False):
     with  open(f'./reports/postprocessing_models/fairlearn/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
-        f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
+        f.write(f'\nF1 score: {round(f1,3)}\n')
         f.write('\n')
 
 def load_dataset():

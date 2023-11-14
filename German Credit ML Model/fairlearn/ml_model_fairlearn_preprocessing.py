@@ -32,9 +32,12 @@ def training_model(dataset):
     features.remove('Target')
 
     # evidenziamo gli attributi sensibili del dataset
-    sex_features = [
-        'sex_A91','sex_A92','sex_A93','sex_A94'
+    protected_features = [
+        'sex_A91','sex_A92','sex_A93','sex_A94','Age in years'
     ]
+
+    sex_features = ['sex_A91','sex_A92','sex_A93','sex_A94']
+    age_feature = ['Age in years']
 
     # settiamo la nostra X sulle sole variabili di features
     X = dataset[features]
@@ -47,7 +50,9 @@ def training_model(dataset):
     y = dataset['Target']
 
     # settiamo un dataframe contenente solamente i valori degli attributi sensibili (utile per utilizzare il framework FairLearn)
-    sex = dataset[sex_features]
+    g = dataset[protected_features]
+    g_sex = dataset[sex_features]
+    g_age = dataset[age_feature]
 
     lr_model_pipeline = pickle.load(open('./output_models/std_models/lr_credit_model.sav','rb'))
     rf_model_pipeline = pickle.load(open('./output_models/std_models/rf_credit_model.sav','rb'))
@@ -57,7 +62,7 @@ def training_model(dataset):
 
     # proviamo a rimuovere eventuali correlazioni esistenti fra i dati e le features sensibli
     # utilizzando una classe messa a disposizione dalla libreria FairLearn
-    corr_remover = CorrelationRemover(sensitive_feature_ids=sex_features,alpha=1.0)
+    corr_remover = CorrelationRemover(sensitive_feature_ids=protected_features,alpha=1.0)
 
     # creiamo un nuovo modello da addestrare sul dataset modificato
     lr_fair_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
@@ -67,8 +72,8 @@ def training_model(dataset):
 
 
     features_names = dataset.columns.tolist()
-    for sex_feature in sex_features:
-        features_names.remove(sex_feature)
+    for features in protected_features:
+        features_names.remove(features)
         
 
     # modifichiamo il set training usando lo strumento di preprocessing fornito dalla libreria FairLearn
@@ -77,7 +82,7 @@ def training_model(dataset):
         fair_dataset, columns=features_names
     )
 
-    fair_dataset[sex_features] = dataset[sex_features]
+    fair_dataset[protected_features] = dataset[protected_features]
     fair_dataset['Target'] = dataset['Target']
     fair_dataset = fair_dataset[dataset.columns.tolist()]
     
@@ -97,7 +102,7 @@ def training_model(dataset):
     # sns.heatmap(fair_dataset[sens_and_target_features].corr(),annot=True,cmap='coolwarm')
     # plt.title("Modified dataset heatmap")
     # plt.show()
-    X_train, X_test, y_train, y_test, sex_train, sex_test = train_test_split(X,y,sex,test_size=0.2,random_state=42)
+    X_train, X_test, y_train, y_test,g_train,g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
     X_fair_train, X_fair_test, y_fair_train, y_fair_test = train_test_split(X_fair,y_fair,test_size=0.2,random_state=42)
 
     print(f'######### Training modelli #########')
@@ -114,36 +119,40 @@ def training_model(dataset):
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
 
     print(f'######### Testing Fairness #########')
-    lr_std_pred = lr_model_pipeline.predict(X)
-    lr_fair_pred = lr_fair_model_pipeline.predict(X)
+    lr_std_pred = lr_model_pipeline.predict(X_test)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X_test)
 
-    rf_std_pred = rf_model_pipeline.predict(X)
-    rf_fair_pred = rf_fair_model_pipeline.predict(X)
+    rf_std_pred = rf_model_pipeline.predict(X_test)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X_test)
 
-    svm_std_pred = svm_model_pipeline.predict(X)
-    svm_fair_pred = svm_fair_model_pipeline.predict(X)
+    svm_std_pred = svm_model_pipeline.predict(X_test)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X_test)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X)
-    xgb_fair_pred = xgb_fair_model_pipeline.predict(X)
+    xgb_std_pred = xgb_model_pipeline.predict(X_test)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_test)
 
     predictions = {
         'lr_std':lr_std_pred,
-        'rf_std': rf_std_pred,
-        'svm_std': svm_std_pred,
-        'xgb_std': xgb_std_pred,
         'lr_fair': lr_fair_pred,
+        'rf_std': rf_std_pred,
         'rf_fair':rf_fair_pred,
+        'svm_std': svm_std_pred,
         'svm_fair': svm_fair_pred,
+        'xgb_std': xgb_std_pred,
         'xgb_fair': xgb_fair_pred,
     }
 
     start = True
-    
+
     for name,prediction in predictions.items():
 
-        sex_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=sex)
-        sex_eqodds = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=sex)
-        sex_mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=sex)
+        sex_DI = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=g_test[sex_features])
+        sex_eqodds = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[sex_features])
+        sex_mean = demographic_parity_difference(y_test,y_pred=prediction,sensitive_features=g_test[sex_features])
+
+        age_DI = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=g_test[age_feature])
+        age_eqodds = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[age_feature])
+        age_mean = demographic_parity_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[age_feature])
 
         if start is True:
             open_type = 'w'
@@ -152,9 +161,12 @@ def training_model(dataset):
             open_type = 'a'
 
         with open('./reports/fairness_reports/preprocessing/fairlearn/credit_report.txt',open_type) as f:
-            f.write(f'{name}_sex DI: {round(sex_DI,3)}\n')
-            f.write(f'{name}_eq_odds_diff: {round(sex_eqodds,3)}\n')
-            f.write(f'{name}_mean_diff: {round(sex_mean_diff,3)}\n')
+            f.write(f'{name} sex DI: {round(sex_DI,3)}\n')
+            f.write(f'{name} sex eq_odds_diff: {round(sex_eqodds,3)}\n')
+            f.write(f'{name} sex mean_diff: {round(sex_mean,3)}\n')
+            f.write(f'{name} age DI: {round(age_DI,3)}\n')
+            f.write(f'{name} age mean_diff: {round(age_mean,3)}\n')
+            f.write(f'{name} age eq_odds_diff: {round(age_eqodds,3)}\n')
 
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_fairlearn_credit_model.sav','wb'))
@@ -165,11 +177,12 @@ def training_model(dataset):
 
 def validate(ml_model,model_type,X_test,y_test,first=False):
     ## funzione utile a calcolare metriche del modello realizzato
-    accuracy = ml_model.score(X_test,y_test)
 
-    y_proba = ml_model.predict_proba(X_test)[::,1]
+    pred = ml_model.predict(X_test)
 
-    auc_score = roc_auc_score(y_test,y_proba)
+    accuracy = accuracy_score(y_test, pred)
+
+    f1 = f1_score(y_test,pred)
 
     if first:
         open_type = "w"
@@ -177,10 +190,10 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = "a"
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f"./reports/preprocessing_models/fairlearn/credit_metrics_report.txt",open_type) as f:
+    with  open(f'./reports/postprocessing_models/fairlearn/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
-        f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
+        f.write(f'\nF1 score: {round(f1,3)}\n')
         f.write('\n')
 
 def load_dataset():
