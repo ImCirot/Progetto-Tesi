@@ -113,7 +113,7 @@ def training_and_testing_model(std_df,fair_df):
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2, horizontal_flip=True)
 
     # creiamo il dataset di training del modello
-    train_generator = fair_train_datagen.flow_from_dataframe(
+    train_generator = train_datagen.flow_from_dataframe(
         dataframe=std_df,
         y_col='gender',
         shuffle=True,
@@ -124,7 +124,7 @@ def training_and_testing_model(std_df,fair_df):
     )
 
     # creiamo il dataset di testing del modello
-    validaton_generator = fair_train_datagen.flow_from_dataframe(
+    validaton_generator = train_datagen.flow_from_dataframe(
         dataframe=std_df,
         y_col="gender",
         shuffle=True,
