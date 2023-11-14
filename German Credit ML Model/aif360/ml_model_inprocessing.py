@@ -136,7 +136,7 @@ def training_and_testing_model(df):
             
 def processing_fairness(dataset,X_set,y_set,protected_features):
 
-    fair_classifier = MetaFairClassifier(type='sr')
+    fair_classifier = MetaFairClassifier(type='sr',seed=42)
 
     train_dataset = pd.DataFrame(X_set)
 
@@ -164,6 +164,33 @@ def processing_fairness(dataset,X_set,y_set,protected_features):
 
     print_inproc_metrics(metrics_trans.mean_difference(),f'Gender Mean difference post inprocessing')
     print_inproc_metrics(metrics_trans.disparate_impact(),f'Gender DI post inprocessing')
+
+    df_train = fair_df.convert_to_dataframe()[0]
+
+    aif_train = BinaryLabelDataset(
+        df=df_train,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Age in years'],
+    )
+
+    privileged_groups = [{'Age in years': 1}]
+    unprivileged_groups = [{'Age in years': 0}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+    
+    print_inproc_metrics(metrics_og.mean_difference(),f'Age Mean difference pre inprocessing')
+    print_inproc_metrics(metrics_og.disparate_impact(),f'Age DI pre inprocessing')
+
+    fair_classifier = MetaFairClassifier(type='sr',seed=42)
+
+    fair_df = fair_classifier.fit_predict(dataset=aif_train)
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_inproc_metrics(metrics_trans.mean_difference(),f'Age Mean difference post inprocessing')
+    print_inproc_metrics(metrics_trans.disparate_impact(),f'Age DI post inprocessing')
 
     df_train = fair_df.convert_to_dataframe()[0]
     
@@ -200,7 +227,34 @@ def eq_odds_fair_report(dataset,prediction,name):
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_inproc_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Eq. Odds difference')
+    print_inproc_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Gender Eq. Odds difference')
+
+    aif360_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Age in years'],
+    )
+
+    aif360_pred = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['Target'],
+        protected_attribute_names=['Age in years'],
+    )
+
+    # Setting dei gruppi privilegiati e non
+    # In questo caso si è scelto di trattare come gruppo privilegiato tutte le entrate che presentano la feature 'Sex_A94' = 1, ovvero tutte le entrate
+    # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_94' != 1,
+    # ovvero tutti gli altri individui.
+    privileged_groups = [{'Age in years': 1}]
+    unprivileged_groups = [{'Age in years': 0}]
+
+    metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    print_inproc_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Age Eq. Odds difference')
 
 def print_inproc_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
@@ -220,9 +274,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
 
     accuracy = ml_model.score(X_test,y_test)
 
-    y_proba = ml_model.predict_proba(X_test)[::,1]
-
-    auc_score = roc_auc_score(y_test,y_proba)
+    f1 = f1_score(y_test,pred)
 
     if first:
         open_type = "w"
@@ -233,7 +285,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
     with  open(f'./reports/inprocessing_models/aif360/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
-        f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
+        f.write(f'\nF1 score: {round(f1,3)}\n')
         f.write('\n')
             
 def print_time(time,index):

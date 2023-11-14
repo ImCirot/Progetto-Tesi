@@ -1,12 +1,12 @@
-Mean_difference value before: -0.074
-DI value before: 0.899
-Mean_difference value after: 0.0
+Mean_difference value before: -0.156
+DI value before: 0.79
+Mean_difference value after: -0.0
 DI value after: 1.0
-lr_std_model Eq. Odds difference from fair classifier: 0.097
-rf_std_model Eq. Odds difference from fair classifier: -0.254
-svm_std_model Eq. Odds difference from fair classifier: -0.134
-xgb_std_model Eq. Odds difference from fair classifier: -0.186
-lr_fair_model Eq. Odds difference from fair classifier: 0.097
-rf_fair_model Eq. Odds difference from fair classifier: -0.254
-svm_fair_model Eq. Odds difference from fair classifier: -0.134
-xgb_fair_model Eq. Odds difference from fair classifier: -0.186
+lr_std_model Eq. Odds difference: 0.026
+rf_std_model Eq. Odds difference: -0.204
+svm_std_model Eq. Odds difference: -0.172
+xgb_std_model Eq. Odds difference: 0.137
+lr_fair_model Eq. Odds difference: 0.026
+rf_fair_model Eq. Odds difference: -0.204
+svm_fair_model Eq. Odds difference: -0.172
+xgb_fair_model Eq. Odds difference: 0.137

@@ -196,7 +196,7 @@ def test_fairness(dataset):
 
     # Attributi sensibili
     protected_attribute_names = [
-        'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
+        'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94','Age in years'
     ]
 
     aif360_dataset = BinaryLabelDataset(
@@ -211,8 +211,8 @@ def test_fairness(dataset):
     # In questo caso si è scelto di trattare come gruppo privilegiato tutte le entrate che presentano la feature 'Sex_A94' = 1, ovvero tutte le entrate
     # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_94' != 1,
     # ovvero tutti gli altri individui.
-    privileged_groups = [{'sex_A93': 1}]
-    unprivileged_groups = [{'sex_A93': 0}]
+    privileged_groups = [{'sex_A93': 1} | {'Age in years': 1}]
+    unprivileged_groups = [{'sex_A93': 0} | {'Age in years': 0}]
 
     # Calcolo della metrica sul dataset originale
     metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)  
@@ -236,12 +236,16 @@ def test_fairness(dataset):
     # otteniamo i nuovi pesi forniti dall'oggetto che mitigano i problemi di fairness
     sample_weights = dataset_transformed.instance_weights
 
+    new_dataset = dataset_transformed.convert_to_dataframe()[0]
+
+
+
     return sample_weights
 
 def eq_odds_fair_report(dataset,prediction,name):
     # Attributi sensibili
     protected_attribute_names = [
-        'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94'
+        'sex_A91', 'sex_A92', 'sex_A93', 'sex_A94','Age in years'
     ]
 
     aif360_dataset = BinaryLabelDataset(
@@ -264,8 +268,8 @@ def eq_odds_fair_report(dataset,prediction,name):
     # In questo caso si è scelto di trattare come gruppo privilegiato tutte le entrate che presentano la feature 'Sex_A94' = 1, ovvero tutte le entrate
     # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_94' != 1,
     # ovvero tutti gli altri individui.
-    privileged_groups = [{'sex_A93': 1}]
-    unprivileged_groups = [{'sex_A93': 0}]
+    privileged_groups = [{'sex_A93': 1} | {'Age in years':1}]
+    unprivileged_groups = [{'sex_A93': 0} | {'Age in years': 0}]
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
