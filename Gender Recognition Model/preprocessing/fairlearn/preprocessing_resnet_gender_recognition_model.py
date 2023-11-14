@@ -243,7 +243,7 @@ def training_and_testing_model(std_df,fair_df):
         else:
             open_type = 'a'
         
-        with open('./reports/fairness_reports/preprocessing/fairlearn/gender_report.txt',open_type) as f:
+        with open('./reports/fairness_reports/preprocessing/fairlearn/resnet_gender_report.txt',open_type) as f:
                 f.write(f'{name} DI: {round(DI_value,3)}\n')
                 f.write(f'{name} mean_diff: {round(mean_diff,3)}\n')
                 f.write(f'eq_odds_diff: {round(eq_odds_diff,3)}\n')
