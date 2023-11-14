@@ -114,31 +114,12 @@ def training_and_testing_model(df):
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
 
-    model_name = "resnet_v2_model.h5"
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        monitor="val_loss",
-        mode="min",
-        save_best_only = True,
-        verbose=1,
-        filepath=f'./output_models/std_models/{model_name}'
-    )
-
-    earlystopping = tf.keras.callbacks.EarlyStopping(
-        monitor='val_loss',min_delta = 0, patience = 5,
-        verbose = 1, restore_best_weights=True
-        )
-
-    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
-        monitor='val_loss', factor=0.2,
-        patience=5, min_lr=0.0001)
-
     resnet_history = resnet_google.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
         epochs=epochs, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
-        callbacks=[checkpoint,reduce_lr]
     )
 
     plt.figure(figsize=(20,8))
@@ -146,26 +127,27 @@ def training_and_testing_model(df):
     plt.title('model AUC')
     plt.ylabel('AUC')
     plt.xlabel('epoch')
-    plt.savefig('./figs/std_resnet_roc-auc.png')
+    plt.savefig('./figs/std/std_resnet_roc-auc.png')
 
     plt.figure(figsize=(20,8))
     plt.plot(resnet_history.history['accuracy'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
-    plt.savefig('./figs/std_resnet_accuracy.png')
+    plt.savefig('./figs/std/std_resnet_accuracy.png')
 
     resnet_loss, resnet_accuracy, resnet_auc = resnet_google.evaluate(validation_generator)
-
-    pred = resnet_google.predict(validation_generator)
-    pred = np.argmax(pred,axis=1)
-    df_pred = pd.DataFrame(pred,columns=['gender'])
-    df_pred.to_csv('./reports/predictions/resnet_prediction.txt',index_label='ID')
 
     with open('./reports/std_models/resnet_gender_recognition_report.txt','w') as f:
         f.write('ResnetV2 model\n')
         f.write(f"Accuracy: {round(resnet_accuracy,3)}\n")
         f.write(f'AUC-ROC: {round(resnet_auc,3)}\n')
+
+    m_json = resnet_google.to_json()
+    with open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json','w') as f:
+        f.write(m_json)
+
+    resnet_google.save_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
 
 def print_time(time):
     with open('./reports/time_reports/gender/std_resnet_report.txt','w') as f:
