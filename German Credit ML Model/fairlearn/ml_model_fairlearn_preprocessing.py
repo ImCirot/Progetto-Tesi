@@ -113,37 +113,39 @@ def training_model(dataset):
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
 
     print(f'######### Testing Fairness #########')
-    lr_std_pred = lr_model_pipeline.predict(X_test)
-    lr_fair_pred = lr_fair_model_pipeline.predict(X_fair_test)
+    lr_std_pred = lr_model_pipeline.predict(X)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X_fair)
 
-    rf_std_pred = rf_model_pipeline.predict(X_test)
-    rf_fair_pred = rf_fair_model_pipeline.predict(X_fair_test)
+    rf_std_pred = rf_model_pipeline.predict(X)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X_fair)
 
-    svm_std_pred = svm_model_pipeline.predict(X_test)
-    svm_fair_pred = svm_fair_model_pipeline.predict(X_fair_test)
+    svm_std_pred = svm_model_pipeline.predict(X)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X_fair)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X_test)
-    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_fair_test)
+    xgb_std_pred = xgb_model_pipeline.predict(X)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_fair)
 
     predictions = {
         'lr_std':lr_std_pred,
-        'lr_fair': lr_fair_pred,
         'rf_std': rf_std_pred,
-        'rf_fair':rf_fair_pred,
         'svm_std': svm_std_pred,
-        'svm_fair': svm_fair_pred,
         'xgb_std': xgb_std_pred,
+    }
+    
+    fair_pred = {
+        'lr_fair': lr_fair_pred,
+        'rf_fair':rf_fair_pred,
+        'svm_fair': svm_fair_pred,
         'xgb_fair': xgb_fair_pred,
     }
 
-    sex = X_test[sex_feature]
     start = True
-
+    
     for name,prediction in predictions.items():
 
-        sex_DI = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=sex)
-        sex_eqodds = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=sex)
-        sex_mean_diff = demographic_parity_difference(y_true=y_test,y_pred=prediction,sensitive_features=sex)
+        sex_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=sex)
+        sex_eqodds = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=sex)
+        sex_mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=sex)
 
         if start is True:
             open_type = 'w'
@@ -152,6 +154,17 @@ def training_model(dataset):
             open_type = 'a'
 
         with open('./reports/fairness_reports/preprocessing/fairlearn/credit_report.txt',open_type) as f:
+            f.write(f'{name}_sex DI: {round(sex_DI,3)}\n')
+            f.write(f'{name}_eq_odds_diff: {round(sex_eqodds,3)}\n')
+            f.write(f'{name}_mean_diff: {round(sex_mean_diff,3)}\n')
+
+    for name,prediction in fair_pred.items():
+
+        sex_DI = demographic_parity_ratio(y_true=y_fair,y_pred=prediction,sensitive_features=sex)
+        sex_eqodds = equalized_odds_difference(y_true=y_fair,y_pred=prediction,sensitive_features=sex)
+        sex_mean_diff = demographic_parity_difference(y_true=y_fair,y_pred=prediction,sensitive_features=sex)
+
+        with open('./reports/fairness_reports/preprocessing/fairlearn/credit_report.txt','a') as f:
             f.write(f'{name}_sex DI: {round(sex_DI,3)}\n')
             f.write(f'{name}_eq_odds_diff: {round(sex_eqodds,3)}\n')
             f.write(f'{name}_mean_diff: {round(sex_mean_diff,3)}\n')
