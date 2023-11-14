@@ -1,1 +1,4 @@
-UTKFace Dataset/
+*.jpg
+*.h5
+*.sav
+*.json
