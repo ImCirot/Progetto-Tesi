@@ -190,7 +190,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = "a"
     
     #scriviamo su un file le metriche di valutazione ottenute
-    with  open(f'./reports/postprocessing_models/fairlearn/credit_metrics_report.txt',open_type) as f:
+    with  open(f'./reports/preprocessing_models/fairlearn/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
         f.write(f'\nF1 score: {round(f1,3)}\n')
