@@ -1,0 +1,6 @@
+mean_difference before: -0.036
+DI before: 0.932
+mean_difference after: 0.0
+DI after: 1.0
+std_model Eq. Odds diff: 0.005
+fair_model Eq. Odds diff: -0.002
