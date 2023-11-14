@@ -5,12 +5,11 @@ import pandas as pd
 import os
 from codecarbon import track_emissions
 import glob
-from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
-from aif360.algorithms.preprocessing import Reweighing
-from aif360.datasets import BinaryLabelDataset
-from aif360.datasets import StandardDataset
+from fairlearn.metrics import demographic_parity_difference,demographic_parity_ratio,equalized_odds_difference
+from fairlearn.preprocessing import CorrelationRemover
 import tensorflow_hub as hub
 import matplotlib.pyplot as plt
+import seaborn as sns
 from datetime import datetime
 
 #
@@ -65,8 +64,7 @@ def load_dataset():
     std_df = pd.DataFrame(data={"filename": data, "age": age_label, "gender": gender_label, 'race': race_label})
 
     # effettuiamo delle operazioni di fairness e otteniamo un dataset ¨fair"
-    (fair_df,sample_weights) = test_fairness(std_df)
-    fair_df['weights'] = sample_weights
+    fair_df = test_fairness(std_df)
     filenames = std_df['filename'].tolist()
     fair_df['filename'] = filenames
 
@@ -99,11 +97,10 @@ def training_and_testing_model(std_df,fair_df):
         batch_size=batch_size,
         subset='training',
         class_mode='categorical',
-        weight_col='weights'
     )
 
     # creiamo il dataset di testing del modello
-    fair_validation_generator = fair_train_datagen.flow_from_dataframe(
+    fair_validaton_generator = fair_train_datagen.flow_from_dataframe(
         dataframe=fair_df,
         y_col="gender",
         shuffle=True,
@@ -111,7 +108,6 @@ def training_and_testing_model(std_df,fair_df):
         batch_size=batch_size,
         subset='validation',
         class_mode='categorical',
-        weight_col='weights'
     )
 
     train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2, horizontal_flip=True)
@@ -128,7 +124,7 @@ def training_and_testing_model(std_df,fair_df):
     )
 
     # creiamo il dataset di testing del modello
-    validation_generator = train_datagen.flow_from_dataframe(
+    validaton_generator = train_datagen.flow_from_dataframe(
         dataframe=std_df,
         y_col="gender",
         shuffle=True,
@@ -138,8 +134,8 @@ def training_and_testing_model(std_df,fair_df):
         class_mode='categorical',
     )
 
-    model_URL = "https://www.kaggle.com/models/google/resnet-v2/frameworks/TensorFlow2/variations/50-classification/versions/2"
-    resnet_google = tf.keras.Sequential(
+    model_URL = "https://www.kaggle.com/models/tensorflow/efficientnet/frameworks/TensorFlow2/variations/b7-classification/versions/1"
+    effnet_model = tf.keras.Sequential(
         [
             tf.keras.layers.Rescaling(1./255, input_shape=(48,48, 3)),
             hub.KerasLayer(model_URL),
@@ -147,140 +143,153 @@ def training_and_testing_model(std_df,fair_df):
         ])
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
 
-    resnet_history = resnet_google.fit(
+    effnet_history = effnet_model.fit(
         fair_train_generator, 
         steps_per_epoch=fair_train_generator.samples//batch_size, 
-        epochs=1, 
-        validation_data=fair_validation_generator, 
-        validation_steps=fair_validation_generator.samples//batch_size,
+        epochs=2, 
+        validation_data=fair_validaton_generator, 
+        validation_steps=fair_validaton_generator.samples//batch_size,
     )
 
     plt.figure(figsize=(20,8))
-    plt.plot(resnet_history.history['auc'])
+    plt.plot(effnet_history.history['auc'])
     plt.title('model AUC')
     plt.ylabel('AUC')
     plt.xlabel('epoch')
-    plt.savefig('./figs/aif360/preprocessing_resnet_roc-auc.png')
+    plt.savefig('./figs/fairlearn/preprocessing_effnet_roc-auc.png')
 
     plt.figure(figsize=(20,8))
-    plt.plot(resnet_history.history['accuracy'])
+    plt.plot(effnet_history.history['accuracy'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
-    plt.savefig('./figs/aif360/preprocessing_resnet_accuracy.png')
+    plt.savefig('./figs/fairlearn/preprocessing_effnet_accuracy.png')
 
-    resnet_loss, resnet_accuracy, resnet_auc = resnet_google.evaluate(validation_generator)
+    effnet_loss, effnet_accuracy, effnet_auc = effnet_model.evaluate(fair_validaton_generator)
 
-    with open('./reports/preprocessing_models/aif360/resnet_gender_recognition_report.txt','w') as f:
-        f.write('ResnetV2 model\n')
-        f.write(f"Accuracy: {round(resnet_accuracy,3)}\n")
-        f.write(f'AUC-ROC: {round(resnet_auc,3)}\n')
+    with open('./reports/preprocessing_models/fairlearn/effnet_gender_recognition_report.txt','w') as f:
+        f.write('Effnet model\n')
+        f.write(f"Accuracy: {round(effnet_accuracy,3)}\n")
+        f.write(f'AUC-ROC: {round(effnet_auc,3)}\n')
 
-    m_json = resnet_google.to_json()
-    with open('./output_models/preprocessing_models/resnet_model/fairlearn/resnet_gender_recognition_model.json','w') as f:
+    
+    m_json = effnet_model.to_json()
+    with open('./output_models/preprocessing_models/effnet_model/fairlearn/effnet_gender_recognition_model.json','w') as f:
         f.write(m_json)
 
-    resnet_google.save_weights('./output_models/preprocessing_models/resnet_model/fairlearn/resnet_std_weights.h5')
+    effnet_model.save_weights('./output_models/preprocessing_models/effnet_model/fairlearn/effnet_std_weights.h5')
 
-    json_file = open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json', 'r')
+    json_file = open('./output_models/std_models/effnet_model/effnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     model = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
-    model.load_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
+    model.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
+
+    # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
 
     features = std_df.columns.tolist()
     features.remove('gender') 
 
     df_fair_train = fair_df[fair_df['filename'].isin(fair_train_generator.filenames)]
-    df_fair_test = fair_df[fair_df['filename'].isin(fair_validation_generator.filenames)]
-    df_fair_test = df_fair_test.drop('weights',axis=1)
+    df_fair_test = fair_df[fair_df['filename'].isin(fair_validaton_generator.filenames)]
     
     df_std_train = std_df[std_df['filename'].isin(train_generator.filenames)]
-    df_std_test = std_df[std_df['filename'].isin(validation_generator.filenames)]
+    df_std_test = std_df[std_df['filename'].isin(validaton_generator.filenames)]
 
-    pred = model.predict(validation_generator)
+    target = ['gender']
+    prot_attrb = ['race']
+
+    X_fair_train = df_fair_train[features]
+    y_fair_train = df_fair_train[target].astype(int)
+
+    X_fair_test = df_fair_test[features]
+    y_fair_test = df_fair_test[target].astype(int)
+
+    X_train = df_std_train[features]
+    y_train = df_std_train[target].astype(int)
+
+    X_test = df_std_test[features]
+    y_test = df_std_test[target].astype(int)
+
+    pred = model.predict(validaton_generator)
+    print(pred)
     pred = np.argmax(pred,axis=1)
-    std_pred = pd.DataFrame(pred,columns=['gender'])
+    print(pred)
+    std_pred = pd.DataFrame(pred,columns=[target])
     std_pred[features] = df_std_test[features]
+    print(std_pred)
 
-    pred = resnet_google.predict(validation_generator)
+    pred = effnet_model.predict(validaton_generator)
+    print(pred)
     pred = np.argmax(pred,axis=1)
-    fair_pred = pd.DataFrame(df_fair_test,columns=features)
-    fair_pred['gender'] = pred
-    fairness_op(df_std_test,std_pred,'std')
+    print(pred)
+    fair_pred = pd.DataFrame(pred,columns=[target])
+    fair_pred[features] = df_fair_test[features]
+    print(fair_pred)
 
-    fairness_op(df_fair_test,fair_pred,'fair')
+    g = X_test[prot_attrb]
+
+    predictions = {
+        'std_model': std_pred[target],
+        'fair_model': fair_pred[target]
+    }
+
+    start = True
+
+    for name,value in predictions.items():
+
+        DI_value = demographic_parity_ratio(y_true=y_test,y_pred=value,sensitive_features=g)
+        mean_diff = demographic_parity_difference(y_true=y_test,y_pred=value,sensitive_features=g)
+        eq_odds_diff = equalized_odds_difference(y_true=y_test,y_pred=value,sensitive_features=g)
+
+        if start:
+            open_type = 'w'
+            start = False
+        else:
+            open_type = 'a'
+        
+        with open('./reports/fairness_reports/preprocessing/fairlearn/effnet_gender_report.txt',open_type) as f:
+                f.write(f'{name} DI: {round(DI_value,3)}\n')
+                f.write(f'{name} mean_diff: {round(mean_diff,3)}\n')
+                f.write(f'eq_odds_diff: {round(eq_odds_diff,3)}\n')
 
 def test_fairness(dataset):
     ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
 
+    sens_features = ['race']
     dataset = dataset.drop('filename',axis=1)
 
     dataset= dataset.astype(int)
 
-    race_aif_dataset = BinaryLabelDataset(
-        df=dataset,
-        favorable_label=0,
-        unfavorable_label=1,
-        label_names=['gender'],
-        protected_attribute_names=['race'],
+    corr_remover = CorrelationRemover(sensitive_feature_ids=sens_features,alpha=1.0)
+
+    features_names = dataset.columns.tolist()
+
+    features_names.remove('race')
+
+    fair_dataset = corr_remover.fit_transform(dataset)
+    fair_dataset = pd.DataFrame(
+        fair_dataset,columns=features_names
     )
 
-    race_privileged_groups = [{'race': 0},{'race':2},{'race':3}]
-    race_unprivileged_groups = [{'race': 1},{'race':4}]
+    fair_dataset[sens_features] = dataset[sens_features]
 
-    race_metric_original = BinaryLabelDatasetMetric(dataset=race_aif_dataset, privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups)
-    print_metrics('mean_difference before', race_metric_original.mean_difference(),first_message=True)
-    print_metrics('DI before', race_metric_original.disparate_impact())
+    fair_dataset['gender'] = dataset['gender']
 
-    RACE_RW = Reweighing(unprivileged_groups=race_unprivileged_groups, privileged_groups=race_privileged_groups)
+    # grafici che mostrano la correlazione prima e dopo
+    # sns.heatmap(dataset.corr(),annot=True,cmap='coolwarm')
+    # plt.show()
 
-    race_transformed = RACE_RW.fit_transform(race_aif_dataset)
-
-    race_metric_transformed = BinaryLabelDatasetMetric(dataset=race_transformed, privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups)
-
-    print_metrics('mean_difference after', race_metric_transformed.mean_difference())
-    print_metrics('DI after', race_metric_transformed.disparate_impact())
-
-    fair_dataset = race_transformed.convert_to_dataframe()[0]
+    # sns.heatmap(fair_dataset.corr(),annot=True,cmap='coolwarm')
+    # plt.show()
 
     fair_dataset = fair_dataset.astype(int)
     fair_dataset = fair_dataset.astype(str)
 
-    return (fair_dataset,race_transformed.instance_weights)
-
-def fairness_op(dataset,pred,name):
-    ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
-
-    dataset = dataset.drop('filename',axis=1)
-    pred = pred.drop('filename',axis=1)
-
-    dataset= dataset.astype(int)
-    pred = pred.astype(int)
-
-    race_aif_dataset = BinaryLabelDataset(
-        df=dataset,
-        favorable_label=0,
-        unfavorable_label=1,
-        label_names=['gender'],
-        protected_attribute_names=['race'],
-    )
-
-    race_aif_pred = BinaryLabelDataset(
-        df=pred,
-        favorable_label=0,
-        unfavorable_label=1,
-        label_names=['gender'],
-        protected_attribute_names=['race'],
-    )
-
-    race_privileged_groups = [{'race': 0},{'race':2},{'race':3}]
-    race_unprivileged_groups = [{'race': 1},{'race':4}]
-
-    race_metric_original = ClassificationMetric(dataset=race_aif_dataset,classified_dataset=race_aif_pred, privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups)
-    print_metrics(f'{name}_model Eq. Odds diff', race_metric_original.true_positive_rate_difference()-race_metric_original.false_positive_rate_difference())
+    return fair_dataset
 
 def print_metrics(message,metric,first_message=False):
     if first_message:
@@ -288,11 +297,11 @@ def print_metrics(message,metric,first_message=False):
     else:
         open_type = 'a'
 
-    with open('./reports/fairness_reports/preprocessing/aif360/resnet_gender_report.txt',open_type) as f:
+    with open('./reports/fairness_reports/preprocessing/fairlearn/effnet_gender_report.txt',open_type) as f:
         f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
-    with open('./reports/time_reports/gender/resnet_fair_report.txt','w') as f:
+    with open('./reports/time_reports/gender/fairlearn/effnet_preprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()

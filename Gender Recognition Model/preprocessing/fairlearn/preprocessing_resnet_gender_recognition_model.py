@@ -212,12 +212,12 @@ def training_and_testing_model(std_df,fair_df):
     X_test = df_std_test[features]
     y_test = df_std_test['gender'].astype(int)
 
-    pred = model.predict(fair_validaton_generator)
+    pred = model.predict(validaton_generator)
     pred = np.argmax(pred,axis=1)
     std_pred = pd.DataFrame(pred,columns=['gender'])
     std_pred[features] = df_std_test[features]
 
-    pred = resnet_google.predict(fair_validaton_generator)
+    pred = resnet_google.predict(validaton_generator)
     pred = np.argmax(pred,axis=1)
     fair_pred = pd.DataFrame(pred,columns=['gender'])
     fair_pred[features] = df_fair_test[features]

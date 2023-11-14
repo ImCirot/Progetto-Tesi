@@ -118,7 +118,7 @@ def training_and_testing_model(df):
     effnet_history = effnet_model.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
-        epochs=epochs, 
+        epochs=1, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
     )
@@ -150,6 +150,14 @@ def training_and_testing_model(df):
         f.write(m_json)
 
     effnet_model.save_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
+
+    pred = effnet_model.predict(validation_generator)
+
+    print(pred)
+
+    pred = np.argmax(pred,axis=1)
+
+    print(pred)
 
 def print_time(time):
     with open('./reports/time_reports/gender/effnet_std_report.txt','w') as f:

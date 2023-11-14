@@ -5,7 +5,7 @@ import pandas as pd
 import os
 from codecarbon import track_emissions
 import glob
-from aif360.metrics import BinaryLabelDatasetMetric
+from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from aif360.algorithms.preprocessing import Reweighing
 from aif360.datasets import BinaryLabelDataset
 from aif360.datasets import StandardDataset
@@ -71,9 +71,9 @@ def load_dataset():
     fair_df['filename'] = filenames
 
     # addestriamo più modelli fair sul dataset modificato
-    training_and_testing_model(fair_df)
+    training_and_testing_model(std_df,fair_df)
 
-def training_and_testing_model(df):
+def training_and_testing_model(std_df,fair_df):
     ## funzione di apprendimento e validazione del modello
 
     # setting dimensioni immagine
@@ -88,11 +88,11 @@ def training_and_testing_model(df):
 
     # settiamo l'oggetto offerto da TensorFLow che ci permette di caricare immagini e creare un dataset su quest'ultime
     # settiamo la divisione come 80/20 training/testing come standard
-    train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2, horizontal_flip=True)
+    fair_train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2, horizontal_flip=True)
 
     # creiamo il dataset di training del modello
-    train_generator = train_datagen.flow_from_dataframe(
-        dataframe=df,
+    fair_train_generator = fair_train_datagen.flow_from_dataframe(
+        dataframe=fair_df,
         y_col='gender',
         shuffle=True,
         target_size=image_size,
@@ -103,8 +103,8 @@ def training_and_testing_model(df):
     )
 
     # creiamo il dataset di testing del modello
-    validation_generator = train_datagen.flow_from_dataframe(
-        dataframe=df,
+    fair_validation_generator = fair_train_datagen.flow_from_dataframe(
+        dataframe=fair_df,
         y_col="gender",
         shuffle=True,
         target_size=image_size,
@@ -112,6 +112,30 @@ def training_and_testing_model(df):
         subset='validation',
         class_mode='categorical',
         weight_col='weights'
+    )
+
+    train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2, horizontal_flip=True)
+
+    # creiamo il dataset di training del modello
+    train_generator = train_datagen.flow_from_dataframe(
+        dataframe=std_df,
+        y_col='gender',
+        shuffle=True,
+        target_size=image_size,
+        batch_size=batch_size,
+        subset='training',
+        class_mode='categorical',
+    )
+
+    # creiamo il dataset di testing del modello
+    validation_generator = train_datagen.flow_from_dataframe(
+        dataframe=std_df,
+        y_col="gender",
+        shuffle=True,
+        target_size=image_size,
+        batch_size=batch_size,
+        subset='validation',
+        class_mode='categorical',
     )
 
     model_URL = "https://www.kaggle.com/models/tensorflow/efficientnet/frameworks/TensorFlow2/variations/b7-classification/versions/1"
@@ -124,24 +148,6 @@ def training_and_testing_model(df):
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
-
-    model_name = "effnet_model.h5"
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        monitor="val_loss",
-        mode="min",
-        save_best_only = True,
-        verbose=1,
-        filepath=f'./output_models/preprocessing_models/{model_name}'
-    )
-
-    earlystopping = tf.keras.callbacks.EarlyStopping(
-        monitor='val_loss',min_delta = 0, patience = 5,
-        verbose = 1, restore_best_weights=True
-        )
-
-    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
-        monitor='val_loss', factor=0.2,
-        patience=5, min_lr=0.0001)
     
     # addestriamo il modello EfficientNet
     effnet_history = effnet_model.fit(
@@ -150,7 +156,6 @@ def training_and_testing_model(df):
         epochs=epochs, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
-        callbacks=[checkpoint,reduce_lr]
     )
 
     plt.figure(figsize=(20,8))
@@ -169,10 +174,76 @@ def training_and_testing_model(df):
 
     effnet_loss, effnet_accuracy, effnet_auc = effnet_model.evaluate(validation_generator)
 
-    with open('./reports/preprocessing_models/effnet_gender_recognition_report.txt','w') as f:
+    with open('./reports/preprocessing_models/aif360/effnet_gender_recognition_report.txt','w') as f:
         f.write('EfficentNet Model\n')
         f.write(f"Accuracy: {round(effnet_accuracy,3)}\n")
         f.write(f'AUC-ROC: {round(effnet_auc,3)}\n')
+
+    m_json = effnet_model.to_json()
+    with open('./output_models/preprocessing_models/effnet_model/fairlearn/effnet_gender_recognition_model.json','w') as f:
+        f.write(m_json)
+
+    effnet_model.save_weights('./output_models/preprocessing_models/effnet_model/fairlearn/effnet_std_weights.h5')
+
+    json_file = open('./output_models/std_models/effnet_model/effnet_gender_recognition_model.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
+    model.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
+
+    features = std_df.columns.tolist()
+    features.remove('gender') 
+
+    df_fair_train = fair_df[fair_df['filename'].isin(fair_train_generator.filenames)]
+    df_fair_test = fair_df[fair_df['filename'].isin(fair_validation_generator.filenames)]
+    df_fair_test = df_fair_test.drop('weights',axis=1)
+    
+    df_std_train = std_df[std_df['filename'].isin(train_generator.filenames)]
+    df_std_test = std_df[std_df['filename'].isin(validation_generator.filenames)]
+
+    pred = model.predict(validation_generator)
+    pred = np.argmax(pred,axis=1)
+    std_pred = pd.DataFrame(pred,columns=['gender'])
+    std_pred[features] = df_std_test[features]
+
+    pred = effnet_model.predict(validation_generator)
+    pred = np.argmax(pred,axis=1)
+    fair_pred = pd.DataFrame(df_fair_test,columns=features)
+    fair_pred['gender'] = pred
+    fairness_op(df_std_test,std_pred,'std')
+
+    fairness_op(df_fair_test,fair_pred,'fair')
+
+def fairness_op(dataset,pred,name):
+    ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
+
+    dataset = dataset.drop('filename',axis=1)
+    pred = pred.drop('filename',axis=1)
+
+    dataset= dataset.astype(int)
+    pred = pred.astype(int)
+
+    race_aif_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=0,
+        unfavorable_label=1,
+        label_names=['gender'],
+        protected_attribute_names=['race'],
+    )
+
+    race_aif_pred = BinaryLabelDataset(
+        df=pred,
+        favorable_label=0,
+        unfavorable_label=1,
+        label_names=['gender'],
+        protected_attribute_names=['race'],
+    )
+
+    race_privileged_groups = [{'race': 0},{'race':2},{'race':3}]
+    race_unprivileged_groups = [{'race': 1},{'race':4}]
+
+    race_metric_original = ClassificationMetric(dataset=race_aif_dataset,classified_dataset=race_aif_pred, privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups)
+    print_metrics(f'{name}_model Eq. Odds diff', race_metric_original.true_positive_rate_difference()-race_metric_original.false_positive_rate_difference())
 
 def test_fairness(dataset):
     ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
@@ -218,7 +289,7 @@ def print_metrics(message,metric,first_message=False):
     else:
         open_type = 'a'
 
-    with open('./reports/fairness_reports/preprocessing/effnet_gender_report.txt',open_type) as f:
+    with open('./reports/fairness_reports/preprocessing/aif360/effnet_gender_report.txt',open_type) as f:
         f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
