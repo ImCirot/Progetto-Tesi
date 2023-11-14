@@ -80,6 +80,7 @@ def training_model(dataset):
         objective='accuracy_score'
     )
 
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
     X_train, X_test, y_train, y_test,g_train,g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
 
     # modifichiamo i modelli con postop di fairness
@@ -104,17 +105,18 @@ def training_model(dataset):
     # plot_threshold_optimizer(xgb_threshold)
 
     print(f'######### Testing Fairness #########')
-    lr_std_pred = lr_model_pipeline.predict(X)
-    lr_threshold_pred = lr_threshold.predict(X,sensitive_features=g)
+    g_test = X_test[sex_features]
+    lr_std_pred = lr_model_pipeline.predict(X_test)
+    lr_threshold_pred = lr_threshold.predict(X_test,sensitive_features=g_test)
 
-    rf_std_pred = rf_model_pipeline.predict(X)
-    rf_threshold_pred = rf_threshold.predict(X,sensitive_features=g)
+    rf_std_pred = rf_model_pipeline.predict(X_test)
+    rf_threshold_pred = rf_threshold.predict(X_test,sensitive_features=g_test)
 
-    svm_std_pred = svm_model_pipeline.predict(X)
-    svm_threshold_pred = svm_threshold.predict(X,sensitive_features=g)
+    svm_std_pred = svm_model_pipeline.predict(X_test)
+    svm_threshold_pred = svm_threshold.predict(X_test,sensitive_features=g_test)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X)
-    xgb_threshold_pred = xgb_threshold.predict(X,sensitive_features=g)
+    xgb_std_pred = xgb_model_pipeline.predict(X_test)
+    xgb_threshold_pred = xgb_threshold.predict(X_test,sensitive_features=g_test)
 
     predictions = {
         'lr_std':lr_std_pred,
@@ -131,9 +133,9 @@ def training_model(dataset):
 
     for name,prediction in predictions.items():
 
-        sex_DI = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
-        sex_eq_odss = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
-        sex_mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=g)
+        sex_DI = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=g_test)
+        sex_eq_odss = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test)
+        sex_mean_diff = demographic_parity_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test)
 
         if start is True:
             open_type = 'w'
