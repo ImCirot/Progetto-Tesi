@@ -45,6 +45,8 @@ def formatting_data():
     df = df.drop(categorical_features, axis=1)
     df = df.join(one_hot)
 
+    df['age'] = df['age'].apply(lambda x: 1 if x>=25 else 0)
+
     # stampiamo in output il dataset in un nuovo file .csv pronto per essere utilizzato
     df.to_csv('./Adult Dataset/adult_modificato.csv',index_label='ID')
 

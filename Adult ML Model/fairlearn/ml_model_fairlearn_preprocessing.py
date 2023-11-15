@@ -39,9 +39,8 @@ def load_dataset():
 def training_model(dataset):
     ## funzione di sviluppo del modello
 
-    # drop delle features superflue
-    dataset.drop("ID",axis=1,inplace=True)
-
+    dataset = dataset.drop('ID',axis=1)
+    
     # lista con tutte le features del dataset
     features = dataset.columns.tolist()
 
@@ -49,9 +48,9 @@ def training_model(dataset):
     features.remove('salary')
 
     # setting lista contenente nomi degli attributi protetti
-    protected_features_names = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','sex_Female','sex_Male']
+    protected_features_names = ['sex_Female','sex_Male','age']
     sex_features_names = ['sex_Female','sex_Male']
-    race_features_names = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
+    age_feature = ['age']
 
     # setting del set contenente le features utili all'apprendimento
     X = dataset[features]
@@ -61,8 +60,6 @@ def training_model(dataset):
 
     # setting del set contenente valori attributi sensibili
     g= dataset[protected_features_names]
-    g_sex = dataset[sex_features_names]
-    g_race = dataset[race_features_names]
 
     # setting pipeline contenente modello e scaler per ottimizzazione dei dati da fornire al modello
     lr_model_pipeline = pickle.load(open('./output_models/std_models/lr_adult_model.sav','rb'))
@@ -103,17 +100,17 @@ def training_model(dataset):
     validate(xgb_fair_model_pipeline,'xgb',X_fair_test,y_fair_test)
 
     print(f'######### Testing Fairness #########')
-    lr_std_pred = lr_model_pipeline.predict(X)
-    lr_fair_pred = lr_fair_model_pipeline.predict(X)
+    lr_std_pred = lr_model_pipeline.predict(X_test)
+    lr_fair_pred = lr_fair_model_pipeline.predict(X_test)
 
-    rf_std_pred = rf_model_pipeline.predict(X)
-    rf_fair_pred = rf_fair_model_pipeline.predict(X)
+    rf_std_pred = rf_model_pipeline.predict(X_test)
+    rf_fair_pred = rf_fair_model_pipeline.predict(X_test)
 
-    svm_std_pred = svm_model_pipeline.predict(X)
-    svm_fair_pred = svm_fair_model_pipeline.predict(X)
+    svm_std_pred = svm_model_pipeline.predict(X_test)
+    svm_fair_pred = svm_fair_model_pipeline.predict(X_test)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X)
-    xgb_fair_pred = xgb_fair_model_pipeline.predict(X)
+    xgb_std_pred = xgb_model_pipeline.predict(X_test)
+    xgb_fair_pred = xgb_fair_model_pipeline.predict(X_test)
 
     predictions = {
         'lr_std':lr_std_pred,
@@ -130,9 +127,13 @@ def training_model(dataset):
 
     for name,prediction in predictions.items():
 
-        DI_value = demographic_parity_ratio(y_true=y,y_pred=prediction,sensitive_features=g)
-        mean_diff = demographic_parity_difference(y_true=y,y_pred=prediction,sensitive_features=g)
-        eq_odds_diff = equalized_odds_difference(y_true=y,y_pred=prediction,sensitive_features=g)
+        sex_DI_value = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=g_test[sex_features_names])
+        sex_mean_diff = demographic_parity_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[sex_features_names])
+        sex_eq_odds_diff = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[sex_features_names])
+
+        age_DI_value = demographic_parity_ratio(y_true=y_test,y_pred=prediction,sensitive_features=g_test[age_feature])
+        age_mean_diff = demographic_parity_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[age_feature])
+        age_eq_odds_diff = equalized_odds_difference(y_true=y_test,y_pred=prediction,sensitive_features=g_test[age_feature])
 
         if start is True:
             open_type = 'w'
@@ -141,9 +142,12 @@ def training_model(dataset):
             open_type = 'a'
 
         with open('./reports/fairness_reports/preprocessing/fairlearn/adult_report.txt',open_type) as f:
-            f.write(f'{name} DI: {round(DI_value,3)}\n')
-            f.write(f'{name} mean_diff: {round(mean_diff,3)}\n')
-            f.write(f'{name} eq_odds_diff: {round(eq_odds_diff,3)}\n')
+            f.write(f'{name} sex DI: {round(sex_DI_value,3)}\n')
+            f.write(f'{name} sex mean_diff: {round(sex_mean_diff,3)}\n')
+            f.write(f'{name} sex eq_odds_diff: {round(sex_eq_odds_diff,3)}\n')
+            f.write(f'{name} age DI: {round(age_DI_value,3)}\n')
+            f.write(f'{name} age mean_diff: {round(age_mean_diff,3)}\n')
+            f.write(f'{name} age eq_odds_diff: {round(age_eq_odds_diff,3)}\n')
     
     # salviamo i modelli ottenuti
     print(f'######### Salvataggio modelli #########')
