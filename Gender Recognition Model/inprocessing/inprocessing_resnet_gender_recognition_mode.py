@@ -12,6 +12,7 @@ from aif360.datasets import StandardDataset
 import tensorflow_hub as hub
 import matplotlib.pyplot as plt
 from datetime import datetime
+import tensorflow_addons as tfa
 
 #
 #
@@ -117,25 +118,22 @@ def training_and_testing_model(df):
     model.load_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
-
-    # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
 
     resnet_history = model.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
-        epochs=1, 
+        epochs=epochs, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
     )
 
     plt.figure(figsize=(20,8))
-    plt.plot(resnet_history.history['auc'])
-    plt.title('model AUC')
-    plt.ylabel('AUC')
+    plt.plot(resnet_history.history['f1_score'])
+    plt.title('model F1')
+    plt.ylabel('F1')
     plt.xlabel('epoch')
-    plt.savefig('./figs/aif360/inprocessing_resnet_roc-auc.png')
+    plt.savefig('./figs/aif360/inprocessing_resnet_f1.png')
 
     plt.figure(figsize=(20,8))
     plt.plot(resnet_history.history['accuracy'])
@@ -176,7 +174,7 @@ def training_and_testing_model(df):
     model_std.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    model_std.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+    model_std.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
 
     pred = model_std.predict(validation_generator)
     pred = np.argmax(pred,axis=1)

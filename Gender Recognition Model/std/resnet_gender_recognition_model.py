@@ -8,6 +8,7 @@ import glob
 import tensorflow_hub as hub
 import matplotlib.pyplot as plt
 from datetime import datetime
+import tensorflow_addons as tfa
 
 #
 #
@@ -112,7 +113,7 @@ def training_and_testing_model(df):
         ])
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+    resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
 
     resnet_history = resnet_google.fit(
         train_generator, 
@@ -123,11 +124,11 @@ def training_and_testing_model(df):
     )
 
     plt.figure(figsize=(20,8))
-    plt.plot(resnet_history.history['auc'])
-    plt.title('model AUC')
-    plt.ylabel('AUC')
+    plt.plot(resnet_history.history['f1_score'])
+    plt.title('model F1_Score')
+    plt.ylabel('F1')
     plt.xlabel('epoch')
-    plt.savefig('./figs/std/std_resnet_roc-auc.png')
+    plt.savefig('./figs/std/std_resnet_f1.png')
 
     plt.figure(figsize=(20,8))
     plt.plot(resnet_history.history['accuracy'])
