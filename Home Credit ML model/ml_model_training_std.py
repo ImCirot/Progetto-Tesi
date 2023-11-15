@@ -1,6 +1,6 @@
 from sklearn.metrics import *
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import f_classif,SelectKBest
@@ -36,7 +36,7 @@ def load_dataset():
             sleep(120)
             print('########################### IDLE TIME FINISH ###########################')
 
-# @track_emissions(country_iso_code='ITA',offline=True)
+@track_emissions(country_iso_code='ITA',offline=True)
 def training_testing_models(df):
     ## funzione di training e testing dei vari modelli
 
@@ -50,16 +50,16 @@ def training_testing_models(df):
     # settiamo i nostri modelli sul dataset originale
     lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression(max_iter=1000))
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
-    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,shrinking=False,verbose=True))
+    svm_model_pipeline = make_pipeline(StandardScaler(),LinearSVC(dual='auto'))
     xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic',random_state=42))
 
 
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
 
-    selector = SelectKBest(score_func=f_classif,k=10)
+    selector = SelectKBest(score_func=f_classif,k=60)
     X_train_selected = selector.fit_transform(X_train,y_train)
     X_test_selected = selector.transform(X_test)
-
+    print(f'######### Training modelli #########')
     lr_model_pipeline.fit(X_train_selected,y_train.values.ravel())
     rf_model_pipeline.fit(X_train_selected,y_train.values.ravel())
     svm_model_pipeline.fit(X_train_selected,y_train.values.ravel())
