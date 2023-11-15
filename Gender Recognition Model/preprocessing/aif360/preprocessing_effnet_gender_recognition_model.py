@@ -12,7 +12,7 @@ from aif360.datasets import StandardDataset
 import tensorflow_hub as hub
 import matplotlib.pyplot as plt
 from datetime import datetime
-
+import tensorflow_addons as tfa
 #
 #
 #
@@ -147,7 +147,7 @@ def training_and_testing_model(std_df,fair_df):
         ])
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
     
     # addestriamo il modello EfficientNet
     effnet_history = effnet_model.fit(
@@ -159,11 +159,11 @@ def training_and_testing_model(std_df,fair_df):
     )
 
     plt.figure(figsize=(20,8))
-    plt.plot(effnet_history.history['auc'])
-    plt.title('model AUC')
-    plt.ylabel('AUC')
+    plt.plot(effnet_history.history['f1_score'])
+    plt.title('model F1 Score')
+    plt.ylabel('F1')
     plt.xlabel('epoch')
-    plt.savefig('./figs/preprocessing_effnet_roc-auc.png')
+    plt.savefig('./figs/preprocessing_effnet_f1.png')
 
     plt.figure(figsize=(20,8))
     plt.plot(effnet_history.history['accuracy'])
@@ -190,6 +190,8 @@ def training_and_testing_model(std_df,fair_df):
     json_file.close()
     model = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
     model.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
+
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
 
     features = std_df.columns.tolist()
     features.remove('gender') 

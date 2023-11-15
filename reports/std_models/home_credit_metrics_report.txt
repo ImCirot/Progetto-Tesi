@@ -1,16 +1,54 @@
 lr
-Accuracy: 0.644
-F1 score: 0.636
+Accuracy: 0.636
+F1 score: 0.627
+
+matrix:
+ [[6584 3404]
+ [3816 6056]]
+
+report:               precision    recall  f1-score   support
+
+           0       0.63      0.66      0.65      9988
+           1       0.64      0.61      0.63      9872
+
+    accuracy                           0.64     19860
+   macro avg       0.64      0.64      0.64     19860
+weighted avg       0.64      0.64      0.64     19860
+
 
 rf
-Accuracy: 0.861
-F1 score: 0.865
+Accuracy: 0.852
+F1 score: 0.857
 
-svm
-Accuracy: 0.683
-F1 score: 0.678
+matrix:
+ [[8085 1903]
+ [1044 8828]]
+
+report:               precision    recall  f1-score   support
+
+           0       0.89      0.81      0.85      9988
+           1       0.82      0.89      0.86      9872
+
+    accuracy                           0.85     19860
+   macro avg       0.85      0.85      0.85     19860
+weighted avg       0.85      0.85      0.85     19860
+
 
 xgb
-Accuracy: 0.716
-F1 score: 0.721
+Accuracy: 0.703
+F1 score: 0.706
+
+matrix:
+ [[6901 3087]
+ [2808 7064]]
+
+report:               precision    recall  f1-score   support
+
+           0       0.71      0.69      0.70      9988
+           1       0.70      0.72      0.71      9872
+
+    accuracy                           0.70     19860
+   macro avg       0.70      0.70      0.70     19860
+weighted avg       0.70      0.70      0.70     19860
+
 
