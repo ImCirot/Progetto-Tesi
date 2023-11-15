@@ -56,20 +56,16 @@ def training_testing_models(df):
 
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
 
-    selector = SelectKBest(score_func=f_classif,k=10)
-    X_train_selected = selector.fit_transform(X_train,y_train)
-    X_test_selected = selector.transform(X_test)
-
-    lr_model_pipeline.fit(X_train_selected,y_train.values.ravel())
-    rf_model_pipeline.fit(X_train_selected,y_train.values.ravel())
-    svm_model_pipeline.fit(X_train_selected,y_train.values.ravel())
-    xgb_model_pipeline.fit(X_train_selected,y_train.values.ravel())
+    lr_model_pipeline.fit(X_train,y_train.values.ravel())
+    rf_model_pipeline.fit(X_train,y_train.values.ravel())
+    svm_model_pipeline.fit(X_train,y_train.values.ravel())
+    xgb_model_pipeline.fit(X_train,y_train.values.ravel())
 
     print(f'######### Testing modelli #########')
-    validate(lr_model_pipeline,'lr', X_test_selected, y_test,True)
-    validate(rf_model_pipeline,'rf',X_test_selected,y_test)
-    validate(svm_model_pipeline,'svm',X_test_selected,y_test)
-    validate(xgb_model_pipeline,'xgb',X_test_selected,y_test)
+    validate(lr_model_pipeline,'lr', X_test, y_test,True)
+    validate(rf_model_pipeline,'rf',X_test,y_test)
+    validate(svm_model_pipeline,'svm',X_test,y_test)
+    validate(xgb_model_pipeline,'xgb',X_test,y_test)
     
     print(f'######### Salvataggio modelli #########')
     pickle.dump(lr_model_pipeline,open('./output_models/std_models/lr_heart_disease_model.sav','wb'))
