@@ -1,24 +1,24 @@
-Race Mean difference pre inprocessing: -0.105
-Race DI pre inprocessing: 0.599
-Race Mean difference post inprocessing: -0.052
-Race DI post inprocessing: 0.863
 Gender Mean difference pre inprocessing: -0.198
 Gender DI pre inprocessing: 0.365
-Gender Mean difference post inprocessing: 0.026
-Gender DI post inprocessing: 1.072
-lr_model Race Eq. Odds difference: 0.011
-lr_model Sex Eq. Odds difference: -0.018
-rf_model Race Eq. Odds difference: 0.044
-rf_model Sex Eq. Odds difference: -0.015
-svm_model Race Eq. Odds difference: -0.123
-svm_model Sex Eq. Odds difference: -0.048
-xgb_model Race Eq. Odds difference: -0.018
-xgb_model Sex Eq. Odds difference: -0.063
-lr_inprocessing_model Race Eq. Odds difference: -0.035
-lr_inprocessing_model Sex Eq. Odds difference: -0.029
-rf_inprocessing_model Race Eq. Odds difference: -0.041
-rf_inprocessing_model Sex Eq. Odds difference: -0.014
-svm_inprocessing_model Race Eq. Odds difference: -0.031
-svm_inprocessing_model Sex Eq. Odds difference: -0.026
-xgb_inprocessing_model Race Eq. Odds difference: -0.041
-xgb_inprocessing_model Sex Eq. Odds difference: -0.028
+Gender Mean difference post inprocessing: 0.061
+Gender DI post inprocessing: 1.113
+Age Mean difference pre inprocessing: -0.282
+Age DI pre inprocessing: 0.04
+Age Mean difference post inprocessing: -0.04
+Age DI post inprocessing: 0.93
+lr_model Sex Eq. Odds difference: -0.035
+lr_model Age Eq. Odds difference: -0.451
+rf_model Sex Eq. Odds difference: 0.016
+rf_model Age Eq. Odds difference: -0.361
+svm_model Sex Eq. Odds difference: -0.031
+svm_model Age Eq. Odds difference: -0.433
+xgb_model Sex Eq. Odds difference: -0.025
+xgb_model Age Eq. Odds difference: -0.425
+lr_inprocessing_model Sex Eq. Odds difference: -0.066
+lr_inprocessing_model Age Eq. Odds difference: -0.108
+rf_inprocessing_model Sex Eq. Odds difference: -0.055
+rf_inprocessing_model Age Eq. Odds difference: -0.027
+svm_inprocessing_model Sex Eq. Odds difference: -0.07
+svm_inprocessing_model Age Eq. Odds difference: -0.111
+xgb_inprocessing_model Sex Eq. Odds difference: -0.055
+xgb_inprocessing_model Age Eq. Odds difference: -0.101

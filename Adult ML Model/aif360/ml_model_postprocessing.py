@@ -37,7 +37,7 @@ def training_model(dataset):
 
     # setting variabili protette
     protected_features_names = [
-        'race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','sex_Female','sex_Male'
+        'sex_Female','sex_Male','age'
     ]
 
     # setting nomi features del dataset
@@ -108,9 +108,7 @@ def validate(model,fair_pred,model_type,X,y,first=False):
 
     accuracy = accuracy_score(y_pred=fair_pred,y_true=y)
 
-    y_proba = model.predict_proba(X)[::,1]
-
-    auc_score = roc_auc_score(y,y_proba)
+    f1 = f1_score(y,fair_pred)
 
     if first:
         open_type = "w"
@@ -121,61 +119,11 @@ def validate(model,fair_pred,model_type,X,y,first=False):
     with  open(f"./reports/postprocessing_models/aif360/adult_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
-        f.write(f'ROC-AUC Score: {round(auc_score,3)}\n')
+        f.write(f'F1 score: {round(f1,3)}\n')
         f.write('\n')
 
 def test_fairness(original_dataset,pred,name,first_message=False):
     ## funzione che testa la fairness del dataset tramite libreria AIF360 e restituisce un dataset fair opportunamente modificato
-
-    race_features = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
-
-    # costruiamo il dataset sfruttando l'oggetto richiesto dalla libreria AIF360 per operare
-    # questo dataset sfrutterà solamente i gruppi ottenuti utilizzando la feature "race"
-    aif_race_dataset = BinaryLabelDataset(
-        df=original_dataset,
-        favorable_label=1,
-        unfavorable_label=0,
-        label_names=['salary'],
-        protected_attribute_names=race_features,
-        privileged_protected_attributes=['race_White']
-    )
-    
-    aif_race_pred = BinaryLabelDataset(
-        df=pred,
-        favorable_label=1,
-        unfavorable_label=0,
-        label_names=['salary'],
-        protected_attribute_names=race_features,
-        privileged_protected_attributes=['race_White']
-    )
-
-    # setting dei gruppi privilegiati e non del delle varibili protette
-    # in particolare, scegliamo di trattare gli individui "bianchi" come favoriti data la forte presenza di quest'ultimi all'interno del dataset
-    # rispetto agli individui di razze diverse, che vengono settati come appartenenti al gruppo sfavorito.
-    race_privileged_groups = [{'race_White': 1}]
-    race_unprivileged_groups = [{'race_White': 0}]
-
-    # Calcolo della metrica sul dataset originale
-    race_metric_original = BinaryLabelDatasetMetric(dataset=aif_race_dataset, unprivileged_groups=race_unprivileged_groups, privileged_groups=race_privileged_groups)    
-    
-    print_fairness_metrics(race_metric_original.mean_difference(),f'{name}_model Race mean_difference before',first_message)
-    print_fairness_metrics(race_metric_original.disparate_impact(),f'{name}_model Race DI before')
-
-    eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups,seed=42)
-
-    # bilanciamo il dataset originale sfruttando l'oggetto appena creato
-    race_dataset_transformed = eqoddspost.fit_predict(aif_race_dataset,aif_race_pred,threshold=0.8)
-
-    # vengono ricalcolate le metriche sul nuovo modello appena bilanciato
-    race_metric_transformed = BinaryLabelDatasetMetric(dataset=race_dataset_transformed,unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups)
-    
-    # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics(race_metric_transformed.mean_difference(),f'{name}_model Race mean_difference after')
-    print_fairness_metrics(race_metric_transformed.disparate_impact(),f'{name}_model Race DI after')
-    
-    # passiamo ora a valutare il dataset sulla base della feature legata al genere
-
-    new_dataset = race_dataset_transformed.convert_to_dataframe()[0]
 
     # setting nome varibili sensibili legate al sesso
     sex_features = ['sex_Male','sex_Female']
@@ -192,7 +140,7 @@ def test_fairness(original_dataset,pred,name,first_message=False):
     )
 
     aif_sex_pred = BinaryLabelDataset(
-        df=new_dataset,
+        df=pred,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['salary'],
@@ -210,7 +158,7 @@ def test_fairness(original_dataset,pred,name,first_message=False):
     sex_metric_original = BinaryLabelDatasetMetric(dataset=aif_sex_dataset, unprivileged_groups=sex_unprivileged_groups, privileged_groups=sex_privileged_groups) 
     
     # stampiamo la metrica mean_difference sul file di report    
-    print_fairness_metrics(sex_metric_original.mean_difference(),f'{name}_model Sex mean_difference before')
+    print_fairness_metrics(sex_metric_original.mean_difference(),f'{name}_model Sex mean_difference before',first_message)
     print_fairness_metrics(sex_metric_original.disparate_impact(),f'{name}_model Sex DI before')
     
     eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=sex_privileged_groups, unprivileged_groups=sex_unprivileged_groups,seed=42)
@@ -227,37 +175,55 @@ def test_fairness(original_dataset,pred,name,first_message=False):
 
     new_dataset = sex_dataset_transformed.convert_to_dataframe()[0]
 
+    age_feature = ['age']
+
+    aif_age_dataset = BinaryLabelDataset(
+        df=original_dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=age_feature
+    )
+
+    aif_age_pred = BinaryLabelDataset(
+        df=new_dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=age_feature
+    )
+
+    # setting dei gruppi privilegiati e non del delle varibili protette
+    # in particolare, scegliamo di trattare gli individui di sesso maschile come favoriti data la forte presenza di quest'ultimi all'interno del dataset
+    # rispetto agli individui di sesso femminile, che vengono settati come appartenenti al gruppo sfavorito.
+    age_privileged_groups = [{'age': 1}]
+    age_unprivileged_groups = [{'age': 0}]
+
+    # Calcolo della metrica sul dataset originale
+    age_metric_original = BinaryLabelDatasetMetric(dataset=aif_age_dataset, unprivileged_groups=age_unprivileged_groups, privileged_groups=age_privileged_groups) 
+    
+    # stampiamo la metrica mean_difference sul file di report    
+    print_fairness_metrics(age_metric_original.mean_difference(),f'{name}_model Age mean_difference before')
+    print_fairness_metrics(age_metric_original.disparate_impact(),f'{name}_model Age DI before')
+    
+    eqoddspost_age = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=age_privileged_groups, unprivileged_groups=age_unprivileged_groups,seed=1)
+
+    # bilanciamo il dataset originale sfruttando l'oggetto appena creato
+    age_dataset_transformed = eqoddspost_age.fit_predict(aif_age_dataset,aif_age_pred,threshold=0.8)
+
+    # vengono ricalcolate le metriche sul nuovo modello appena bilanciato
+    age_metric_transformed = BinaryLabelDatasetMetric(dataset=age_dataset_transformed,unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)
+    
+    # stampa della mean_difference del nuovo modello bilanciato sul file di report
+    print_fairness_metrics(age_metric_transformed.mean_difference(),f'{name}_model Age mean_difference value after')
+    print_fairness_metrics(age_metric_transformed.disparate_impact(),f'{name}_model Age DI value after')
+
+    new_dataset = age_dataset_transformed.convert_to_dataframe()[0]
+
     return new_dataset
 
 def eq_odds_fair_report(dataset,prediction,name):
    
-    race_features = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
-
-    aif_race_dataset = BinaryLabelDataset(
-        df=dataset,
-        favorable_label=1,
-        unfavorable_label=0,
-        label_names=['salary'],
-        protected_attribute_names=race_features,
-        privileged_protected_attributes=['race_White']
-    )
-
-    aif_race_pred = BinaryLabelDataset(
-        df=prediction,
-        favorable_label=1,
-        unfavorable_label=0,
-        label_names=['salary'],
-        protected_attribute_names=race_features,
-        privileged_protected_attributes=['race_White']
-    )
-    
-    race_privileged_groups = [{'race_White': 1}]
-    race_unprivileged_groups = [{'race_White': 0}]
-
-    metrics = ClassificationMetric(dataset=aif_race_dataset,classified_dataset=aif_race_pred,unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups)
-
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Race Eq. Odds difference')
-
     sex_features = ['sex_Male','sex_Female']
 
     aif_sex_dataset = BinaryLabelDataset(
@@ -284,6 +250,31 @@ def eq_odds_fair_report(dataset,prediction,name):
     metrics = ClassificationMetric(dataset=aif_sex_dataset,classified_dataset=aif_sex_pred,unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
 
     print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Sex Eq. Odds difference')
+
+    age_features = ['age']
+
+    aif_age_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=age_features
+    )
+
+    aif_age_pred = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=age_features
+    )
+
+    age_privileged_groups = [{'age': 1}]
+    age_unprivileged_groups = [{'age': 0}]
+
+    metrics = ClassificationMetric(dataset=aif_age_dataset,classified_dataset=aif_age_pred,unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)
+
+    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Age Eq. Odds diff')
 
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input

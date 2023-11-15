@@ -204,9 +204,7 @@ def validate(ml_model, model_type, X_test, y_test, first=False):
 
     accuracy = ml_model.score(X_test,y_test)
 
-    y_proba = ml_model.predict_proba(X_test)[::,1]
-
-    auc_score = roc_auc_score(y_test,y_proba)
+    f1 = f1_score(y_test,pred)
 
     if first:
         open_type = "w"
@@ -218,7 +216,7 @@ def validate(ml_model, model_type, X_test, y_test, first=False):
     with open(f"./reports/preprocessing_models/fairlearn/adult_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
-        f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
+        f.write(f'\nF1 score: {round(f1,3)}\n')
         f.write('\n')
 
 def print_time(time,index):

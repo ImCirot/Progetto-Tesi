@@ -44,7 +44,7 @@ def training_model(dataset):
 
     # setting variabili protette
     protected_features_names = [
-        'race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White','sex_Female','sex_Male'
+        'age','sex_Female','sex_Male'
     ]
 
     # setting nomi features del dataset
@@ -153,27 +153,14 @@ def processing_fairness(dataset,X_set,y_set,protected_features):
         protected_attribute_names=protected_features,
     )
 
-    privileged_groups = [{'race_White': 1}]
-    unprivileged_groups = [{'race_White': 0}]
-
-    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
-    
-    print_metrics(metrics_og.mean_difference(),f'Race Mean difference pre inprocessing',first_message=True)
-    print_metrics(metrics_og.disparate_impact(),f'Race DI pre inprocessing')
-
     fair_postop_df = fair_classifier.fit_predict(dataset=aif_train)
-
-    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
-
-    print_metrics(metrics_trans.mean_difference(),f'Race Mean difference post inprocessing')
-    print_metrics(metrics_trans.disparate_impact(),f'Race DI post inprocessing')
 
     privileged_groups = [{'sex_Male': 1}]
     unprivileged_groups = [{'sex_Female': 1}]
 
     metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_metrics(metrics_og.mean_difference(),f'Gender Mean difference pre inprocessing')
+    print_metrics(metrics_og.mean_difference(),f'Gender Mean difference pre inprocessing',first_message=True)
     print_metrics(metrics_og.disparate_impact(),f'Gender DI pre inprocessing')
 
     metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
@@ -181,39 +168,25 @@ def processing_fairness(dataset,X_set,y_set,protected_features):
     print_metrics(metrics_trans.mean_difference(),f'Gender Mean difference post inprocessing')
     print_metrics(metrics_trans.disparate_impact(),f'Gender DI post inprocessing')
 
+    privileged_groups = [{'age': 1}]
+    unprivileged_groups = [{'age': 0}]
+
+    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+
+    print_metrics(metrics_og.mean_difference(),f'Age Mean difference pre inprocessing')
+    print_metrics(metrics_og.disparate_impact(),f'Age DI pre inprocessing')
+
+    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_postop_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+
+    print_metrics(metrics_trans.mean_difference(),f'Age Mean difference post inprocessing')
+    print_metrics(metrics_trans.disparate_impact(),f'Age DI post inprocessing')
+
     postop_train = fair_postop_df.convert_to_dataframe()[0]
     
     return postop_train
 
 def eq_odds_fair_report(dataset,prediction,name):
    
-    race_features = ['race_Amer-Indian-Eskimo','race_Asian-Pac-Islander','race_Black','race_Other','race_White']
-
-    aif_race_dataset = BinaryLabelDataset(
-        df=dataset,
-        favorable_label=1,
-        unfavorable_label=0,
-        label_names=['salary'],
-        protected_attribute_names=race_features,
-        privileged_protected_attributes=['race_White']
-    )
-
-    aif_race_pred = BinaryLabelDataset(
-        df=prediction,
-        favorable_label=1,
-        unfavorable_label=0,
-        label_names=['salary'],
-        protected_attribute_names=race_features,
-        privileged_protected_attributes=['race_White']
-    )
-    
-    race_privileged_groups = [{'race_White': 1}]
-    race_unprivileged_groups = [{'race_White': 0}]
-
-    metrics = ClassificationMetric(dataset=aif_race_dataset,classified_dataset=aif_race_pred,unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups)
-
-    print_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Race Eq. Odds difference')
-
     sex_features = ['sex_Male','sex_Female']
 
     aif_sex_dataset = BinaryLabelDataset(
@@ -241,6 +214,31 @@ def eq_odds_fair_report(dataset,prediction,name):
 
     print_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Sex Eq. Odds difference')
 
+    age_features = ['age']
+
+    aif_age_dataset = BinaryLabelDataset(
+        df=dataset,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=age_features
+    )
+
+    aif_age_pred = BinaryLabelDataset(
+        df=prediction,
+        favorable_label=1,
+        unfavorable_label=0,
+        label_names=['salary'],
+        protected_attribute_names=age_features
+    )
+
+    age_privileged_groups = [{'age': 1}]
+    age_unprivileged_groups = [{'age': 0}]
+
+    metrics = ClassificationMetric(dataset=aif_age_dataset,classified_dataset=aif_age_pred,unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)
+
+    print_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Age Eq. Odds difference')
+
 def print_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
 
@@ -259,9 +257,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
 
     accuracy = ml_model.score(X_test,y_test)
 
-    y_proba = ml_model.predict_proba(X_test)[::,1]
-
-    auc_score = roc_auc_score(y_test,y_proba)
+    f1 = f1_score(y_test,pred)
 
     if first:
         open_type = 'w'
@@ -272,7 +268,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
     with open(f'./reports/inprocessing_models/aif360/adult_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
-        f.write(f'\nROC-AUC score: {round(auc_score,3)}\n')
+        f.write(f'\nF1 score: {round(f1,3)}\n')
         f.write('\n')
 
 def print_time(time,index):
