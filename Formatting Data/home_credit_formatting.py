@@ -35,7 +35,7 @@ def load_dataset():
 
     df_train = df_train.drop('DAYS_BIRTH',axis=1)
 
-    df_train['CODE_GENDER'] = df_train['CODE_GENDER'].map({'M':1,'F':0,'XNA':2})
+    df_train['CODE_GENDER'] = df_train['CODE_GENDER'].map({'M':1,'F':0,'XNA':0})
     df_train['CODE_GENDER'] = df_train['CODE_GENDER'].astype(int)
 
     colonne_oggetto = df_train.select_dtypes(include=['object']).columns.tolist()
