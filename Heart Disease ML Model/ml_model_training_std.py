@@ -33,7 +33,7 @@ def load_dataset():
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(120)
+            sleep(60)
             print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(country_iso_code='ITA',offline=True)

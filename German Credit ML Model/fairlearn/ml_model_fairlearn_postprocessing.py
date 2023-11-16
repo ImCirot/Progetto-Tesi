@@ -206,7 +206,7 @@ def load_dataset():
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(1)
+            sleep(60)
             print('########################### IDLE TIME FINISH ###########################')
 
 def print_time(time,index):
