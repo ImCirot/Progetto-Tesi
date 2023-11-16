@@ -104,18 +104,20 @@ def training_and_testing_model(df):
         class_mode='categorical'
     )
 
-    model_URL = "https://www.kaggle.com/models/google/resnet-v2/frameworks/TensorFlow2/variations/50-classification/versions/2"
-    resnet_google = tf.keras.Sequential(
-        [
-            tf.keras.layers.Rescaling(1./255, input_shape=(48,48, 3)),
-            hub.KerasLayer(model_URL),
-            tf.keras.layers.Dense(2, activation="softmax")
-        ])
+    resnet_model = tf.keras.applications.resnet_v2.ResNet50V2(
+        include_top=True,
+        weights=None,
+        input_tensor=None,
+        input_shape=image_size + (3,), 
+        pooling=None, 
+        classes=2,
+        classifier_activation="softmax"
+    )
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),'precision','recall'])
+    resnet_model.compile(optimizer="Adam",loss='binary_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
 
-    resnet_history = resnet_google.fit(
+    resnet_history = resnet_model.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
         epochs=epochs, 
@@ -151,20 +153,20 @@ def training_and_testing_model(df):
     plt.xlabel('epoch')
     plt.savefig('./figs/std/std_resnet_recall.png')
 
-    resnet_loss, resnet_accuracy, resnet_f1, resnet_precision, resnet_recall = resnet_google.evaluate(validation_generator)
+    resnet_loss, resnet_accuracy, resnet_f1, resnet_precision, resnet_recall = resnet_model.evaluate(validation_generator)
 
     with open('./reports/std_models/resnet_gender_recognition_report.txt','w') as f:
         f.write('ResnetV2 model\n')
-        f.write(f"Accuracy: {round(resnet_accuracy,3)}\n")
-        f.write(f'F1 Score: {round(resnet_f1,3)}\n')
+        f.write(f"Accuracy: {round(resnet_accuracy)}\n")
+        f.write(f'F1 Score: {resnet_f1}\n')
         f.write(f'Precision: {round(resnet_precision,3)}\n')
-        f.write(f'Recall: {round(resnet_recall,3)}\n')
+        f.write(f'Recall: {round(resnet_recall)}\n')
 
-    m_json = resnet_google.to_json()
+    m_json = resnet_model.to_json()
     with open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json','w') as f:
         f.write(m_json)
 
-    resnet_google.save_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
+    resnet_model.save_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
 
 def print_time(time):
     with open('./reports/time_reports/gender/std_resnet_report.txt','w') as f:
