@@ -95,38 +95,41 @@ def training_model(dataset):
     )
 
     # setting subset train/test X e y
-    X_train, X_test, y_train, y_test, g_train, g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
 
     selector = SelectKBest(score_func=f_classif,k=60)
-    X_train_selected = selector.fit_transform(X_train,y_train)
-    X_test_selected = selector.transform(X_test)
+    selector.fit(X,y)
+    mask = selector.get_support(indices=True)
+    X_selected = X.iloc[:,mask]
+    X_selected['AGE_CAT'] = X['AGE_CAT']
+
+    X_train, X_test, y_train, y_test, g_train, g_test = train_test_split(X_selected,y,g,test_size=0.2,random_state=42)
 
     # addestriamo i modelli
     print(f'######### Training modelli #########')
-    lr_threshold.fit(X_train_selected,y_train,sensitive_features=g_train)
-    rf_threshold.fit(X_train_selected,y_train,sensitive_features=g_train)
-    svm_threshold.fit(X_train_selected,y_train,sensitive_features=g_train)
-    xgb_threshold.fit(X_train_selected,y_train,sensitive_features=g_train)
+    lr_threshold.fit(X_train,y_train,sensitive_features=g_train)
+    rf_threshold.fit(X_train,y_train,sensitive_features=g_train)
+    svm_threshold.fit(X_train,y_train,sensitive_features=g_train)
+    xgb_threshold.fit(X_train,y_train,sensitive_features=g_train)
 
     # validiamo i modelli
     print(f'######### Testing modelli #########')
-    validate(lr_threshold,'lr',X_test_selected,y_test,g_test,True)
-    validate(rf_threshold,'rf',X_test_selected,y_test,g_test)
-    validate(svm_threshold,'svm',X_test_selected,y_test,g_test)
-    validate(xgb_threshold,'xgb',X_test_selected,y_test,g_test)
+    validate(lr_threshold,'lr',X_test,y_test,g_test,True)
+    validate(rf_threshold,'rf',X_test,y_test,g_test)
+    validate(svm_threshold,'svm',X_test,y_test,g_test)
+    validate(xgb_threshold,'xgb',X_test,y_test,g_test)
 
     print(f'######### Testing Fairness #########')
-    lr_std_pred = lr_model_pipeline.predict(X_test_selected)
-    lr_threshold_pred = lr_threshold.predict(X_test_selected,sensitive_features=g_test)
+    lr_std_pred = lr_model_pipeline.predict(X_test)
+    lr_threshold_pred = lr_threshold.predict(X_test,sensitive_features=g_test)
 
-    rf_std_pred = rf_model_pipeline.predict(X_test_selected)
-    rf_threshold_pred = rf_threshold.predict(X_test_selected,sensitive_features=g_test)
+    rf_std_pred = rf_model_pipeline.predict(X_test)
+    rf_threshold_pred = rf_threshold.predict(X_test,sensitive_features=g_test)
 
-    svm_std_pred = svm_model_pipeline.predict(X_test_selected)
-    svm_threshold_pred = svm_threshold.predict(X_test_selected,sensitive_features=g_test)
+    svm_std_pred = svm_model_pipeline.predict(X_test)
+    svm_threshold_pred = svm_threshold.predict(X_test,sensitive_features=g_test)
 
-    xgb_std_pred = xgb_model_pipeline.predict(X_test_selected)
-    xgb_threshold_pred = xgb_threshold.predict(X_test_selected,sensitive_features=g_test)
+    xgb_std_pred = xgb_model_pipeline.predict(X_test)
+    xgb_threshold_pred = xgb_threshold.predict(X_test,sensitive_features=g_test)
 
     predictions = {
         'lr_std':lr_std_pred,
@@ -182,6 +185,10 @@ def validate(ml_model,model_type,X_test,y_test,g_test,first=False):
 
     f1 = f1_score(y_test,pred)
 
+    precision = precision_score(y_test,pred)
+
+    recall = recall_score(y_test,pred)
+
     if first:
         open_type = "w"
     else:
@@ -190,8 +197,10 @@ def validate(ml_model,model_type,X_test,y_test,g_test,first=False):
     #scriviamo su un file le metriche di valutazione ottenute
     with  open(f'./reports/postprocessing_models/fairlearn/home_credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
-        f.write(f"Accuracy: {round(accuracy,3)}")
-        f.write(f'\nF1 score: {round(f1,3)}\n')
+        f.write(f"Accuracy: {round(accuracy,3)}\n")
+        f.write(f'F1 Score: {round(f1,3)}\n')
+        f.write(f'Precision: {round(precision,3)}\n')
+        f.write(f'Recall: {round(recall,3)}\n')
         f.write('\n')
 
 def print_time(time,index):
