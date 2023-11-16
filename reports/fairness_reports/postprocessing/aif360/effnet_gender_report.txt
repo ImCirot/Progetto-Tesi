@@ -1,6 +1,0 @@
-mean_difference before: -0.057
-DI before: 0.895
-Eq. odds diff before: -1.0
-mean_difference after: 0.0
-DI after: 1.0
-Eq. odds diff after: -1.0

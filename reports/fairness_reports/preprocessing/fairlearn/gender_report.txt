@@ -1,6 +1,0 @@
-std_model DI: 0.993
-std_model mean_diff: 0.007
-eq_odds_diff: 0.012
-fair_model DI: 0.927
-fair_model mean_diff: 0.033
-eq_odds_diff: 0.064

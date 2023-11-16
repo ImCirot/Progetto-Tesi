@@ -1,6 +1,0 @@
-std_model DI: nan
-std_model mean_diff: 0.0
-eq_odds_diff: 0.0
-fair_model DI: nan
-fair_model mean_diff: 0.0
-eq_odds_diff: 0.0

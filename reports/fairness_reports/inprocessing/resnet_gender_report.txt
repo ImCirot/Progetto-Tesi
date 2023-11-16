@@ -1,6 +1,0 @@
-mean_difference before: -0.036
-DI before: 0.932
-mean_difference after: 0.089
-DI after: 1.138
-std_model Eq. odds diff: -1.0
-inprocessed_model Eq. odds diff: -0.67

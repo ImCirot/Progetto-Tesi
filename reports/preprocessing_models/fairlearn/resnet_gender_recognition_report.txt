@@ -1,3 +1,0 @@
-ResnetV2 model
-Accuracy: 0.574
-AUC-ROC: 0.604
