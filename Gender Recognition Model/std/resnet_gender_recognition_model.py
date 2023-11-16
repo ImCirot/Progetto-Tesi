@@ -113,7 +113,7 @@ def training_and_testing_model(df):
         ])
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
+    resnet_google.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),'precision','recall'])
 
     resnet_history = resnet_google.fit(
         train_generator, 
@@ -137,12 +137,28 @@ def training_and_testing_model(df):
     plt.xlabel('epoch')
     plt.savefig('./figs/std/std_resnet_accuracy.png')
 
-    resnet_loss, resnet_accuracy, resnet_auc = resnet_google.evaluate(validation_generator)
+    plt.figure(figsize=(20,8))
+    plt.plot(resnet_history.history['precision'])
+    plt.title('model precision')
+    plt.ylabel('precision')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/std/std_resnet_precision.png')
+
+    plt.figure(figsize=(20,8))
+    plt.plot(resnet_history.history['recall'])
+    plt.title('model recall')
+    plt.ylabel('recall')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/std/std_resnet_recall.png')
+
+    resnet_loss, resnet_accuracy, resnet_f1, resnet_precision, resnet_recall = resnet_google.evaluate(validation_generator)
 
     with open('./reports/std_models/resnet_gender_recognition_report.txt','w') as f:
         f.write('ResnetV2 model\n')
         f.write(f"Accuracy: {round(resnet_accuracy,3)}\n")
-        f.write(f'AUC-ROC: {round(resnet_auc,3)}\n')
+        f.write(f'F1 Score: {round(resnet_f1,3)}\n')
+        f.write(f'Precision: {round(resnet_precision,3)}\n')
+        f.write(f'Recall: {round(resnet_recall,3)}\n')
 
     m_json = resnet_google.to_json()
     with open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json','w') as f:

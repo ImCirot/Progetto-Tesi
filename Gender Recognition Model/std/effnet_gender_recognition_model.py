@@ -112,7 +112,7 @@ def training_and_testing_model(df):
         ])
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
+    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),'precision','recall'])
     
     # addestriamo il modello EfficientNet
     effnet_history = effnet_model.fit(
@@ -137,12 +137,28 @@ def training_and_testing_model(df):
     plt.xlabel('epoch')
     plt.savefig('./figs/std/std_effnet_accuracy.png')
 
-    effnet_loss, effnet_accuracy, effnet_auc = effnet_model.evaluate(validation_generator)
+    plt.figure(figsize=(20,8))
+    plt.plot(effnet_history.history['precision'])
+    plt.title('model precision')
+    plt.ylabel('precision')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/std/std_effnet_precision.png')
+
+    plt.figure(figsize=(20,8))
+    plt.plot(effnet_history.history['recall'])
+    plt.title('model accuracy')
+    plt.ylabel('recall')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/std/std_effnet_recall.png')
+
+    effnet_loss, effnet_accuracy, effnet_f1, effnet_precision, effnet_recall = effnet_model.evaluate(validation_generator)
 
     with open('./reports/std_models/effnet_gender_recognition_report.txt','w') as f:
         f.write('EfficentNet Model\n')
         f.write(f"Accuracy: {round(effnet_accuracy,3)}\n")
-        f.write(f'AUC-ROC: {round(effnet_auc,3)}\n')
+        f.write(f'F1 Score: {round(effnet_f1,3)}\n')
+        f.write(f'Precision: {round(effnet_precision,3)}\n')
+        f.write(f'Recall: {round(effnet_recall,3)}\n')
 
 
     m_json = effnet_model.to_json()
