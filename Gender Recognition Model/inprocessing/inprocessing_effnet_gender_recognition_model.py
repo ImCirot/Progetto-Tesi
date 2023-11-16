@@ -114,17 +114,17 @@ def training_and_testing_model(df):
     json_file = open('./output_models/std_models/effnet_model/effnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
-    model = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
+    model = tf.keras.models.model_from_json(loaded_model_json)
     model.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
+    model.compile(loss='categorical_crossentropy',metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
     
     # addestriamo il modello EfficientNet
     effnet_history = model.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
-        epochs=1, 
+        epochs=epochs, 
         validation_data=validation_generator, 
         validation_steps=validation_generator.samples//batch_size,
     )
@@ -143,12 +143,29 @@ def training_and_testing_model(df):
     plt.xlabel('epoch')
     plt.savefig('./figs/aif360/inprocessing_effnet_accuracy.png')
 
-    effnet_loss, effnet_accuracy, effnet_auc = model.evaluate(validation_generator)
+    plt.figure(figsize=(20,8))
+    plt.plot(effnet_history.history['precision'])
+    plt.title('model precision')
+    plt.ylabel('precision')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/aif360/inprocessing_effnet_precision.png')
+
+    plt.figure(figsize=(20,8))
+    plt.plot(effnet_history.history['recall'])
+    plt.title('model recall')
+    plt.ylabel('recall')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/aif360/inprocessing_effnet_recall.png')
+
+    effnet_loss, effnet_accuracy, effnet_f1, effnet_precision, effnet_recall = model.evaluate(validation_generator)
+
 
     with open('./reports/inprocessing_models/aif360/effnet_gender_recognition_report.txt','w') as f:
         f.write('EfficentNet Model\n')
         f.write(f"Accuracy: {round(effnet_accuracy,3)}\n")
-        f.write(f'AUC-ROC: {round(effnet_auc,3)}\n')
+        f.write(f'F1 Score: {effnet_f1}\n')
+        f.write(f'Precision: {round(effnet_precision,3)}\n')
+        f.write(f'Recall: {round(effnet_recall)}\n')
 
     m_json = model.to_json()
     with open('./output_models/inprocess_models/effnet_model/effnet_gender_recognition_model.json','w') as f:
@@ -172,11 +189,11 @@ def training_and_testing_model(df):
     json_file = open('./output_models/std_models/effnet_model/effnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
-    model_std = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
+    model_std = tf.keras.models.model_from_json(loaded_model_json)
     model_std.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    model_std.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
+    model_std.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
 
     pred = model_std.predict(validation_generator)
     pred = np.argmax(pred,axis=1)

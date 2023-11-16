@@ -9,11 +9,12 @@ from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from aif360.datasets import BinaryLabelDataset
 from aif360.datasets import StandardDataset
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score,f1_score,recall_score,precision_score
 from aif360.algorithms.postprocessing import CalibratedEqOddsPostprocessing
 import tensorflow_hub as hub
 import matplotlib.pyplot as plt
 from datetime import datetime
+import tensorflow_addons as tfa
 
 #
 #
@@ -120,11 +121,11 @@ def postop_model(df):
     json_file = open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
-    model = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
+    model = tf.keras.models.model_from_json(loaded_model_json)
     model.load_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy','AUC'])
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
 
     pred = model.predict(validation_generator)
     pred = np.argmax(pred,axis=1)
@@ -134,10 +135,19 @@ def postop_model(df):
     fair_pred = test_fairness(df_test,std_pred)
 
     resnet_accuracy = accuracy_score(y_true=y_test,y_pred=fair_pred['gender'])
+
+    resnet_f1_score = f1_score(y_true=y_test,y_pred=fair_pred['gender'])
+
+    resnet_precision_score = precision_score(y_true=y_test,y_pred=fair_pred['gender'])
+
+    resnet_recall_score = recall_score(y_true=y_test,y_pred=fair_pred['gender'])
     
     with open('./reports/postprocessing_models/resnet_gender_recognition_report.txt','w') as f:
         f.write('ResnetV2 model\n')
         f.write(f"Accuracy: {round(resnet_accuracy,3)}\n")
+        f.write(f"F1 score: {round(resnet_f1_score,3)}\n")
+        f.write(f"Precision: {round(resnet_precision_score,3)}\n")
+        f.write(f"Recall: {round(resnet_recall_score,3)}\n")
 
 def test_fairness(dataset,pred):
     ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset

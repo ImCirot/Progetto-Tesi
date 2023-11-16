@@ -114,11 +114,11 @@ def training_and_testing_model(df):
     json_file = open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
-    model = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
+    model = tf.keras.models.model_from_json(loaded_model_json)
     model.load_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
 
     resnet_history = model.fit(
         train_generator, 
@@ -142,12 +142,28 @@ def training_and_testing_model(df):
     plt.xlabel('epoch')
     plt.savefig('./figs/aif360/inprocessing_resnet_accuracy.png')
 
-    resnet_loss, resnet_accuracy, resnet_auc = model.evaluate(validation_generator)
+    plt.figure(figsize=(20,8))
+    plt.plot(resnet_history.history['precision'])
+    plt.title('model precision')
+    plt.ylabel('precision')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/aif360/inprocessing_resnet_precision.png')
+
+    plt.figure(figsize=(20,8))
+    plt.plot(resnet_history.history['recall'])
+    plt.title('model recall')
+    plt.ylabel('recall')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/aif360/inprocessing_resnet_recall.png')
+
+    resnet_loss, resnet_accuracy, resnet_f1, resnet_precision, resnet_recall = model.evaluate(validation_generator)
 
     with open('./reports/inprocessing_models/resnet_gender_recognition_report.txt','w') as f:
         f.write('ResnetV2 model\n')
         f.write(f"Accuracy: {round(resnet_accuracy,3)}\n")
-        f.write(f'AUC-ROC: {round(resnet_auc,3)}\n')
+        f.write(f'F1 Score: {resnet_f1}\n')
+        f.write(f'Precision: {round(resnet_precision,3)}\n')
+        f.write(f'Recall: {round(resnet_recall)}\n')
     
     m_json = model.to_json()
     with open('./output_models/inprocess_models/resnet_model/resnet_gender_recognition_model.json','w') as f:
@@ -167,14 +183,14 @@ def training_and_testing_model(df):
     X_test = df_test[features]
     y_test = df_test['gender'].astype(int)
 
-    json_file = open('./output_models/std_models/effnet_model/effnet_gender_recognition_model.json', 'r')
+    json_file = open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
-    model_std = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
-    model_std.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
+    model_std = tf.keras.models.model_from_json(loaded_model_json)
+    model_std.load_weights('./output_models/std_models/resnet_model/resnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    model_std.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
+    model_std.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
 
     pred = model_std.predict(validation_generator)
     pred = np.argmax(pred,axis=1)
