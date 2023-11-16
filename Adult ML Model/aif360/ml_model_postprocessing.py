@@ -108,7 +108,12 @@ def validate(model,fair_pred,model_type,X,y,first=False):
 
     accuracy = accuracy_score(y_pred=fair_pred,y_true=y)
 
-    f1 = f1_score(y,fair_pred)
+    f1 = f1_score(y_pred=fair_pred,y_true=y)
+
+    precision = precision_score(y_pred=fair_pred,y_true=y)
+
+    recall = recall_score(y_pred=fair_pred,y_true=y)
+
 
     if first:
         open_type = "w"
@@ -119,7 +124,9 @@ def validate(model,fair_pred,model_type,X,y,first=False):
     with  open(f"./reports/postprocessing_models/aif360/adult_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
-        f.write(f'F1 score: {round(f1,3)}\n')
+        f.write(f'\nF1 score: {round(f1,3)}\n')
+        f.write(f"Precision: {round(precision,3)}")
+        f.write(f'\nRecall: {round(recall,3)}\n')
         f.write('\n')
 
 def test_fairness(original_dataset,pred,name,first_message=False):
