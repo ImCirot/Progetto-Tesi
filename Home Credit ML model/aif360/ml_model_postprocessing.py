@@ -263,7 +263,7 @@ def test_fairness(dataset,pred,name,first_message=False):
 
     age_metric_og = BinaryLabelDatasetMetric(dataset=aif_age_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
 
-    print_fairness_metrics(age_metric_og.mean_difference(),f'{name}_model age mean_difference before',first_message)
+    print_fairness_metrics(age_metric_og.mean_difference(),f'{name}_model age mean_difference before')
     print_fairness_metrics(age_metric_og.disparate_impact(),f"{name}_model age DI before")
     
     eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=age_privileged_group, unprivileged_groups=age_unprivileged_group,seed=42)
