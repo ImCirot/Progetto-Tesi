@@ -85,8 +85,8 @@ def loading_dataset():
     # Stampa di debug
     # print(df.head)
 
-    # salviamo come 1 gli individui con più di 25 anni e 0 quelli con meno per considerare come favoriti gli adulti
-    df['Age in years'] = df['Age in years'].apply(lambda x: 1 if x>=25 else 0)
+    age_mean = df['Age in years'].mean()
+    df['Age in years'] = df['Age in years'].apply(lambda x: 1 if x>=age_mean else 0)
 
     # Salviamo in locale il dataset in un file csv, pronto per essere utilizzato per la fase di training e testing del modello
     ouptut = df.to_csv('./German Credit Dataset/dataset_modificato.csv', index_label="ID")

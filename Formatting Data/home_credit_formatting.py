@@ -29,7 +29,9 @@ def load_dataset():
     df_train[categorical_features] = df_train[categorical_features].fillna(value='Unknown')
 
     df_train_age= abs(df_train['DAYS_BIRTH']) // 365
-    df_train_age = df_train_age.apply(lambda x: 1 if x>=25 else 0).astype(int)
+    age_mean = df_train_age.mean()
+    print(age_mean)
+    df_train_age = df_train_age.apply(lambda x: 1 if x>=age_mean else 0).astype(int)
 
     df_train['AGE_CAT'] = df_train_age
 
@@ -57,8 +59,6 @@ def load_dataset():
 
     df_bilanciato = df_bilanciato.sample(frac=1, random_state=42).reset_index(drop=True)
 
-    print(df_bilanciato['TARGET'].value_counts())
-    print(df_bilanciato.shape)
     constant_columns = df_bilanciato.columns[df_bilanciato.nunique() == 1]
 
     df_bilanciato = df_bilanciato.drop(constant_columns,axis=1)

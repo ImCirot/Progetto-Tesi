@@ -11,7 +11,9 @@ def load_dataset():
 
     df = df.dropna()
 
-    df['age'] = df['age'].apply(lambda x: 1 if x>=40 else 0)
+    age_mean = df['age'].mean()
+
+    df['age'] = df['age'].apply(lambda x: 1 if x>=age_mean else 0)
     
     print(df.head)
     # poichè non è importante ai fini dello studio classificare correttamente lo stato della malattia, consideriamo come 1 tutti gli stati di malattia presenti
