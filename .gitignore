@@ -3,3 +3,4 @@
 *.sav
 *.json
 _old_models/
+*.txt
