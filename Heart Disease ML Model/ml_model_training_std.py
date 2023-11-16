@@ -84,6 +84,10 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
 
     f1 = f1_score(y_test,pred)
 
+    precision = precision_score(y_test,pred)
+
+    recall = recall_score(y_test,pred)
+
     if first:
         open_type = "w"
     else:
@@ -94,6 +98,8 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
         f.write(f'\nF1 score: {round(f1,3)}\n')
+        f.write(f"Precision: {round(precision,3)}")
+        f.write(f'\nRecall: {round(recall,3)}\n')
         f.write('\n')
 
 def print_time(time,index):

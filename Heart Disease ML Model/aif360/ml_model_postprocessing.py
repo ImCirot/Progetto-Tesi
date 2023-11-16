@@ -109,6 +109,10 @@ def validate(model,fair_pred,model_type,X,y,first=False):
 
     f1 = f1_score(y_pred=fair_pred,y_true=y)
 
+    precision = precision_score(y_pred=fair_pred,y_true=y)
+
+    recall = recall_score(y_pred=fair_pred,y_true=y)
+
     if first:
         open_type = "w"
     else:
@@ -119,6 +123,8 @@ def validate(model,fair_pred,model_type,X,y,first=False):
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'F1 Score: {round(f1,3)}\n')
+        f.write(f"Precision: {round(precision,3)}")
+        f.write(f'\nRecall: {round(recall,3)}\n')
         f.write('\n')
 
 def test_fairness(dataset,pred,name,first_message=False):
