@@ -117,7 +117,6 @@ def training_testing_models(dataset):
 
     print('######### Testing Fairness #########')
 
-    print(X_fair_test,y_fair_test)
     X_test_fair_df = X_fair_test.copy(deep=True)
     X_test_fair_df['TARGET'] = y_fair_test
 
@@ -200,8 +199,8 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'F1 Score: {round(f1,3)}\n')
-        f.write(f'Precision: {round(f1,3)}\n')
-        f.write(f'Recall: {round(f1,3)}\n')
+        f.write(f'Precision: {round(precision,3)}\n')
+        f.write(f'Recall: {round(recall,3)}\n')
         f.write('\n')
 
 def test_fairness(dataset):
@@ -252,7 +251,7 @@ def test_fairness(dataset):
 
     age_metric_og = BinaryLabelDatasetMetric(dataset=aif_age_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
 
-    print_fairness_metrics(age_metric_og.mean_difference(),'age mean_difference before',first_message=True)
+    print_fairness_metrics(age_metric_og.mean_difference(),'age mean_difference before')
     print_fairness_metrics(age_metric_og.disparate_impact(),"age DI before")
     
     age_RW = Reweighing(unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
