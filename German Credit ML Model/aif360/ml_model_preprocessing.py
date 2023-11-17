@@ -115,16 +115,16 @@ def training_and_testing_model(df):
     X_test_df = X_test.copy(deep=True)
     X_test_df['Target'] = y_test['Target']
 
-    lr_fair_pred = X_fair_test.copy(deep=True)
+    lr_fair_pred = X_test_df.copy(deep=True)
     lr_fair_pred['Target'] = lr_fair_model_pipeline.predict(X_test)
 
-    rf_fair_pred =  X_fair_test.copy(deep=True)
+    rf_fair_pred =  X_test_df.copy(deep=True)
     rf_fair_pred['Target'] = rf_fair_model_pipeline.predict(X_test)
 
-    svm_fair_pred =  X_fair_test.copy(deep=True)
+    svm_fair_pred =  X_test_df.copy(deep=True)
     svm_fair_pred['Target'] = svm_fair_model_pipeline.predict(X_test)
 
-    xgb_fair_pred =  X_fair_test.copy(deep=True)
+    xgb_fair_pred =  X_test_df.copy(deep=True)
     xgb_fair_pred['Target'] = xgb_fair_model_pipeline.predict(X_test)
 
     lr_pred = X_test_df.copy(deep=True)
