@@ -11,7 +11,7 @@ from aif360.algorithms.preprocessing import Reweighing
 from aif360.datasets import StandardDataset
 from aif360.datasets import BinaryLabelDataset
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 import pickle
 import xgboost as xgb
 from datetime import datetime
@@ -84,7 +84,7 @@ def training_and_testing_model(df):
 
     svm_fair_model_pipeline = Pipeline(steps=[
         ('scaler',StandardScaler()), 
-        ('model',SVC(probability=True,class_weight={1:1,0:5}))
+        ('model',LinearSVC(dual='auto',class_weight={1:1,0:5}))
     ])
 
     xgb_fair_model_pipeline = Pipeline(steps=[

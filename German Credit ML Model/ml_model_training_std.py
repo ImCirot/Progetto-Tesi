@@ -7,7 +7,7 @@ from codecarbon import track_emissions
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 from aif360.datasets import BinaryLabelDataset,StandardDataset
 from aif360.metrics import ClassificationMetric
 import pickle
@@ -61,7 +61,7 @@ def training_and_testing_model(df):
     # volte a rimuovere discriminazione e bias nel dataset di training
     lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(class_weight={1:1,0:5}))
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(class_weight={1:1,0:5}))
-    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,class_weight={1:1,0:5}))
+    svm_model_pipeline = make_pipeline(StandardScaler(),LinearSVC(dual='auto',class_weight={1:1,0:5}))
     xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     # Strategia KFold
