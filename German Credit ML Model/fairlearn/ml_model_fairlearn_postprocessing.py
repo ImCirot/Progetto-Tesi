@@ -54,7 +54,7 @@ def training_model(dataset):
     lr_threshold = ThresholdOptimizer(
         estimator=lr_model_pipeline,
         constraints='demographic_parity',
-        predict_method='predict_proba',
+        predict_method='auto',
         prefit=True,   
         objective='accuracy_score'      
     )
@@ -62,7 +62,7 @@ def training_model(dataset):
     rf_threshold = ThresholdOptimizer(
         estimator=rf_model_pipeline,
         constraints='demographic_parity',
-        predict_method='predict_proba',
+        predict_method='auto',
         prefit=True,
         objective='accuracy_score'
     )
@@ -70,7 +70,7 @@ def training_model(dataset):
     svm_threshold = ThresholdOptimizer(
         estimator=svm_model_pipeline,
         constraints='demographic_parity',
-        predict_method='predict_proba',
+        predict_method='auto',
         prefit=True,
         objective='accuracy_score'
     )
@@ -78,7 +78,7 @@ def training_model(dataset):
     xgb_threshold = ThresholdOptimizer(
         estimator=xgb_model_pipeline,
         constraints='demographic_parity',
-        predict_method='predict_proba',
+        predict_method='auto',
         prefit=True,
         objective='accuracy_score'
     )

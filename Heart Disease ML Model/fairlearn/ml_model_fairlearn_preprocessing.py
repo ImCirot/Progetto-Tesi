@@ -13,7 +13,7 @@ from fairlearn.reductions import *
 import seaborn as sns
 import pickle
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 from codecarbon import track_emissions
 import xgboost as xgb
 from datetime import datetime
@@ -71,7 +71,7 @@ def training_model(dataset):
     # creiamo un nuovo modello da addestrare sul dataset modificato
     lr_fair_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
     rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
-    svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    svm_fair_model_pipeline = make_pipeline(StandardScaler(),LinearSVC(dual='auto'))
     xgb_fair_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     # otteniamo il dataset modificato sulla base di fairness

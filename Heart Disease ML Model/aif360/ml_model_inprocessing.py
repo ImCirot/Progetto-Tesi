@@ -12,7 +12,7 @@ from aif360.datasets import StandardDataset
 from aif360.datasets import BinaryLabelDataset
 from sklearn.ensemble import RandomForestClassifier
 from aif360.algorithms.inprocessing import MetaFairClassifier
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 import pickle
 import xgboost as xgb
 from datetime import datetime
@@ -61,7 +61,7 @@ def training_and_testing_model(df):
 
     post_lr_model_pipeline = make_pipeline(StandardScaler(), LogisticRegression(random_state=42))
     post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier(random_state=42))
-    post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True,random_state=42))
+    post_svm_model_pipeline = make_pipeline(StandardScaler(),LinearSVC(dual='auto'))
     post_xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)

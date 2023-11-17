@@ -1,6 +1,6 @@
 from sklearn.metrics import *
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import f_classif,SelectKBest
@@ -50,7 +50,7 @@ def training_testing_models(df):
     # settiamo i nostri modelli sul dataset originale
     lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression(max_iter=1000))
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
-    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    svm_model_pipeline = make_pipeline(StandardScaler(),LinearSVC(dual='auto'))
     xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic',random_state=42))
 
 
