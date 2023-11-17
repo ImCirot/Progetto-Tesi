@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from aif360.datasets import StandardDataset, BinaryLabelDataset
 from aif360.metrics import BinaryLabelDatasetMetric, ClassificationMetric
-from aif360.algorithms.postprocessing import CalibratedEqOddsPostprocessing
+from aif360.algorithms.postprocessing import CalibratedEqOddsPostprocessing,EqOddsPostprocessing
 import pickle
 from sklearn.feature_selection import f_classif,SelectKBest
 from datetime import datetime
@@ -229,10 +229,9 @@ def test_fairness(dataset,pred,name,first_message=False):
     print_fairness_metrics(gender_metric_og.mean_difference(),f'{name}_model Gender mean_difference before',first_message)
     print_fairness_metrics(gender_metric_og.disparate_impact(),f"{name}_model Gender DI before")
     
-    eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=gender_privileged_group, unprivileged_groups=gender_unprivileged_group,seed=42)
+    eqoddspost = EqOddsPostprocessing(privileged_groups=gender_privileged_group, unprivileged_groups=gender_unprivileged_group,seed=42)
 
-    eqoddspost.fit(aif_gender_dataset,aif_gender_pred)
-    gender_trans_dataset = eqoddspost.predict(aif_gender_pred,threshold=0.8)
+    gender_trans_dataset = eqoddspost.fit_predict(aif_gender_dataset,aif_gender_pred)
 
     gender_metric_trans = BinaryLabelDatasetMetric(dataset=gender_trans_dataset,unprivileged_groups=gender_unprivileged_group,privileged_groups=gender_privileged_group)
 
@@ -242,7 +241,7 @@ def test_fairness(dataset,pred,name,first_message=False):
     new_dataset = gender_trans_dataset.convert_to_dataframe()[0]
 
     aif_age_dataset = BinaryLabelDataset(
-        df=dataset,
+        df=new_dataset,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['TARGET'],
@@ -266,10 +265,10 @@ def test_fairness(dataset,pred,name,first_message=False):
     print_fairness_metrics(age_metric_og.mean_difference(),f'{name}_model age mean_difference before')
     print_fairness_metrics(age_metric_og.disparate_impact(),f"{name}_model age DI before")
     
-    eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=age_privileged_group, unprivileged_groups=age_unprivileged_group,seed=42)
+    eqoddspost = EqOddsPostprocessing(privileged_groups=age_privileged_group, unprivileged_groups=age_unprivileged_group,seed=42)
 
-    eqoddspost.fit(aif_age_dataset,aif_age_pred)
-    age_trans_dataset = eqoddspost.predict(aif_age_pred,threshold=0.8)
+    
+    age_trans_dataset = eqoddspost.fit_predict(aif_age_dataset,aif_age_pred)
 
     age_metric_trans = BinaryLabelDatasetMetric(dataset=age_trans_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
 

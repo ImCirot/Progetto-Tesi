@@ -6,7 +6,7 @@ from aif360.datasets import BinaryLabelDataset
 from aif360.datasets import StandardDataset
 from aif360.metrics import BinaryLabelDatasetMetric,ClassificationMetric
 from codecarbon import track_emissions
-from aif360.algorithms.postprocessing import CalibratedEqOddsPostprocessing
+from aif360.algorithms.postprocessing import CalibratedEqOddsPostprocessing,EqOddsPostprocessing
 import pickle
 from datetime import datetime
 from time import sleep
@@ -123,7 +123,7 @@ def validate(model,fair_pred,model_type,X,y,first=False):
     #scriviamo su un file le metriche di valutazione ottenute
     with  open(f"./reports/postprocessing_models/aif360/adult_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
-        f.write(f"Accuracy: {round(accuracy,3)}\n")
+        f.write(f"Accuracy: {round(accuracy,3)}")
         f.write(f'\nF1 score: {round(f1,3)}\n')
         f.write(f"Precision: {round(precision,3)}")
         f.write(f'\nRecall: {round(recall,3)}\n')
@@ -168,10 +168,10 @@ def test_fairness(original_dataset,pred,name,first_message=False):
     print_fairness_metrics(sex_metric_original.mean_difference(),f'{name}_model Sex mean_difference before',first_message)
     print_fairness_metrics(sex_metric_original.disparate_impact(),f'{name}_model Sex DI before')
     
-    eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=sex_privileged_groups, unprivileged_groups=sex_unprivileged_groups,seed=42)
+    eqoddspost = EqOddsPostprocessing(privileged_groups=sex_privileged_groups, unprivileged_groups=sex_unprivileged_groups,seed=42)
 
     # bilanciamo il dataset originale sfruttando l'oggetto appena creato
-    sex_dataset_transformed = eqoddspost.fit_predict(aif_sex_dataset,aif_sex_pred,threshold=0.8)
+    sex_dataset_transformed = eqoddspost.fit_predict(aif_sex_dataset,aif_sex_pred)
 
     # vengono ricalcolate le metriche sul nuovo modello appena bilanciato
     sex_metric_transformed = BinaryLabelDatasetMetric(dataset=sex_dataset_transformed,unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
@@ -185,7 +185,7 @@ def test_fairness(original_dataset,pred,name,first_message=False):
     age_feature = ['age']
 
     aif_age_dataset = BinaryLabelDataset(
-        df=original_dataset,
+        df=new_dataset,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['salary'],
@@ -193,7 +193,7 @@ def test_fairness(original_dataset,pred,name,first_message=False):
     )
 
     aif_age_pred = BinaryLabelDataset(
-        df=new_dataset,
+        df=pred,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['salary'],
@@ -213,10 +213,10 @@ def test_fairness(original_dataset,pred,name,first_message=False):
     print_fairness_metrics(age_metric_original.mean_difference(),f'{name}_model Age mean_difference before')
     print_fairness_metrics(age_metric_original.disparate_impact(),f'{name}_model Age DI before')
     
-    eqoddspost_age = CalibratedEqOddsPostprocessing(cost_constraint='fnr',privileged_groups=age_privileged_groups, unprivileged_groups=age_unprivileged_groups,seed=1)
+    eqoddspost_age = EqOddsPostprocessing(privileged_groups=age_privileged_groups, unprivileged_groups=age_unprivileged_groups,seed=1)
 
     # bilanciamo il dataset originale sfruttando l'oggetto appena creato
-    age_dataset_transformed = eqoddspost_age.fit_predict(aif_age_dataset,aif_age_pred,threshold=0.8)
+    age_dataset_transformed = eqoddspost_age.fit_predict(aif_age_dataset,aif_age_pred)
 
     # vengono ricalcolate le metriche sul nuovo modello appena bilanciato
     age_metric_transformed = BinaryLabelDatasetMetric(dataset=age_dataset_transformed,unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)

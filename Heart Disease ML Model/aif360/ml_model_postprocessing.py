@@ -119,7 +119,7 @@ def validate(model,fair_pred,model_type,X,y,first=False):
         open_type = "a"
     
     #scriviamo su un file matrice di confusione ottenuta
-    with open(f"./reports/postprocessing_models/aif360/heart_dheart_disease_metrics_report.txt",open_type) as f:
+    with open(f"./reports/postprocessing_models/aif360/heart_disease_metrics_report.txt",open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'F1 Score: {round(f1,3)}\n')
@@ -146,37 +146,25 @@ def test_fairness(dataset,pred,name,first_message=False):
         protected_attribute_names=['sex'],
     )
 
-    # Setting dei gruppi privilegiati e non
-    # In questo caso si è scelto di trattare come gruppo privilegiato tutte le entrate che presentano la feature 'Sex_A94' = 1, ovvero tutte le entrate
-    # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_94' != 1,
-    # ovvero tutti gli altri individui.
-    privileged_groups = [{'sex': 1}]
-    unprivileged_groups =  [{'sex': 0}]
+    sex_privileged_groups = [{'sex':1}]
+    sex_unprivileged_groups = [{'sex':0}]
+
+    age_privileged_groups = [{'age':1}]
+    age_unprivileged_groups = [{'age':0}]
 
     # Calcolo della metrica sul dataset originale
-    metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)    
-    
-    caleqodds = CalibratedEqOddsPostprocessing(privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups,cost_constraint='weighted',seed=42)
+    sex_metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=sex_unprivileged_groups, privileged_groups=sex_privileged_groups)
+ 
+    caleqodds = EqOddsPostprocessing(privileged_groups=sex_privileged_groups,unprivileged_groups=sex_unprivileged_groups,seed=42)
 
-    dataset_transformed = caleqodds.fit_predict(dataset_true=aif360_dataset,dataset_pred=aif360_pred,threshold=0.8)
+    dataset_transformed = caleqodds.fit_predict(dataset_true=aif360_dataset,dataset_pred=aif360_pred)
 
-    # Ricalcoliamo la metrica
-    metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
+    sex_metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=sex_unprivileged_groups, privileged_groups=sex_privileged_groups)
 
-    # stampa della mean_difference del modello originale
-    print_fairness_metrics(metric_original.mean_difference(),f'{name}_model sex Mean_difference value before', first_message)
-    print_fairness_metrics(metric_original.disparate_impact(),f'{name}_model sex DI value before')
-
-    # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics(metric_transformed.mean_difference(),f'{name}_model sex Mean_difference value after')
-    print_fairness_metrics(metric_transformed.disparate_impact(),f'{name}_model sex DI value after')
-
-    # otteniamo i nuovi pesi forniti dall'oggetto che mitigano i problemi di fairness
-    post_pred = dataset_transformed.convert_to_dataframe()[0]
-
+    new_dataset = dataset_transformed.convert_to_dataframe()[0]
 
     aif360_dataset = BinaryLabelDataset(
-        df=dataset,
+        df=new_dataset,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['num'],
@@ -184,36 +172,38 @@ def test_fairness(dataset,pred,name,first_message=False):
     )
 
     aif360_pred = BinaryLabelDataset(
-        df=post_pred,
+        df=pred,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['num'],
         protected_attribute_names=['age'],
     )
 
-    # Setting dei gruppi privilegiati e non
-    # In questo caso si è scelto di trattare come gruppo privilegiato tutte le entrate che presentano la feature 'Sex_A94' = 1, ovvero tutte le entrate
-    # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_94' != 1,
-    # ovvero tutti gli altri individui.
-    privileged_groups = [{'age': 1}]
-    unprivileged_groups = [{'age': 0}]
+    age_metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=age_unprivileged_groups, privileged_groups=age_privileged_groups)  
 
-    eqoddspost = CalibratedEqOddsPostprocessing(cost_constraint='weighted',privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups,seed=42)
-    # Bilanciamo il dataset
-    dataset_transformed =  eqoddspost.fit_predict(dataset_true=aif360_dataset,dataset_pred=aif360_pred,threshold=0.8)
+    caleqodds = EqOddsPostprocessing(privileged_groups=age_privileged_groups,unprivileged_groups=age_unprivileged_groups,seed=42)
+
+    dataset_transformed = caleqodds.fit_predict(dataset_true=aif360_dataset,dataset_pred=aif360_pred)
+
     # Ricalcoliamo la metrica
-    metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
+
+    age_metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=age_unprivileged_groups, privileged_groups=age_privileged_groups)
 
     # stampa della mean_difference del modello originale
-    print_fairness_metrics(metric_original.mean_difference(),f'{name}_model age Mean_difference value before', first_message)
-    print_fairness_metrics(metric_original.disparate_impact(),f'{name}_model age DI value before')
+    print_fairness_metrics(sex_metric_original.mean_difference(),f'{name}_model sex Mean_difference value before', first_message)
+    print_fairness_metrics(sex_metric_original.disparate_impact(),f'{name}_model sex DI value before')
+
+    print_fairness_metrics(age_metric_original.mean_difference(),f'{name}_model age Mean_difference value before')
+    print_fairness_metrics(age_metric_original.disparate_impact(),f'{name}_model age DI value before')
 
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics(metric_transformed.mean_difference(),f'{name}_model age Mean_difference value after')
-    print_fairness_metrics(metric_transformed.disparate_impact(),f'{name}_model age DI value after')
+    print_fairness_metrics(sex_metric_transformed.mean_difference(),f'{name}_model sex Mean_difference value after')
+    print_fairness_metrics(sex_metric_transformed.disparate_impact(),f'{name}_model sex DI value after')
 
-    # otteniamo i nuovi pesi forniti dall'oggetto che mitigano i problemi di fairness
-    post_pred = dataset_transformed.convert_to_dataframe()[0]    
+    print_fairness_metrics(age_metric_transformed.mean_difference(),f'{name}_model age Mean_difference value after')
+    print_fairness_metrics(age_metric_transformed.disparate_impact(),f'{name}_model sex DI value after')
+
+    post_pred = dataset_transformed.convert_to_dataframe()[0]
 
     return post_pred
 
