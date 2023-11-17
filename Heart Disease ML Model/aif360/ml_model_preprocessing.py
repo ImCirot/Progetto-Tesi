@@ -114,29 +114,29 @@ def training_and_testing_model(df):
     X_test_df = X_test.copy(deep=True)
     X_test_df['num'] = y_test['num']
 
-    lr_fair_pred = X_fair_test.copy(deep=True)
-    lr_fair_pred['num'] = lr_fair_model_pipeline.predict(X_fair_test)
+    lr_fair_pred = X_test_df.copy(deep=True)
+    lr_fair_pred['num'] = lr_fair_model_pipeline.predict(X_test)
 
-    rf_fair_pred =  X_fair_test.copy(deep=True)
-    rf_fair_pred['num'] = rf_fair_model_pipeline.predict(X_fair_test)
+    rf_fair_pred =  X_test_df.copy(deep=True)
+    rf_fair_pred['num'] = rf_fair_model_pipeline.predict(X_test)
 
-    svm_fair_pred =  X_fair_test.copy(deep=True)
-    svm_fair_pred['num'] = svm_fair_model_pipeline.predict(X_fair_test)
+    svm_fair_pred =  X_test_df.copy(deep=True)
+    svm_fair_pred['num'] = svm_fair_model_pipeline.predict(X_test)
 
-    xgb_fair_pred =  X_fair_test.copy(deep=True)
-    xgb_fair_pred['num'] = xgb_fair_model_pipeline.predict(X_fair_test)
+    xgb_fair_pred =  X_test_df.copy(deep=True)
+    xgb_fair_pred['num'] = xgb_fair_model_pipeline.predict(X_test)
 
     lr_pred = X_test_df.copy(deep=True)
-    lr_pred['num'] = lr_fair_model_pipeline.predict(X_test)
+    lr_pred['num'] = lr_model_pipeline.predict(X_test)
 
     rf_pred =  X_test_df.copy(deep=True)
-    rf_pred['num'] = rf_fair_model_pipeline.predict(X_test)
+    rf_pred['num'] = rf_model_pipeline.predict(X_test)
 
     svm_pred =  X_test_df.copy(deep=True)
-    svm_pred['num'] = svm_fair_model_pipeline.predict(X_test)
+    svm_pred['num'] = svm_model_pipeline.predict(X_test)
 
     xgb_pred =  X_test_df.copy(deep=True)
-    xgb_pred['num'] = xgb_fair_model_pipeline.predict(X_test)
+    xgb_pred['num'] = xgb_model_pipeline.predict(X_test)
 
     std_predictions = {
         'lr_std':lr_pred,
@@ -215,10 +215,18 @@ def test_fairness(dataset):
     # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_94' != 1,
     # ovvero tutti gli altri individui.
     privileged_groups = [{'sex': 1} | {'age': 1}]
-    unprivileged_groups = [{'sex': 0} | {'age': 0}]
+    unprivileged_groups = [{'sex': 0, 'age': 0}]
+
+    sex_privileged_groups = [{'sex':1}]
+    sex_unprivileged_groups = [{'sex':0}]
+
+    age_privileged_groups = [{'age':1}]
+    age_unprivileged_groups = [{'age':0}]
 
     # Calcolo della metrica sul dataset originale
-    metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)  
+    sex_metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=sex_unprivileged_groups, privileged_groups=sex_privileged_groups) 
+
+    age_metric_original = BinaryLabelDatasetMetric(dataset=aif360_dataset, unprivileged_groups=age_unprivileged_groups, privileged_groups=age_privileged_groups)
 
     # Utilizzamo un operatore di bilanciamento offerto dall'API AIF360
     RW = Reweighing(privileged_groups=privileged_groups, unprivileged_groups=unprivileged_groups)
@@ -226,15 +234,24 @@ def test_fairness(dataset):
     # Bilanciamo il dataset
     dataset_transformed = RW.fit_transform(aif360_dataset)
     # Ricalcoliamo la metrica
-    metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=unprivileged_groups, privileged_groups=privileged_groups)
+    sex_metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=sex_unprivileged_groups, privileged_groups=sex_privileged_groups)
+
+    age_metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed, unprivileged_groups=age_unprivileged_groups, privileged_groups=age_privileged_groups)
 
     # stampa della mean_difference del modello originale
-    print_fairness_metrics(metric_original.mean_difference(),'Mean_difference value before', first_message=True)
-    print_fairness_metrics(metric_original.disparate_impact(),'DI value before')
+    print_fairness_metrics(sex_metric_original.mean_difference(),'sex Mean_difference value before', first_message=True)
+    print_fairness_metrics(sex_metric_original.disparate_impact(),'sex DI value before')
 
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics(metric_transformed.mean_difference(),'Mean_difference value after')
-    print_fairness_metrics(metric_transformed.disparate_impact(),'DI value after')
+    print_fairness_metrics(sex_metric_transformed.mean_difference(),'sex Mean_difference value after')
+    print_fairness_metrics(sex_metric_transformed.disparate_impact(),'sex DI value after')
+
+    print_fairness_metrics(age_metric_original.mean_difference(),'age Mean_difference value before')
+    print_fairness_metrics(age_metric_original.disparate_impact(),'age DI value before')
+
+    # stampa della mean_difference del nuovo modello bilanciato sul file di report
+    print_fairness_metrics(age_metric_transformed.mean_difference(),'age Mean_difference value after')
+    print_fairness_metrics(age_metric_transformed.disparate_impact(),'age DI value after')
 
     # otteniamo i nuovi pesi forniti dall'oggetto che mitigano i problemi di fairness
     sample_weights = dataset_transformed.instance_weights
