@@ -68,28 +68,28 @@ def training_model(dataset):
     lr_threshold = ThresholdOptimizer(
         estimator=lr_model_pipeline,
         constraints='demographic_parity',
-        predict_method='predict_proba',
+        predict_method='auto',
         prefit=True
     )
 
     rf_threshold = ThresholdOptimizer(
         estimator=rf_model_pipeline,
         constraints='demographic_parity',
-        predict_method='predict_proba',
+        predict_method='auto',
         prefit=True
     )
 
     svm_threshold = ThresholdOptimizer(
         estimator=svm_model_pipeline,
         constraints='demographic_parity',
-        predict_method='predict_proba',
+        predict_method='auto',
         prefit=True
     )
 
     xgb_threshold = ThresholdOptimizer(
         estimator=xgb_model_pipeline,
         constraints='demographic_parity',
-        predict_method='predict_proba',
+        predict_method='auto',
         prefit=True
     )
 
@@ -169,10 +169,10 @@ def training_model(dataset):
     
     # salviamo i modelli ottenuti
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_threshold,open('./output_models/postprocessing_models/threshold_lr_fairlearn_adult_model.sav','wb'))
-    pickle.dump(rf_threshold,open('./output_models/postprocessing_models/threshold_rf_fairlearn_adult_model.sav','wb'))
-    pickle.dump(svm_threshold,open('./output_models/postprocessing_models/threshold_svm_fairlearn_adult_model.sav','wb'))
-    pickle.dump(xgb_threshold,open('./output_models/postprocessing_models/threshold_xgb_fairlearn_adult_model.sav','wb'))
+    pickle.dump(lr_threshold,open('./output_models/postprocessing_models/fairlearn/threshold_lr_adult_model.sav','wb'))
+    pickle.dump(rf_threshold,open('./output_models/postprocessing_models/fairlearn/threshold_rf_adult_model.sav','wb'))
+    pickle.dump(svm_threshold,open('./output_models/postprocessing_models/fairlearn/threshold_svm_adult_model.sav','wb'))
+    pickle.dump(xgb_threshold,open('./output_models/postprocessing_models/fairlearn/threshold_xgb_adult_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 

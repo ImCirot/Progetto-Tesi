@@ -131,10 +131,10 @@ def training_testing_models(dataset):
 
     
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(post_lr_model_pipeline,open('./output_models/inprocessing_models/lr_home_credit_model.sav','wb'))
-    pickle.dump(post_rf_model_pipeline,open('./output_models/inprocessing_models/rf_home_credit_model.sav','wb'))
-    pickle.dump(post_svm_model_pipeline,open('./output_models/inprocessing_models/svm_home_credit_model.sav','wb'))
-    pickle.dump(post_xgb_model_pipeline,open('./output_models/inprocessing_models/xgb_home_credit_model.sav','wb'))
+    pickle.dump(post_lr_model_pipeline,open('./output_models/inprocessing_models/aif360/lr_home_credit_model.sav','wb'))
+    pickle.dump(post_rf_model_pipeline,open('./output_models/inprocessing_models/aif360/rf_home_credit_model.sav','wb'))
+    pickle.dump(post_svm_model_pipeline,open('./output_models/inprocessing_models/aif360/svm_home_credit_model.sav','wb'))
+    pickle.dump(post_xgb_model_pipeline,open('./output_models/inprocessing_models/aif360/xgb_home_credit_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 

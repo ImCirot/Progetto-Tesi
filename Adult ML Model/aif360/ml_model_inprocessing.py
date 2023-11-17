@@ -12,7 +12,7 @@ from codecarbon import track_emissions
 from sklearn.ensemble import RandomForestClassifier
 from aif360.algorithms.inprocessing import MetaFairClassifier
 import xgboost as xgb
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 import pickle
 import warnings
 from datetime import datetime
@@ -69,7 +69,7 @@ def training_model(dataset):
 
     post_lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression(max_iter=200))
     post_rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
-    post_svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    post_svm_model_pipeline = make_pipeline(StandardScaler(),LinearSVC(dual='auto'))
     post_xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic',random_state=42))
 
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
@@ -130,10 +130,10 @@ def training_model(dataset):
     eq_odds_fair_report(X_test_df,xgb_inproc_pred,'xgb_inprocessing')
 
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(post_lr_model_pipeline,open('./output_models/inprocess_models/lr_aif360_adult_model.sav','wb'))
-    pickle.dump(post_rf_model_pipeline,open('./output_models/inprocess_models/rf_aif360_adult_model.sav','wb'))
-    pickle.dump(post_svm_model_pipeline,open('./output_models/inprocess_models/svm_aif360_adult_model.sav','wb'))
-    pickle.dump(post_xgb_model_pipeline,open('./output_models/inprocess_models/xgb_aif360_adult_model.sav','wb'))
+    pickle.dump(post_lr_model_pipeline,open('./output_models/inprocessing_models/aif360/lr_adult_model.sav','wb'))
+    pickle.dump(post_rf_model_pipeline,open('./output_models/inprocessing_models/aif360/rf_adult_model.sav','wb'))
+    pickle.dump(post_svm_model_pipeline,open('./output_models/inprocessing_models/aif360/svm_adult_model.sav','wb'))
+    pickle.dump(post_xgb_model_pipeline,open('./output_models/inprocessing_models/aif360/xgb_adult_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 

@@ -12,7 +12,7 @@ from aif360.algorithms.preprocessing import Reweighing
 from codecarbon import track_emissions
 from sklearn.ensemble import RandomForestClassifier
 import xgboost as xgb
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 import pickle
 import warnings
 from datetime import datetime
@@ -86,7 +86,7 @@ def training_model(dataset):
 
     svm_fair_model_pipeline = Pipeline(steps=[
         ('scaler', StandardScaler()),
-        ('model',SVC(probability=True))
+        ('model',LinearSVC(dual='auto'))
     ])
 
     xgb_fair_model_pipeline = Pipeline(steps=[
@@ -164,10 +164,10 @@ def training_model(dataset):
         eq_odds_fair_report(X_test_fair_df,prediction,name)
 
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_aif360_adult_model.sav','wb'))
-    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/rf_aif360_adult_model.sav','wb'))
-    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/svm_aif360_adult_model.sav','wb'))
-    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/xgb_aif360_adult_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/lr_adult_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/rf_adult_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/svm_adult_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/xgb_adult_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 

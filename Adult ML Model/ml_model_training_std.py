@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler
 from codecarbon import track_emissions
 from sklearn.ensemble import RandomForestClassifier
 import xgboost as xgb
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 import pickle
 from datetime import datetime
 from time import sleep
@@ -54,7 +54,7 @@ def training_model(dataset):
     # costruiamo il modello standard tramite pipeline contenente uno scaler per la normalizzazione dati e un regressore
     lr_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
     rf_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
-    svm_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    svm_model_pipeline = make_pipeline(StandardScaler(),LinearSVC(dual='auto'))
     xgb_model_pipeline = make_pipeline(StandardScaler(), xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)

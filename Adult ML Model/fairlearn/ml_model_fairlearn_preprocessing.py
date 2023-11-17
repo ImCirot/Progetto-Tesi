@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from codecarbon import track_emissions
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 import pickle
 import xgboost as xgb
 from datetime import datetime
@@ -70,7 +70,7 @@ def training_model(dataset):
     # setting pipeline da addestrare sul dataset soggetto ad operazioni di fairness
     lr_fair_model_pipeline = make_pipeline(StandardScaler(),LogisticRegression())
     rf_fair_model_pipeline = make_pipeline(StandardScaler(),RandomForestClassifier())
-    svm_fair_model_pipeline = make_pipeline(StandardScaler(),SVC(probability=True))
+    svm_fair_model_pipeline = make_pipeline(StandardScaler(),LinearSVC(dual='auto'))
     xgb_fair_model_pipeline = make_pipeline(StandardScaler(), xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
 
@@ -151,10 +151,10 @@ def training_model(dataset):
     
     # salviamo i modelli ottenuti
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_fairlearn_adult_model.sav','wb'))
-    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/rf_fairlearn_adult_model.sav','wb'))
-    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/svm_fairlearn_adult_model.sav','wb'))
-    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/xgb_fairlearn_adult_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/fairlearn/lr_adult_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/fairlearn/rf_adult_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/fairlearn/svm_adult_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/fairlearn/xgb_adult_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 
