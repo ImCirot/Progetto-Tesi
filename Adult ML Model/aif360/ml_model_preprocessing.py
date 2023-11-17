@@ -118,17 +118,17 @@ def training_model(dataset):
     X_test_df = X_test.copy(deep=True)
     X_test_df['salary'] = y_test
 
-    lr_fair_pred = X_fair_test.copy(deep=True)
-    lr_fair_pred['salary'] = lr_fair_model_pipeline.predict(X_fair_test)
+    lr_fair_pred = X_test_df.copy(deep=True)
+    lr_fair_pred['salary'] = lr_fair_model_pipeline.predict(X_test)
 
-    rf_fair_pred =  X_fair_test.copy(deep=True)
-    rf_fair_pred['salary'] = rf_fair_model_pipeline.predict(X_fair_test)
+    rf_fair_pred =  X_test_df.copy(deep=True)
+    rf_fair_pred['salary'] = rf_fair_model_pipeline.predict(X_test)
 
-    svm_fair_pred =  X_fair_test.copy(deep=True)
-    svm_fair_pred['salary'] = svm_fair_model_pipeline.predict(X_fair_test)
+    svm_fair_pred =  X_test_df.copy(deep=True)
+    svm_fair_pred['salary'] = svm_fair_model_pipeline.predict(X_test)
 
-    xgb_fair_pred =  X_fair_test.copy(deep=True)
-    xgb_fair_pred['salary'] = xgb_fair_model_pipeline.predict(X_fair_test)
+    xgb_fair_pred =  X_test_df.copy(deep=True)
+    xgb_fair_pred['salary'] = xgb_fair_model_pipeline.predict(X_test)
 
     lr_pred = X_test_df.copy(deep=True)
     lr_pred['salary'] = lr_fair_model_pipeline.predict(X_test)
@@ -256,89 +256,106 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
 def test_fairness(original_dataset):
     ## funzione che testa la fairness del dataset tramite libreria AIF360 e restituisce un dataset fair opportunamente modificato
 
+    protected_features = ['sex_Male','sex_Female','age']
     # setting nome varibili sensibili legate al sesso
     sex_features = ['sex_Male','sex_Female']
 
     # costruiamo il dataset sfruttando l'oggetto richiesto dalla libreria AIF360 per operare
     # questo dataset sfrutterà solamente i gruppi ottenuti utilizzando la feature "sex"
-    aif_sex_dataset = BinaryLabelDataset(
+    aif_dataset = BinaryLabelDataset(
         df=original_dataset,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['salary'],
-        protected_attribute_names=sex_features,
-        privileged_protected_attributes=['sex_Male'],
+        protected_attribute_names=protected_features,
     )
 
     # setting dei gruppi privilegiati e non del delle varibili protette
     # in particolare, scegliamo di trattare gli individui di sesso maschile come favoriti data la forte presenza di quest'ultimi all'interno del dataset
     # rispetto agli individui di sesso femminile, che vengono settati come appartenenti al gruppo sfavorito.
+
+    privileged_groups = [{'sex_Male:':1} | {'age':1}]
+    unprivileged_groups = [{'sex_Male':0,'age':0}]
+
     sex_privileged_groups = [{'sex_Male': 1}]
     sex_unprivileged_groups = [{'sex_Female': 1}]
 
-    # Calcolo della metrica sul dataset originale
-    sex_metric_original = BinaryLabelDatasetMetric(dataset=aif_sex_dataset, unprivileged_groups=sex_unprivileged_groups, privileged_groups=sex_privileged_groups) 
-    
-    # stampiamo la metrica mean_difference sul file di report    
-    print_fairness_metrics(sex_metric_original.mean_difference(),'Sex mean_difference before',first_message=True)
-    print_fairness_metrics(sex_metric_original.disparate_impact(),'Sex DI before')
-    
-    # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
-    SEX_RW = Reweighing(unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
-
-    # bilanciamo il dataset originale sfruttando l'oggetto appena creato
-    sex_dataset_transformed = SEX_RW.fit_transform(aif_sex_dataset)
-
-    # vengono ricalcolate le metriche sul nuovo modello appena bilanciato
-    sex_metric_transformed = BinaryLabelDatasetMetric(dataset=sex_dataset_transformed,unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
-    
-    # stampa della mean_difference del nuovo modello bilanciato sul file di report
-    print_fairness_metrics(sex_metric_transformed.mean_difference(),'Sex mean_difference value after')
-    print_fairness_metrics(sex_metric_transformed.disparate_impact(),'Sex DI value after')
-
-    sample_weights = sex_dataset_transformed.instance_weights
-
-    new_dataset = sex_dataset_transformed.convert_to_dataframe()[0]
-    new_dataset['weights'] = sample_weights
-
-    age_feature = ['age']
-
-    # costruiamo il dataset sfruttando l'oggetto richiesto dalla libreria AIF360 per operare
-    # questo dataset sfrutterà solamente i gruppi ottenuti utilizzando la feature "sex"
-    aif_age_dataset = BinaryLabelDataset(
-        df=new_dataset,
-        favorable_label=1,
-        unfavorable_label=0,
-        label_names=['salary'],
-        protected_attribute_names=age_feature,
-        instance_weights_name=['weights']
-    )
-
-    # setting dei gruppi privilegiati e non del delle varibili protette
     age_privileged_groups = [{'age': 1}]
     age_unprivileged_groups = [{'age': 0}]
 
     # Calcolo della metrica sul dataset originale
-    age_metric_original = BinaryLabelDatasetMetric(dataset=aif_age_dataset, unprivileged_groups=age_unprivileged_groups, privileged_groups=age_privileged_groups) 
+    sex_metric_original = BinaryLabelDatasetMetric(dataset=aif_dataset, unprivileged_groups=sex_unprivileged_groups, privileged_groups=sex_privileged_groups) 
+
+    age_metric_original = BinaryLabelDatasetMetric(dataset=aif_dataset, unprivileged_groups=age_unprivileged_groups, privileged_groups=age_privileged_groups)
     
     # stampiamo la metrica mean_difference sul file di report    
+    print_fairness_metrics(sex_metric_original.mean_difference(),'Sex mean_difference before',first_message=True)
+    print_fairness_metrics(sex_metric_original.disparate_impact(),'Sex DI before')
+
     print_fairness_metrics(age_metric_original.mean_difference(),'Age mean_difference before')
     print_fairness_metrics(age_metric_original.disparate_impact(),'Age DI before')
     
     # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
-    AGE_RW = Reweighing(unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)
+    RW = Reweighing(unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
 
     # bilanciamo il dataset originale sfruttando l'oggetto appena creato
-    age_dataset_transformed = AGE_RW.fit_transform(aif_age_dataset)
+    dataset_transformed = RW.fit_transform(aif_dataset)
 
     # vengono ricalcolate le metriche sul nuovo modello appena bilanciato
-    age_metric_transformed = BinaryLabelDatasetMetric(dataset=age_dataset_transformed,unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)
+    sex_metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed,unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
     
+    age_metric_transformed = BinaryLabelDatasetMetric(dataset=dataset_transformed,unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)
+
     # stampa della mean_difference del nuovo modello bilanciato sul file di report
+    print_fairness_metrics(sex_metric_transformed.mean_difference(),'Sex mean_difference value after')
+    print_fairness_metrics(sex_metric_transformed.disparate_impact(),'Sex DI value after')
+
     print_fairness_metrics(age_metric_transformed.mean_difference(),'Age mean_difference value after')
     print_fairness_metrics(age_metric_transformed.disparate_impact(),'Age DI value after')
 
-    sample_weights = sex_dataset_transformed.instance_weights
+    sample_weights = dataset_transformed.instance_weights
+
+    # new_dataset = sex_dataset_transformed.convert_to_dataframe()[0]
+    # new_dataset['weights'] = sample_weights
+
+    # age_feature = ['age']
+
+    # # costruiamo il dataset sfruttando l'oggetto richiesto dalla libreria AIF360 per operare
+    # # questo dataset sfrutterà solamente i gruppi ottenuti utilizzando la feature "sex"
+    # aif_age_dataset = BinaryLabelDataset(
+    #     df=new_dataset,
+    #     favorable_label=1,
+    #     unfavorable_label=0,
+    #     label_names=['salary'],
+    #     protected_attribute_names=age_feature,
+    #     instance_weights_name=['weights']
+    # )
+
+    # # setting dei gruppi privilegiati e non del delle varibili protette
+    # age_privileged_groups = [{'age': 1}]
+    # age_unprivileged_groups = [{'age': 0}]
+
+    # # Calcolo della metrica sul dataset originale
+    # age_metric_original = BinaryLabelDatasetMetric(dataset=aif_age_dataset, unprivileged_groups=age_unprivileged_groups, privileged_groups=age_privileged_groups) 
+    
+    # # stampiamo la metrica mean_difference sul file di report    
+    # print_fairness_metrics(age_metric_original.mean_difference(),'Age mean_difference before')
+    # print_fairness_metrics(age_metric_original.disparate_impact(),'Age DI before')
+    
+    # # creiamo l'oggetto reweighing offerto dalla lib AIF360 che permette di bilanciare le istanze del dataset fra i gruppi indicati come favoriti e sfavoriti
+    # AGE_RW = Reweighing(unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)
+
+    # # bilanciamo il dataset originale sfruttando l'oggetto appena creato
+    # age_dataset_transformed = AGE_RW.fit_transform(aif_age_dataset)
+
+    # # vengono ricalcolate le metriche sul nuovo modello appena bilanciato
+    # age_metric_transformed = BinaryLabelDatasetMetric(dataset=age_dataset_transformed,unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)
+    
+    # # stampa della mean_difference del nuovo modello bilanciato sul file di report
+    # print_fairness_metrics(age_metric_transformed.mean_difference(),'Age mean_difference value after')
+    # print_fairness_metrics(age_metric_transformed.disparate_impact(),'Age DI value after')
+
+    # sample_weights = sex_dataset_transformed.instance_weights
 
     return sample_weights
 
