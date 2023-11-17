@@ -162,10 +162,10 @@ def training_and_testing_model(df):
 
 
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_aif360_credit_model.sav','wb'))
-    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/rf_aif360_credit_model.sav','wb'))
-    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/svm_aif360_credit_model.sav','wb'))
-    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/xgb_aif360_credit_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/lr_credit_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/rf_credit_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/svm_credit_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/xgb_credit_model.sav','wb'))
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 
 def validate(ml_model,model_type,X_test,y_test,first=False):

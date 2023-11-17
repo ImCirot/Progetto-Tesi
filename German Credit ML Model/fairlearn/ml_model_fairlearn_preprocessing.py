@@ -169,10 +169,10 @@ def training_model(dataset):
             f.write(f'{name} age eq_odds_diff: {round(age_eqodds,3)}\n')
 
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_fairlearn_credit_model.sav','wb'))
-    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/rf_fairlearn_credit_model.sav','wb'))
-    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/svm_fairlearn_credit_model.sav','wb'))
-    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/xgb_fairlearn_credit_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/fairlearn/lr_credit_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/fairlearn/rf_credit_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/fairlearn/svm_credit_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/fairlearn/xgb_credit_model.sav','wb'))
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 
 def validate(ml_model,model_type,X_test,y_test,first=False):

@@ -157,10 +157,10 @@ def training_model(dataset):
             f.write(f'{name} age eq_odds_diff: {round(age_eqodds,3)}\n')
     
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_threshold,open('./output_models/postprocessing_models/threshold_lr_fairlearn_credit_model.sav','wb'))
-    pickle.dump(rf_threshold,open('./output_models/postprocessing_models/threshold_rf_fairlearn_credit_model.sav','wb'))
-    pickle.dump(svm_threshold,open('./output_models/postprocessing_models/threshold_svm_fairlearn_credit_model.sav','wb'))
-    pickle.dump(xgb_threshold,open('./output_models/postprocessing_models/threshold_xgb_fairlearn_credit_model.sav','wb'))
+    pickle.dump(lr_threshold,open('./output_models/postprocessing_models/fairlearn/threshold_lr_fairlearn_credit_model.sav','wb'))
+    pickle.dump(rf_threshold,open('./output_models/postprocessing_models/fairlearn/threshold_rf_fairlearn_credit_model.sav','wb'))
+    pickle.dump(svm_threshold,open('./output_models/postprocessing_models/fairlearn/threshold_svm_fairlearn_credit_model.sav','wb'))
+    pickle.dump(xgb_threshold,open('./output_models/postprocessing_models/fairlearn/threshold_xgb_fairlearn_credit_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 

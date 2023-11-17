@@ -127,10 +127,10 @@ def training_and_testing_model(df):
 
     
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(post_lr_model_pipeline,open('./output_models/inprocess_models/lr_aif360_credit_model.sav','wb'))
-    pickle.dump(post_rf_model_pipeline,open('./output_models/inprocess_models/rf_aif360_credit_model.sav','wb'))
-    pickle.dump(post_svm_model_pipeline,open('./output_models/inprocess_models/svm_aif360_credit_model.sav','wb'))
-    pickle.dump(post_xgb_model_pipeline,open('./output_models/inprocess_models/xgb_aif360_credit_model.sav','wb'))
+    pickle.dump(post_lr_model_pipeline,open('./output_models/inprocessing_models/aif360/lr_credit_model.sav','wb'))
+    pickle.dump(post_rf_model_pipeline,open('./output_models/inprocessing_models/aif360/rf_credit_model.sav','wb'))
+    pickle.dump(post_svm_model_pipeline,open('./output_models/inprocessing_models/aif360/svm_credit_model.sav','wb'))
+    pickle.dump(post_xgb_model_pipeline,open('./output_models/inprocessing_models/aif360/xgb_credit_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
             
@@ -289,7 +289,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
     with  open(f'./reports/inprocessing_models/aif360/credit_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}")
-        f.write(f'\nF1 score: {round(f1,3)}\n')
+        f.write(f'\nF1 score: {round(f1,3)}')
         f.write(f"\nPrecision: {round(precision,3)}")
         f.write(f'\nRecall: {round(recall,3)}\n')
         f.write('\n')
