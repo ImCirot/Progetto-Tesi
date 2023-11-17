@@ -66,6 +66,11 @@ def training_testing_models(dataset):
     y_fair = fair_dataset['TARGET']
     weights = fair_dataset['weights']
 
+    lr_model_pipeline = pickle.load(open('./output_models/std_models/lr_home_credit_model.sav','rb'))
+    rf_model_pipeline = pickle.load(open('./output_models/std_models/rf_home_credit_model.sav','rb'))
+    svm_model_pipeline = pickle.load(open('./output_models/std_models/svm_home_credit_model.sav','rb'))
+    xgb_model_pipeline = pickle.load(open('./output_models/std_models/xgb_home_credit_model.sav','rb'))
+
     # settiamo i nostri modelli sul dataset fair
     lr_fair_model_pipeline = Pipeline(steps=[
         ('scaler', StandardScaler()),
@@ -123,29 +128,29 @@ def training_testing_models(dataset):
     X_test_df = X_test.copy(deep=True)
     X_test_df['TARGET'] = y_test
 
-    lr_fair_pred = X_fair_test.copy(deep=True)
-    lr_fair_pred['TARGET'] = lr_fair_model_pipeline.predict(X_fair_test)
+    lr_fair_pred = X_test_df.copy(deep=True)
+    lr_fair_pred['TARGET'] = lr_fair_model_pipeline.predict(X_test)
 
-    rf_fair_pred =  X_fair_test.copy(deep=True)
-    rf_fair_pred['TARGET'] = rf_fair_model_pipeline.predict(X_fair_test)
+    rf_fair_pred =  X_test_df.copy(deep=True)
+    rf_fair_pred['TARGET'] = rf_fair_model_pipeline.predict(X_test)
 
-    svm_fair_pred =  X_fair_test.copy(deep=True)
-    svm_fair_pred['TARGET'] = svm_fair_model_pipeline.predict(X_fair_test)
+    svm_fair_pred =  X_test_df.copy(deep=True)
+    svm_fair_pred['TARGET'] = svm_fair_model_pipeline.predict(X_test)
 
-    xgb_fair_pred =  X_fair_test.copy(deep=True)
-    xgb_fair_pred['TARGET'] = xgb_fair_model_pipeline.predict(X_fair_test)
+    xgb_fair_pred =  X_test_df.copy(deep=True)
+    xgb_fair_pred['TARGET'] = xgb_fair_model_pipeline.predict(X_test)
 
     lr_pred = X_test_df.copy(deep=True)
-    lr_pred['TARGET'] = lr_fair_model_pipeline.predict(X_test)
+    lr_pred['TARGET'] = lr_model_pipeline.predict(X_test)
 
     rf_pred =  X_test_df.copy(deep=True)
-    rf_pred['TARGET'] = rf_fair_model_pipeline.predict(X_test)
+    rf_pred['TARGET'] = rf_model_pipeline.predict(X_test)
 
     svm_pred =  X_test_df.copy(deep=True)
-    svm_pred['TARGET'] = svm_fair_model_pipeline.predict(X_test)
+    svm_pred['TARGET'] = svm_model_pipeline.predict(X_test)
 
     xgb_pred =  X_test_df.copy(deep=True)
-    xgb_pred['TARGET'] = xgb_fair_model_pipeline.predict(X_test)
+    xgb_pred['TARGET'] = xgb_model_pipeline.predict(X_test)
 
     std_predictions = {
         'lr_std':lr_pred,
@@ -206,64 +211,84 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
 def test_fairness(dataset):
     ## funzione che testa fairness del dataset sulla base degli attributi sensibili
 
-    aif_gender_dataset = BinaryLabelDataset(
+    protected_features = [
+        'AGE_CAT','CODE_GENDER'
+    ]
+
+    aif_dataset = BinaryLabelDataset(
         df=dataset,
         favorable_label=1,
         unfavorable_label=0,
         label_names=['TARGET'],
-        protected_attribute_names=['CODE_GENDER']
+        protected_attribute_names=protected_features
     )
 
     # cerchiamo di stabilire se le donne sono o meno svantaggiate nella predizione positiva
+
+    privileged_group = [{'CODE_GENDER': 1} | {'AGE_CAT':1}]
+    unprivileged_group = [{'CODE_GENDER': 0,'AGE_CAT':0}]
+
     gender_privileged_group = [{'CODE_GENDER': 1}]
     gender_unprivileged_group = [{'CODE_GENDER': 0}]
 
-    gender_metric_og = BinaryLabelDatasetMetric(dataset=aif_gender_dataset,unprivileged_groups=gender_unprivileged_group,privileged_groups=gender_privileged_group)
+    age_privileged_group = [{'AGE_CAT': 1}]
+    age_unprivileged_group = [{'AGE_CAT': 0}]
+
+    gender_metric_og = BinaryLabelDatasetMetric(dataset=aif_dataset,unprivileged_groups=gender_unprivileged_group,privileged_groups=gender_privileged_group)
+
+    age_metric_og = BinaryLabelDatasetMetric(dataset=aif_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
 
     print_fairness_metrics(gender_metric_og.mean_difference(),'Gender mean_difference before',first_message=True)
     print_fairness_metrics(gender_metric_og.disparate_impact(),"Gender DI before")
+
+    print_fairness_metrics(age_metric_og.mean_difference(),'Age mean_difference before')
+    print_fairness_metrics(age_metric_og.disparate_impact(),"Age DI before")
     
-    gender_RW = Reweighing(unprivileged_groups=gender_unprivileged_group,privileged_groups=gender_privileged_group)
+    gender_RW = Reweighing(unprivileged_groups=unprivileged_group,privileged_groups=privileged_group)
 
-    gender_trans_dataset = gender_RW.fit_transform(aif_gender_dataset)
+    trans_dataset = gender_RW.fit_transform(aif_dataset)
 
-    gender_metric_trans = BinaryLabelDatasetMetric(dataset=gender_trans_dataset,unprivileged_groups=gender_unprivileged_group,privileged_groups=gender_privileged_group)
+    gender_metric_trans = BinaryLabelDatasetMetric(dataset=trans_dataset,unprivileged_groups=gender_unprivileged_group,privileged_groups=gender_privileged_group)
+
+    age_metric_trans = BinaryLabelDatasetMetric(dataset=trans_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
 
     print_fairness_metrics(gender_metric_trans.mean_difference(),'Gender mean_difference after')
     print_fairness_metrics(gender_metric_trans.disparate_impact(),"Gender DI after")
 
-    new_dataset = gender_trans_dataset.convert_to_dataframe()[0]
-    sample_weights = gender_trans_dataset.instance_weights
+    print_fairness_metrics(age_metric_trans.mean_difference(),'Age mean_difference after')
+    print_fairness_metrics(age_metric_trans.disparate_impact(),"Age DI after")
 
-    new_dataset['weights'] = sample_weights
+    sample_weights = trans_dataset.instance_weights
 
-    aif_age_dataset = BinaryLabelDataset(
-        df=dataset,
-        favorable_label=1,
-        unfavorable_label=0,
-        label_names=['TARGET'],
-        protected_attribute_names=['AGE_CAT']
-    )
+    # new_dataset['weights'] = sample_weights
 
-    # cerchiamo di stabilire se le donne sono o meno svantaggiate nella predizione positiva
-    age_privileged_group = [{'AGE_CAT': 1}]
-    age_unprivileged_group = [{'AGE_CAT': 0}]
+    # aif_age_dataset = BinaryLabelDataset(
+    #     df=dataset,
+    #     favorable_label=1,
+    #     unfavorable_label=0,
+    #     label_names=['TARGET'],
+    #     protected_attribute_names=['AGE_CAT']
+    # )
 
-    age_metric_og = BinaryLabelDatasetMetric(dataset=aif_age_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
+    # # cerchiamo di stabilire se le donne sono o meno svantaggiate nella predizione positiva
+    # age_privileged_group = [{'AGE_CAT': 1}]
+    # age_unprivileged_group = [{'AGE_CAT': 0}]
 
-    print_fairness_metrics(age_metric_og.mean_difference(),'age mean_difference before')
-    print_fairness_metrics(age_metric_og.disparate_impact(),"age DI before")
+    # age_metric_og = BinaryLabelDatasetMetric(dataset=aif_age_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
+
+    # print_fairness_metrics(age_metric_og.mean_difference(),'age mean_difference before')
+    # print_fairness_metrics(age_metric_og.disparate_impact(),"age DI before")
     
-    age_RW = Reweighing(unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
+    # age_RW = Reweighing(unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
 
-    age_trans_dataset = age_RW.fit_transform(aif_age_dataset)
+    # age_trans_dataset = age_RW.fit_transform(aif_age_dataset)
 
-    age_metric_trans = BinaryLabelDatasetMetric(dataset=age_trans_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
+    # age_metric_trans = BinaryLabelDatasetMetric(dataset=age_trans_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
 
-    print_fairness_metrics(age_metric_trans.mean_difference(),'age mean_difference after')
-    print_fairness_metrics(age_metric_trans.disparate_impact(),"age DI after")
+    # print_fairness_metrics(age_metric_trans.mean_difference(),'age mean_difference after')
+    # print_fairness_metrics(age_metric_trans.disparate_impact(),"age DI after")
 
-    sample_weights = age_trans_dataset.instance_weights
+    # sample_weights = age_trans_dataset.instance_weights
 
     return sample_weights
 
