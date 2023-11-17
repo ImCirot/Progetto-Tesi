@@ -116,28 +116,28 @@ def training_and_testing_model(df):
     X_test_df['Target'] = y_test['Target']
 
     lr_fair_pred = X_fair_test.copy(deep=True)
-    lr_fair_pred['Target'] = lr_fair_model_pipeline.predict(X_fair_test)
+    lr_fair_pred['Target'] = lr_fair_model_pipeline.predict(X_test)
 
     rf_fair_pred =  X_fair_test.copy(deep=True)
-    rf_fair_pred['Target'] = rf_fair_model_pipeline.predict(X_fair_test)
+    rf_fair_pred['Target'] = rf_fair_model_pipeline.predict(X_test)
 
     svm_fair_pred =  X_fair_test.copy(deep=True)
-    svm_fair_pred['Target'] = svm_fair_model_pipeline.predict(X_fair_test)
+    svm_fair_pred['Target'] = svm_fair_model_pipeline.predict(X_test)
 
     xgb_fair_pred =  X_fair_test.copy(deep=True)
-    xgb_fair_pred['Target'] = xgb_fair_model_pipeline.predict(X_fair_test)
+    xgb_fair_pred['Target'] = xgb_fair_model_pipeline.predict(X_test)
 
     lr_pred = X_test_df.copy(deep=True)
-    lr_pred['Target'] = lr_fair_model_pipeline.predict(X_test)
+    lr_pred['Target'] = lr_model_pipeline.predict(X_test)
 
     rf_pred =  X_test_df.copy(deep=True)
-    rf_pred['Target'] = rf_fair_model_pipeline.predict(X_test)
+    rf_pred['Target'] = rf_model_pipeline.predict(X_test)
 
     svm_pred =  X_test_df.copy(deep=True)
-    svm_pred['Target'] = svm_fair_model_pipeline.predict(X_test)
+    svm_pred['Target'] = svm_model_pipeline.predict(X_test)
 
     xgb_pred =  X_test_df.copy(deep=True)
-    xgb_pred['Target'] = xgb_fair_model_pipeline.predict(X_test)
+    xgb_pred['Target'] = xgb_model_pipeline.predict(X_test)
 
     std_predictions = {
         'lr_std':lr_pred,
@@ -216,7 +216,7 @@ def test_fairness(dataset):
     # che rappresentano un cliente maschio sposato/vedovo. Come gruppi non privilegiati si è scelto di utilizzare la feature 'sex_94' != 1,
     # ovvero tutti gli altri individui.
     privileged_groups = [{'sex_A93': 1} | {'Age in years': 1}]
-    unprivileged_groups = [{'sex_A93': 0} | {'Age in years': 0}]
+    unprivileged_groups = [{'sex_A93': 0, 'Age in years': 0}]
 
     sex_privileged_groups = [{'sex_A93':1}]
     sex_unprivileged_groups = [{'sex_A93':0}]
