@@ -174,10 +174,10 @@ def training_testing_models(dataset):
         eq_odds_fair_report(X_test_df,prediction,name)
     
     print(f'######### Salvataggio modelli #########')
-    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/lr_aif360_home_credit_model.sav','wb'))
-    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/rf_aif360_home_credit_model.sav','wb'))
-    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/svm_aif360_home_credit_model.sav','wb'))
-    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/xgb_aif360_home_credit_model.sav','wb'))
+    pickle.dump(lr_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/lr_home_credit_model.sav','wb'))
+    pickle.dump(rf_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/rf_home_credit_model.sav','wb'))
+    pickle.dump(svm_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/svm_home_credit_model.sav','wb'))
+    pickle.dump(xgb_fair_model_pipeline,open('./output_models/preprocessing_models/aif360/xgb_home_credit_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
 
