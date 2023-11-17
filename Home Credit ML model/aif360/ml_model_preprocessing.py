@@ -260,36 +260,6 @@ def test_fairness(dataset):
 
     sample_weights = trans_dataset.instance_weights
 
-    # new_dataset['weights'] = sample_weights
-
-    # aif_age_dataset = BinaryLabelDataset(
-    #     df=dataset,
-    #     favorable_label=1,
-    #     unfavorable_label=0,
-    #     label_names=['TARGET'],
-    #     protected_attribute_names=['AGE_CAT']
-    # )
-
-    # # cerchiamo di stabilire se le donne sono o meno svantaggiate nella predizione positiva
-    # age_privileged_group = [{'AGE_CAT': 1}]
-    # age_unprivileged_group = [{'AGE_CAT': 0}]
-
-    # age_metric_og = BinaryLabelDatasetMetric(dataset=aif_age_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
-
-    # print_fairness_metrics(age_metric_og.mean_difference(),'age mean_difference before')
-    # print_fairness_metrics(age_metric_og.disparate_impact(),"age DI before")
-    
-    # age_RW = Reweighing(unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
-
-    # age_trans_dataset = age_RW.fit_transform(aif_age_dataset)
-
-    # age_metric_trans = BinaryLabelDatasetMetric(dataset=age_trans_dataset,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
-
-    # print_fairness_metrics(age_metric_trans.mean_difference(),'age mean_difference after')
-    # print_fairness_metrics(age_metric_trans.disparate_impact(),"age DI after")
-
-    # sample_weights = age_trans_dataset.instance_weights
-
     return sample_weights
 
 
