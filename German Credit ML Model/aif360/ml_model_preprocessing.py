@@ -191,7 +191,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         f.write(f"{model_type}\n")
         f.write(f"Accuracy: {round(accuracy,3)}\n")
         f.write(f'F1 score: {round(f1,3)}\n')
-        f.write(f"\nPrecision: {round(precision,3)}")
+        f.write(f"Precision: {round(precision,3)}")
         f.write(f'\nRecall: {round(recall,3)}\n')
         f.write('\n')
 
