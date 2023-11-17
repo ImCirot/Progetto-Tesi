@@ -121,7 +121,7 @@ def training_and_testing_model(df):
     eq_odds_fair_report(X_test_df,svm_inproc_pred,'svm_inprocessing')
     eq_odds_fair_report(X_test_df,xgb_inproc_pred,'xgb_inprocessing')
 
-    
+
     print(f'######### Salvataggio modelli #########')
     pickle.dump(post_lr_model_pipeline,open('./output_models/inprocess_models/lr_aif360_heart_disease_model.sav','wb'))
     pickle.dump(post_rf_model_pipeline,open('./output_models/inprocess_models/rf_aif360_heart_disease_model.sav','wb'))
@@ -129,16 +129,13 @@ def training_and_testing_model(df):
     pickle.dump(post_xgb_model_pipeline,open('./output_models/inprocess_models/xgb_aif360_heart_disease_model.sav','wb'))
 
     print(f'######### OPERAZIONI TERMINATE CON SUCCESSO #########')
-            
+
 def processing_fairness(dataset,X_set,y_set,protected_features):
 
-    fair_classifier = MetaFairClassifier(type='sr',seed=0)
+    fair_classifier = MetaFairClassifier(tau=0,type='sr',seed=42)
 
     train_dataset = pd.DataFrame(X_set)
     train_dataset['num'] = y_set
-
-    print(train_dataset[train_dataset['num'] == 1].shape[0])
-    print(train_dataset[train_dataset['num'] == 0].shape[0])
 
     aif_train = BinaryLabelDataset(
         df=train_dataset,
@@ -148,38 +145,36 @@ def processing_fairness(dataset,X_set,y_set,protected_features):
         protected_attribute_names=protected_features,
     )
 
-    dataset = aif_train.convert_to_dataframe()[0]
-    print(dataset)
-    privileged_groups = [{'sex': 1}]
-    unprivileged_groups = [{'sex': 0}]
+    sex_privileged_groups = [{'sex':1}]
+    sex_unprivileged_groups = [{'sex':0}]
 
-    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
+    age_privileged_groups = [{'age':1}]
+    age_unprivileged_groups = [{'age':0}]
+
+    sex_metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=sex_privileged_groups,unprivileged_groups=sex_unprivileged_groups)
     
-    print_inproc_metrics(metrics_og.mean_difference(),f'Gender Mean difference pre inprocessing',first_message=True)
-    print_inproc_metrics(metrics_og.disparate_impact(),f'Gender DI pre inprocessing')
+    age_metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=age_privileged_groups,unprivileged_groups=age_unprivileged_groups)
+
+    print_inproc_metrics(sex_metrics_og.mean_difference(),f'Gender Mean difference pre inprocessing',first_message=True)
+    print_inproc_metrics(sex_metrics_og.disparate_impact(),f'Gender DI pre inprocessing')
+
+    print_inproc_metrics(age_metrics_og.mean_difference(),f'Age Mean difference pre inprocessing')
+    print_inproc_metrics(age_metrics_og.disparate_impact(),f'Age DI pre inprocessing')
 
     fair_df = fair_classifier.fit_predict(dataset=aif_train)
 
-    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
+    sex_metrics_trans = BinaryLabelDatasetMetric(dataset=fair_df,unprivileged_groups=sex_unprivileged_groups,privileged_groups=sex_privileged_groups)
 
-    print_inproc_metrics(metrics_trans.mean_difference(),f'Gender Mean difference post inprocessing')
-    print_inproc_metrics(metrics_trans.disparate_impact(),f'Gender DI post inprocessing')
+    age_metrics_trans = BinaryLabelDatasetMetric(dataset=fair_df,unprivileged_groups=age_unprivileged_groups,privileged_groups=age_privileged_groups)
 
-    privileged_groups = [{'age': 1}]
-    unprivileged_groups = [{'age': 0}]
+    print_inproc_metrics(sex_metrics_trans.mean_difference(),f'Gender Mean difference post inprocessing')
+    print_inproc_metrics(sex_metrics_trans.disparate_impact(),f'Gender DI post inprocessing')
 
-    metrics_og = BinaryLabelDatasetMetric(dataset=aif_train,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
-    
-    print_inproc_metrics(metrics_og.mean_difference(),f'Age Mean difference pre inprocessing')
-    print_inproc_metrics(metrics_og.disparate_impact(),f'Age DI pre inprocessing')
-
-    metrics_trans = BinaryLabelDatasetMetric(dataset=fair_df,unprivileged_groups=unprivileged_groups,privileged_groups=privileged_groups)
-
-    print_inproc_metrics(metrics_trans.mean_difference(),f'Age Mean difference post inprocessing')
-    print_inproc_metrics(metrics_trans.disparate_impact(),f'Age DI post inprocessing')
+    print_inproc_metrics(age_metrics_trans.mean_difference(),f'Age Mean difference post inprocessing')
+    print_inproc_metrics(age_metrics_trans.disparate_impact(),f'Age DI post inprocessing')
 
     df_train = fair_df.convert_to_dataframe()[0]
-    
+
     return df_train
 
 def eq_odds_fair_report(dataset,prediction,name):
@@ -246,7 +241,7 @@ def print_inproc_metrics(metric, message, first_message=False):
         open_type = 'w'
     else:
         open_type = 'a'
-    
+
     #scriviamo su un file la metrica passata
     with open(f"./reports/fairness_reports/inprocessing/aif360/heart_disease_report.txt",open_type) as f:
         f.write(f"{message}: {round(metric,3)}")
@@ -267,7 +262,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         open_type = "w"
     else:
         open_type = "a"
-    
+
     #scriviamo su un file le metriche di valutazione ottenute
     with  open(f'./reports/inprocessing_models/aif360/heart_disease_metrics_report.txt',open_type) as f:
         f.write(f"{model_type}\n")
@@ -276,7 +271,7 @@ def validate(ml_model,model_type,X_test,y_test,first=False):
         f.write(f"Precision: {round(precision,3)}")
         f.write(f'\nRecall: {round(recall,3)}\n')
         f.write('\n')
-            
+
 def print_time(time,index):
     if index == 0:
         open_type = 'w'
