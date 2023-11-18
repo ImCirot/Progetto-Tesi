@@ -63,6 +63,13 @@ def load_dataset():
 
     df_bilanciato = df_bilanciato.drop(constant_columns,axis=1)
 
+    # age_prot = (df_bilanciato['AGE_CAT'] == 1)
+    # sex_prot = (df_bilanciato['CODE_GENDER'] == 1)
+    
+    # df_prot = df_bilanciato[age_prot | sex_prot]
+
+    # print(df_prot[df_prot['TARGET'] == 1].shape[0])
+
     df_bilanciato.to_csv('./Home Credit Dataset/dataset.csv',index_label='ID')
 
 load_dataset()

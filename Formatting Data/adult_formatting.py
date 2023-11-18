@@ -49,6 +49,13 @@ def formatting_data():
 
     df['age'] = df['age'].apply(lambda x: 1 if x>=age_mean else 0)
 
+    # age_prot = (df['age'] == 0)
+    # sex_prot = (df['sex_Male'] == 0)
+    
+    # df_prot = df[age_prot & sex_prot]
+
+    # print(df_prot[df_prot['salary'] == 1].shape[0])
+
     # stampiamo in output il dataset in un nuovo file .csv pronto per essere utilizzato
     df.to_csv('./Adult Dataset/adult_modificato.csv',index_label='ID')
 

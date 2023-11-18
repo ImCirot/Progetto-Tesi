@@ -88,6 +88,14 @@ def loading_dataset():
     age_mean = df['Age in years'].mean()
     df['Age in years'] = df['Age in years'].apply(lambda x: 1 if x>=age_mean else 0)
 
+    # aggiunte per ottenere informazioni sul numero di entry su gruppi protetti e non per predizioni positive o meno
+    # age_cond = (df['Age in years'] == 1)
+    # sex_cond = (df['sex_A93'] == 1) 
+
+    # df_protected = df[age_cond | sex_cond]
+    
+    # print(df_protected[df_protected['Target'] == 1].shape[0])
+
     # Salviamo in locale il dataset in un file csv, pronto per essere utilizzato per la fase di training e testing del modello
     ouptut = df.to_csv('./German Credit Dataset/dataset_modificato.csv', index_label="ID")
 

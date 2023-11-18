@@ -21,6 +21,13 @@ def load_dataset():
     # di quest'ultima
     df['num'] = df['num'].replace({2:1,3:1,4:1})
 
+    # sex_prot = (df['sex'] == 0)
+    # age_prot = (df['age'] == 0)
+
+    # df_prot = df[sex_prot & age_prot]
+
+    # print(df_prot[df_prot['num'] == 0].shape[0])
+
     df.to_csv('./Heart Disease Dataset/dataset.csv',index_label='ID')
 
 load_dataset()
