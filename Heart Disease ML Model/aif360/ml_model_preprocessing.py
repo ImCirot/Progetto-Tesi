@@ -289,7 +289,7 @@ def eq_odds_fair_report(dataset,prediction,name):
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model sex Eq. Odds difference')
+    print_fairness_metrics(metrics.equal_opportunity_difference(),f'{name}_model sex Eq. Odds difference')
 
     privileged_groups = [{'age': 1}]
     unprivileged_groups = [{'age': 0}]
@@ -297,7 +297,7 @@ def eq_odds_fair_report(dataset,prediction,name):
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model age Eq. Odds difference')
+    print_fairness_metrics(metrics.equal_opportunity_difference(),f'{name}_model age Eq. Odds difference')
 
     
 def print_fairness_metrics(metric, message, first_message=False):

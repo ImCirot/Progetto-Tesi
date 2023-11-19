@@ -288,7 +288,7 @@ def eq_odds_fair_report(dataset,prediction,name):
 
     metrics = ClassificationMetric(dataset=aif_gender_dataset,classified_dataset=aif_gender_prediction,unprivileged_groups=gender_unprivileged_group,privileged_groups=gender_privileged_group)
 
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model Gender Eq. Odds difference')
+    print_fairness_metrics(metrics.equal_opportunity_difference(),f'{name}_model Gender Eq. Odds difference')
 
     aif_age_dataset = BinaryLabelDataset(
         df=dataset,
@@ -312,7 +312,7 @@ def eq_odds_fair_report(dataset,prediction,name):
 
     metrics = ClassificationMetric(dataset=aif_age_dataset,classified_dataset=aif_age_prediction,unprivileged_groups=age_unprivileged_group,privileged_groups=age_privileged_group)
 
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model age Eq. Odds difference')
+    print_fairness_metrics(metrics.equal_opportunity_difference(),f'{name}_model age Eq. Odds difference')
 
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input

@@ -182,7 +182,7 @@ def test_fairness(dataset,pred):
 
     print_metrics('mean_difference before', race_metric_original.mean_difference(),first_message=True)
     print_metrics('DI before', race_metric_original.disparate_impact())
-    print_metrics('Eq. odds diff before', (agg_metrics_og.true_positive_rate_difference()-agg_metrics_og.false_positive_rate()))
+    print_metrics('Eq. odds diff before', agg_metrics_og.equal_opportunity_difference())
 
     eqoods = CalibratedEqOddsPostprocessing(unprivileged_groups=race_unprivileged_groups,privileged_groups=race_privileged_groups,cost_constraint='fpr',seed=42)
 
@@ -193,7 +193,7 @@ def test_fairness(dataset,pred):
 
     print_metrics('mean_difference after', race_metric_transformed.mean_difference())
     print_metrics('DI after', race_metric_transformed.disparate_impact())
-    print_metrics('Eq. odds diff after', (agg_metrics_trans.true_positive_rate_difference()-agg_metrics_trans.false_positive_rate()))
+    print_metrics('Eq. odds diff after', agg_metrics_trans.equal_opportunity_difference())
 
     fair_dataset = race_transformed.convert_to_dataframe()[0]
 

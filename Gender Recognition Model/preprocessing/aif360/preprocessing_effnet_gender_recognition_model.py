@@ -245,7 +245,7 @@ def fairness_op(dataset,pred,name):
     race_unprivileged_groups = [{'race': 1},{'race':4}]
 
     race_metric_original = ClassificationMetric(dataset=race_aif_dataset,classified_dataset=race_aif_pred, privileged_groups=race_privileged_groups, unprivileged_groups=race_unprivileged_groups)
-    print_metrics(f'{name}_model Eq. Odds diff', race_metric_original.true_positive_rate_difference()-race_metric_original.false_positive_rate_difference())
+    print_metrics(f'{name}_model Eq. Odds diff', race_metric_original.equal_opportunity_difference())
 
 def test_fairness(dataset):
     ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset

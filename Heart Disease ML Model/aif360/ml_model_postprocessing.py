@@ -235,7 +235,7 @@ def test_eqodds(dataset,pred,name,first_message=False):
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model sex Eq. Odds difference')
+    print_fairness_metrics(metrics.equal_opportunity_difference(),f'{name}_model sex Eq. Odds difference')
 
     aif360_dataset = BinaryLabelDataset(
         df=dataset,
@@ -258,7 +258,7 @@ def test_eqodds(dataset,pred,name,first_message=False):
 
     metrics = ClassificationMetric(dataset=aif360_dataset,classified_dataset=aif360_pred,privileged_groups=privileged_groups,unprivileged_groups=unprivileged_groups)
 
-    print_fairness_metrics((metrics.true_positive_rate_difference() - metrics.false_positive_rate_difference()),f'{name}_model age Eq. Odds difference')
+    print_fairness_metrics(metrics.equal_opportunity_difference(),f'{name}_model age Eq. Odds difference')
 
 def print_fairness_metrics(metric, message, first_message=False):
     ## funzione per stampare in file le metriche di fairness del modello passato in input
