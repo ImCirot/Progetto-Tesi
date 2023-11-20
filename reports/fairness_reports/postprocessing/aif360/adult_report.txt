@@ -1,0 +1,48 @@
+lr_model Sex mean_difference before: -0.198
+lr_model Sex DI before: 0.377
+lr_model Sex mean_difference value after: -0.095
+lr_model Sex DI value after: 0.604
+lr_model Age mean_difference before: -0.202
+lr_model Age DI before: 0.366
+lr_model Age mean_difference value after: -0.156
+lr_model Age DI value after: 0.445
+rf_model Sex mean_difference before: -0.198
+rf_model Sex DI before: 0.377
+rf_model Sex mean_difference value after: -0.099
+rf_model Sex DI value after: 0.632
+rf_model Age mean_difference before: -0.198
+rf_model Age DI before: 0.424
+rf_model Age mean_difference value after: -0.161
+rf_model Age DI value after: 0.447
+svm_model Sex mean_difference before: -0.198
+svm_model Sex DI before: 0.377
+svm_model Sex mean_difference value after: -0.095
+svm_model Sex DI value after: 0.599
+svm_model Age mean_difference before: -0.204
+svm_model Age DI before: 0.355
+svm_model Age mean_difference value after: -0.163
+svm_model Age DI value after: 0.423
+xgb_model Sex mean_difference before: -0.198
+xgb_model Sex DI before: 0.377
+xgb_model Sex mean_difference value after: -0.113
+xgb_model Sex DI value after: 0.578
+xgb_model Age mean_difference before: -0.204
+xgb_model Age DI before: 0.401
+xgb_model Age mean_difference value after: -0.173
+xgb_model Age DI value after: 0.412
+lr_model Sex Eq. Odds difference: -0.093
+lr_model Age Eq. Odds diff: -0.165
+rf_model Sex Eq. Odds difference: -0.052
+rf_model Age Eq. Odds diff: -0.119
+svm_model Sex Eq. Odds difference: -0.084
+svm_model Age Eq. Odds diff: -0.159
+xgb_model Sex Eq. Odds difference: -0.034
+xgb_model Age Eq. Odds diff: -0.116
+lr_post_model Sex Eq. Odds difference: -0.08
+lr_post_model Age Eq. Odds diff: -0.059
+rf_post_model Sex Eq. Odds difference: -0.035
+rf_post_model Age Eq. Odds diff: -0.042
+svm_post_model Sex Eq. Odds difference: -0.07
+svm_post_model Age Eq. Odds diff: -0.071
+xgb_post_model Sex Eq. Odds difference: -0.052
+xgb_post_model Age Eq. Odds diff: -0.044

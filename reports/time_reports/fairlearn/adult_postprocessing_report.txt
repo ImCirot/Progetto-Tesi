@@ -1,0 +1,10 @@
+1 iter. elapsed time: 6.200515 seconds.
+2 iter. elapsed time: 6.392391 seconds.
+3 iter. elapsed time: 5.95986 seconds.
+4 iter. elapsed time: 6.275032 seconds.
+5 iter. elapsed time: 6.473216 seconds.
+6 iter. elapsed time: 6.223897 seconds.
+7 iter. elapsed time: 6.182242 seconds.
+8 iter. elapsed time: 6.165405 seconds.
+9 iter. elapsed time: 6.286313 seconds.
+10 iter. elapsed time: 6.190332 seconds.
