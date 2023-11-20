@@ -24,7 +24,7 @@ def load_dataset():
     df.drop('ID', inplace=True,axis=1)
 
     # richiamo funzione di training e testing dei modelli
-    for i in range(1):
+    for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
         training_testing_models(df,i)
@@ -33,7 +33,7 @@ def load_dataset():
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(30)
+            sleep(15)
             print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(country_iso_code='ITA',offline=True)

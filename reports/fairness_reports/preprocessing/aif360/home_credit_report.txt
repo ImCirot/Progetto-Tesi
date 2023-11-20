@@ -1,0 +1,24 @@
+Gender mean_difference before: -0.099
+Gender DI before: 0.824
+Age mean_difference before: 0.112
+Age DI before: 1.256
+Gender mean_difference after: -0.103
+Gender DI after: 0.814
+Age mean_difference after: 0.106
+Age DI after: 1.248
+lr_std_model Gender Eq. Odds difference: -0.216
+lr_std_model age Eq. Odds difference: 0.267
+rf_std_model Gender Eq. Odds difference: -0.005
+rf_std_model age Eq. Odds difference: 0.009
+svm_std_model Gender Eq. Odds difference: -0.217
+svm_std_model age Eq. Odds difference: 0.268
+xgb_std_model Gender Eq. Odds difference: -0.097
+xgb_std_model age Eq. Odds difference: 0.139
+lr_fair_model Gender Eq. Odds difference: -0.223
+lr_fair_model age Eq. Odds difference: 0.263
+rf_fair_model Gender Eq. Odds difference: -0.023
+rf_fair_model age Eq. Odds difference: 0.046
+svm_fair_model Gender Eq. Odds difference: -0.222
+svm_fair_model age Eq. Odds difference: 0.261
+xgb_fair_model Gender Eq. Odds difference: -0.111
+xgb_fair_model age Eq. Odds difference: 0.147
