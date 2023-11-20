@@ -1,0 +1,24 @@
+lr
+Accuracy: 0.851
+F1 score: 0.677
+Precision: 0.753
+Recall: 0.615
+
+rf
+Accuracy: 0.842
+F1 score: 0.664
+Precision: 0.717
+Recall: 0.618
+
+svm
+Accuracy: 0.85
+F1 score: 0.671
+Precision: 0.756
+Recall: 0.603
+
+xgb
+Accuracy: 0.866
+F1 score: 0.715
+Precision: 0.775
+Recall: 0.663
+
