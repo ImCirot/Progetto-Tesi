@@ -29,17 +29,17 @@ def load_dataset():
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_model(df)
+        training_model(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(country_iso_code='ITA',offline=True)
-def training_model(dataset):
+def training_model(dataset,index):
     ## funzione che addestra e valuta i modelli sulla base di un dataset fair
 
     # otteniamo la lista delle features del dataset
@@ -85,10 +85,10 @@ def training_model(dataset):
     X_fair = fair_dataset[features_list]
     y_fair = fair_dataset['num']
     
-    X_train, X_test, y_train, y_test, g_train, g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
+    X_train, X_test, y_train, y_test, g_train, g_test = train_test_split(X,y,g,test_size=0.2,random_state=index)
     
     # settiamo i subset di training e testing del dataset fair
-    X_fair_train, X_fair_test, y_fair_train, y_fair_test = train_test_split(X_fair,y_fair,test_size=0.2,random_state=42)
+    X_fair_train, X_fair_test, y_fair_train, y_fair_test = train_test_split(X_fair,y_fair,test_size=0.2,random_state=index)
 
     # addestriamo i modelli sul dataset fair
     print(f'######### Training modelli #########')

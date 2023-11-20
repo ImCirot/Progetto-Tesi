@@ -22,17 +22,17 @@ def load_dataset():
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_model(df)
+        training_model(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(country_iso_code='ITA',offline=True)
-def training_model(dataset):
+def training_model(dataset,index):
     ## funzione di apprendimento del modello sul dataset
 
     # setting variabili protette
@@ -60,7 +60,7 @@ def training_model(dataset):
     svm_model = pickle.load(open('./output_models/std_models/svm_adult_model.sav','rb'))
     xgb_model = pickle.load(open('./output_models/std_models/xgb_adult_model.sav','rb'))
 
-    df_train, df_test, X_train,X_test,y_train,y_test = train_test_split(dataset,X,y,test_size=0.2,random_state=42)
+    df_train, df_test, X_train,X_test,y_train,y_test = train_test_split(dataset,X,y,test_size=0.2,random_state=index)
 
     lr_pred = lr_model.predict(X_test)
     lr_df = X_test.copy(deep=True)

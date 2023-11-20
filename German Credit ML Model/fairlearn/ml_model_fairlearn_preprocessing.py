@@ -19,7 +19,7 @@ from datetime import datetime
 from time import sleep
 
 @track_emissions(country_iso_code='ITA',offline=True)
-def training_model(dataset):
+def training_model(dataset,index):
     ## funzione che addestra il modello sul dataset utilizzando strategia KFold
 
     # trasformiamo dataset in array per usare indici strategia KFold
@@ -102,8 +102,8 @@ def training_model(dataset):
     # sns.heatmap(fair_dataset[sens_and_target_features].corr(),annot=True,cmap='coolwarm')
     # plt.title("Modified dataset heatmap")
     # plt.show()
-    X_train, X_test, y_train, y_test,g_train,g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
-    X_fair_train, X_fair_test, y_fair_train, y_fair_test = train_test_split(X_fair,y_fair,test_size=0.2,random_state=42)
+    X_train, X_test, y_train, y_test,g_train,g_test = train_test_split(X,y,g,test_size=0.2,random_state=index)
+    X_fair_train, X_fair_test, y_fair_train, y_fair_test = train_test_split(X_fair,y_fair,test_size=0.2,random_state=index)
 
     print(f'######### Training modelli #########')
     lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel())
@@ -211,13 +211,13 @@ def load_dataset():
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_model(df)
+        training_model(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
     
 

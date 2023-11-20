@@ -31,17 +31,17 @@ def load_dataset():
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_and_testing_model(df)
+        training_and_testing_model(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
     
 @track_emissions(offline=True, country_iso_code="ITA")
-def training_and_testing_model(df):
+def training_and_testing_model(df,index):
     ## Funzione per il training e testing del modello scelto
 
     fair_dataset = df.copy(deep=True)
@@ -92,8 +92,8 @@ def training_and_testing_model(df):
         ('model', xgb.XGBClassifier(objective='binary:logistic', random_state=42))
     ])
     
-    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
-    X_fair_train, X_fair_test, y_fair_train, y_fair_test, sample_weights_train, sample_weights_test = train_test_split(X_fair,y_fair,sample_weights,test_size=0.2,random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=index)
+    X_fair_train, X_fair_test, y_fair_train, y_fair_test, sample_weights_train, sample_weights_test = train_test_split(X_fair,y_fair,sample_weights,test_size=0.2,random_state=index)
     
     print(f'######### Training modelli #########')
     lr_fair_model_pipeline.fit(X_fair_train,y_fair_train.values.ravel(),model__sample_weight=sample_weights_train)

@@ -23,17 +23,17 @@ def load_dataset():
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_model(df)
+        training_model(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(country_iso_code='ITA',offline=True)
-def training_model(dataset):
+def training_model(dataset,index):
     ## funzione di apprendimento del modello sul dataset
 
     # setting nomi features del dataset
@@ -57,7 +57,7 @@ def training_model(dataset):
     svm_model_pipeline = make_pipeline(StandardScaler(),LinearSVC(dual='auto'))
     xgb_model_pipeline = make_pipeline(StandardScaler(), xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
-    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=index)
 
     # training del modello base sul training set 
     print(f'######### Training modelli #########')

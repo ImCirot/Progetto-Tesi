@@ -30,17 +30,17 @@ def load_dataset():
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_and_testing_model(df)
+        training_and_testing_model(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(offline=True, country_iso_code="ITA")
-def training_and_testing_model(df):
+def training_and_testing_model(df,index):
     ## Funzione per il training e testing del modello scelto
     features = df.columns.tolist()
     features.remove('Target')
@@ -65,7 +65,7 @@ def training_and_testing_model(df):
     xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic', random_state=42))
 
     # Strategia KFold
-    X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=42)
+    X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=index)
     
     print(f'######### Training modelli #########')
     # fit del modello sul training set dell'i-esima iterazione

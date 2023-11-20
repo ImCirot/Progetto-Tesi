@@ -31,17 +31,17 @@ def load_dataset():
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_testing_models(df)
+        training_testing_models(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(country_iso_code='ITA',offline=True)
-def training_testing_models(dataset):
+def training_testing_models(dataset,index):
     ## funzione di training e testing dei vari modelli
 
     # setting feature sensibili
@@ -104,8 +104,8 @@ def training_testing_models(dataset):
     X_fair_selected = X_fair.iloc[:,mask]
     X_fair_selected['AGE_CAT'] = X_fair['AGE_CAT']
 
-    X_train, X_test, y_train, y_test = train_test_split(X_selected,y,test_size=0.2,random_state=42)
-    X_fair_train, X_fair_test, y_fair_train, y_fair_test, weights_train, weights_test = train_test_split(X_fair_selected,y_fair,weights,test_size=0.2,random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X_selected,y,test_size=0.2,random_state=index)
+    X_fair_train, X_fair_test, y_fair_train, y_fair_test, weights_train, weights_test = train_test_split(X_fair_selected,y_fair,weights,test_size=0.2,random_state=index)
 
 
     print(f'######### Training modelli #########')

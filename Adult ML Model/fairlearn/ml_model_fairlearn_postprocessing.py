@@ -21,18 +21,18 @@ def load_dataset():
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_model(df)
+        training_model(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
 
 
 @track_emissions(country_iso_code='ITA',offline=True)
-def training_model(dataset):
+def training_model(dataset,index):
     ## funzione di sviluppo del modello
 
     # drop delle features superflue
@@ -93,7 +93,7 @@ def training_model(dataset):
         prefit=True
     )
 
-    X_train, X_test, y_train, y_test, g_train, g_test = train_test_split(X,y,g,test_size=0.2,random_state=42)
+    X_train, X_test, y_train, y_test, g_train, g_test = train_test_split(X,y,g,test_size=0.2,random_state=index)
 
     print(f'######### Training modelli #########')
     lr_threshold.fit(X_train,y_train,sensitive_features=g_train)

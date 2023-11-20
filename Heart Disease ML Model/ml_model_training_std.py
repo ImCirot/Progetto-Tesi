@@ -27,17 +27,17 @@ def load_dataset():
     for i in range(1):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_testing_models(df)
+        training_testing_models(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(country_iso_code='ITA',offline=True)
-def training_testing_models(df):
+def training_testing_models(df,index):
     ## funzione di training e testing dei vari modelli
 
     feature_names = df.columns.tolist()
@@ -54,7 +54,7 @@ def training_testing_models(df):
     xgb_model_pipeline = make_pipeline(StandardScaler(),xgb.XGBClassifier(objective='binary:logistic',random_state=42))
 
 
-    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=index)
 
     lr_model_pipeline.fit(X_train,y_train.values.ravel())
     rf_model_pipeline.fit(X_train,y_train.values.ravel())

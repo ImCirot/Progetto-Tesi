@@ -31,17 +31,17 @@ def load_dataset():
     for i in range(10):
         print(f'########################### {i+1} esecuzione ###########################')
         start = datetime.now()
-        training_testing_models(df)
+        training_testing_models(df,i)
         end = datetime.now()
         elapsed = (end - start).total_seconds()
         print_time(elapsed,i)
         if(i < 9):
             print('########################### IDLE TIME START ###########################')
-            sleep(60)
+            sleep(30)
             print('########################### IDLE TIME FINISH ###########################')
 
 @track_emissions(country_iso_code='ITA',offline=True)
-def training_testing_models(dataset):
+def training_testing_models(dataset,index):
     ## funzione di training e testing dei vari modelli
 
     # setting feature sensibili
@@ -70,7 +70,7 @@ def training_testing_models(dataset):
     df_selected = pd.DataFrame(X_selected)
     df_selected['TARGET'] = dataset['TARGET']
 
-    df_train,df_test,X_train, X_test, y_train, y_test = train_test_split(df_selected,X_selected,y,test_size=0.2,random_state=42)
+    df_train,df_test,X_train, X_test, y_train, y_test = train_test_split(df_selected,X_selected,y,test_size=0.2,random_state=index)
 
     lr_pred = lr_model.predict(X_test)
     lr_df = X_test.copy(deep=True)
