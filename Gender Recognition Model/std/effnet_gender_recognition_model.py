@@ -103,16 +103,18 @@ def training_and_testing_model(df):
         class_mode='categorical'
     )
 
-    model_URL = "https://www.kaggle.com/models/tensorflow/efficientnet/frameworks/TensorFlow2/variations/b7-classification/versions/1"
-    effnet_model = tf.keras.Sequential(
-        [
-            tf.keras.layers.Rescaling(1./255, input_shape=(48,48, 3)),
-            hub.KerasLayer(model_URL),
-            tf.keras.layers.Dense(2, activation="softmax")
-        ])
-
+    effnet_model = tf.keras.applications.efficientnet_v2.EfficientNetV2B0(
+        include_top=True,
+        weights=None,
+        input_tensor=None,
+        input_shape=image_size + (3,),
+        pooling=None,
+        classes=2,
+        classifier_activation='softmax'
+    )
+    
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),'precision','recall'])
+    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
     
     # addestriamo il modello EfficientNet
     effnet_history = effnet_model.fit(
@@ -166,14 +168,6 @@ def training_and_testing_model(df):
         f.write(m_json)
 
     effnet_model.save_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
-
-    pred = effnet_model.predict(validation_generator)
-
-    print(pred)
-
-    pred = np.argmax(pred,axis=1)
-
-    print(pred)
 
 def print_time(time):
     with open('./reports/time_reports/gender/effnet_std_report.txt','w') as f:
