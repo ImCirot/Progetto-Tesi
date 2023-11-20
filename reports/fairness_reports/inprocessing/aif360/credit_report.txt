@@ -1,0 +1,24 @@
+Gender Mean difference pre inprocessing: -0.066
+Gender DI pre inprocessing: 0.908
+Gender Mean difference post inprocessing: -0.122
+Gender DI post inprocessing: 0.855
+Age Mean difference pre inprocessing: -0.105
+Age DI pre inprocessing: 0.876
+Age Mean difference post inprocessing: -0.072
+Age DI post inprocessing: 0.915
+lr_model Gender Eq. Odds difference: -0.115
+lr_model Age Eq. Odds difference: -0.135
+rf_model Gender Eq. Odds difference: -0.019
+rf_model Age Eq. Odds difference: -0.01
+svm_model Gender Eq. Odds difference: -0.115
+svm_model Age Eq. Odds difference: -0.109
+xgb_model Gender Eq. Odds difference: -0.042
+xgb_model Age Eq. Odds difference: -0.047
+lr_inprocessing_model Gender Eq. Odds difference: -0.059
+lr_inprocessing_model Age Eq. Odds difference: -0.054
+rf_inprocessing_model Gender Eq. Odds difference: -0.007
+rf_inprocessing_model Age Eq. Odds difference: -0.022
+svm_inprocessing_model Gender Eq. Odds difference: -0.071
+svm_inprocessing_model Age Eq. Odds difference: -0.042
+xgb_inprocessing_model Gender Eq. Odds difference: -0.014
+xgb_inprocessing_model Age Eq. Odds difference: -0.044
