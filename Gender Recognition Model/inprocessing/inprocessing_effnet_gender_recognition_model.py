@@ -168,10 +168,10 @@ def training_and_testing_model(df):
         f.write(f'Recall: {round(effnet_recall)}\n')
 
     m_json = model.to_json()
-    with open('./output_models/inprocess_models/effnet_model/effnet_gender_recognition_model.json','w') as f:
+    with open('./output_models/inprocess_models/effnet_model/aif360/effnet_gender_recognition_model.json','w') as f:
         f.write(m_json)
 
-    model.save_weights('./output_models/inprocess_models/effnet_model/effnet_std_weights.h5')
+    model.save_weights('./output_models/inprocess_models/effnet_model/aif360/effnet_std_weights.h5')
 
 
     features = df.columns.tolist()
@@ -239,7 +239,7 @@ def test_fairness(dataset,pred,name):
 
     agg_metrics_og = ClassificationMetric(dataset=race_aif_dataset,classified_dataset=race_aif_pred,privileged_groups=race_privileged_groups,unprivileged_groups=race_unprivileged_groups)
 
-    print_metrics(f'{name}_model Eq. odds diff', (agg_metrics_og.true_positive_rate_difference()-agg_metrics_og.false_positive_rate()))
+    print_metrics(f'{name}_model Eq. odds diff', agg_metrics_og.equal_opportunity_difference())
 
 def inprocess_op(dataset):
     ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
@@ -289,7 +289,7 @@ def print_metrics(message,metric,first_message=False):
         f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
-    with open('./reports/time_reports/gender/effnet_inprocessing_report.txt','w') as f:
+    with open('./reports/time_reports/gender/aif360/effnet_inprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()

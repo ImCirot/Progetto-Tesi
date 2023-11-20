@@ -198,10 +198,10 @@ def training_and_testing_model(std_df,fair_df):
         f.write(f"Recall: {round(resnet_recall,3)}\n")
 
     m_json = resnet_model.to_json()
-    with open('./output_models/preprocessing_models/aif360/resnet_model/fairlearn/resnet_gender_recognition_model.json','w') as f:
+    with open('./output_models/preprocessing_models/resnet_model/aif360/resnet_gender_recognition_model.json','w') as f:
         f.write(m_json)
 
-    resnet_model.save_weights('./output_models/preprocessing_models/aif360/resnet_model/fairlearn/resnet_std_weights.h5')
+    resnet_model.save_weights('./output_models/preprocessing_models/resnet_model/aif360/resnet_std_weights.h5')
 
     json_file = open('./output_models/std_models/resnet_model/resnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()

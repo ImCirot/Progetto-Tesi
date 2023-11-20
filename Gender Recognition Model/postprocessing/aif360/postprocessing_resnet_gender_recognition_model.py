@@ -211,7 +211,7 @@ def print_metrics(message,metric,first_message=False):
         f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
-    with open('./reports/time_reports/gender/resnet_postprocessing_report.txt','w') as f:
+    with open('./reports/time_reports/gender/aif360/resnet_postprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()

@@ -170,7 +170,7 @@ def training_and_testing_model(df):
     effnet_model.save_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
 
 def print_time(time):
-    with open('./reports/time_reports/gender/effnet_std_report.txt','w') as f:
+    with open('./reports/time_reports/gender/std/effnet_std_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()

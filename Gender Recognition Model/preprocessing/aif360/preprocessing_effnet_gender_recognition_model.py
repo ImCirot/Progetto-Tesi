@@ -138,16 +138,18 @@ def training_and_testing_model(std_df,fair_df):
         class_mode='categorical',
     )
 
-    model_URL = "https://www.kaggle.com/models/tensorflow/efficientnet/frameworks/TensorFlow2/variations/b7-classification/versions/1"
-    effnet_model = tf.keras.Sequential(
-        [
-            tf.keras.layers.Rescaling(1./255, input_shape=(48,48, 3)),
-            hub.KerasLayer(model_URL),
-            tf.keras.layers.Dense(2, activation="softmax")
-        ])
+    effnet_model = tf.keras.applications.efficientnet_v2.EfficientNetV2B0(
+        include_top=True,
+        weights=None,
+        input_tensor=None,
+        input_shape=image_size + (3,),
+        pooling=None,
+        classes=2,
+        classifier_activation='softmax'
+    )
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
+    effnet_model.compile(optimizer='adam',loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
     
     # addestriamo il modello EfficientNet
     effnet_history = effnet_model.fit(
@@ -172,26 +174,42 @@ def training_and_testing_model(std_df,fair_df):
     plt.xlabel('epoch')
     plt.savefig('./figs/preprocessing_effnet_accuracy.png')
 
-    effnet_loss, effnet_accuracy, effnet_auc = effnet_model.evaluate(validation_generator)
+    plt.figure(figsize=(20,8))
+    plt.plot(effnet_history.history['precision'])
+    plt.title('model precision')
+    plt.ylabel('precision')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/preprocessing_effnet_precision.png')
+
+    plt.figure(figsize=(20,8))
+    plt.plot(effnet_history.history['recall'])
+    plt.title('model recall')
+    plt.ylabel('recall')
+    plt.xlabel('epoch')
+    plt.savefig('./figs/preprocessing_effnet_recall.png')
+
+    effnet_loss, effnet_accuracy, effnet_f1, effnet_precision, effnet_recall = effnet_model.evaluate(validation_generator)
 
     with open('./reports/preprocessing_models/aif360/effnet_gender_recognition_report.txt','w') as f:
         f.write('EfficentNet Model\n')
         f.write(f"Accuracy: {round(effnet_accuracy,3)}\n")
-        f.write(f'AUC-ROC: {round(effnet_auc,3)}\n')
+        f.write(f'F1-Score: {effnet_f1}\n')
+        f.write(f"Precision: {round(effnet_precision,3)}\n")
+        f.write(f"Recalll: {round(effnet_recall,3)}\n")
 
     m_json = effnet_model.to_json()
-    with open('./output_models/preprocessing_models/effnet_model/fairlearn/effnet_gender_recognition_model.json','w') as f:
+    with open('./output_models/preprocessing_models/effnet_model/aif360/effnet_gender_recognition_model.json','w') as f:
         f.write(m_json)
 
-    effnet_model.save_weights('./output_models/preprocessing_models/effnet_model/fairlearn/effnet_std_weights.h5')
+    effnet_model.save_weights('./output_models/preprocessing_models/effnet_model/aif360/effnet_std_weights.h5')
 
     json_file = open('./output_models/std_models/effnet_model/effnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
-    model = tf.keras.models.model_from_json(loaded_model_json,custom_objects={'Rescaling':tf.keras.layers.Rescaling,'KerasLayer':hub.KerasLayer})
+    model = tf.keras.models.model_from_json(loaded_model_json)
     model.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
 
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2)])
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
 
     features = std_df.columns.tolist()
     features.remove('gender') 
@@ -295,7 +313,7 @@ def print_metrics(message,metric,first_message=False):
         f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
-    with open('./reports/time_reports/gender/effnet_fair_report.txt','w') as f:
+    with open('./reports/time_reports/gender/aif360/effnet_preprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()
