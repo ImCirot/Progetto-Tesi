@@ -112,9 +112,9 @@ def training_and_testing_model(df):
         classes=2,
         classifier_activation='softmax'
     )
-    
+
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
-    effnet_model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
+    effnet_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
     
     # addestriamo il modello EfficientNet
     effnet_history = effnet_model.fit(
