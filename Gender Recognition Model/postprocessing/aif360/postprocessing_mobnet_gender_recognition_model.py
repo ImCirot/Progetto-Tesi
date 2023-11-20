@@ -118,11 +118,11 @@ def postop_model(df):
     X_test = df_test[features]
     y_test = df_test['gender'].astype(int)
 
-    json_file = open('./output_models/std_models/effnet_model/effnet_gender_recognition_model.json', 'r')
+    json_file = open('./output_models/std_models/mobnet_model/mobnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     model = tf.keras.models.model_from_json(loaded_model_json)
-    model.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
+    model.load_weights('./output_models/std_models/mobnet_model/mobnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     model.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
@@ -134,20 +134,20 @@ def postop_model(df):
 
     fair_pred = test_fairness(df_test,std_pred)
 
-    effnet_accuracy = accuracy_score(y_true=y_test,y_pred=fair_pred['gender'])
+    mobnet_accuracy = accuracy_score(y_true=y_test,y_pred=fair_pred['gender'])
     
-    effnet_f1_score = f1_score(y_true=y_test,y_pred=fair_pred['gender'])
+    mobnet_f1_score = f1_score(y_true=y_test,y_pred=fair_pred['gender'])
 
-    effnet_precision_score = precision_score(y_true=y_test,y_pred=fair_pred['gender'])
+    mobnet_precision_score = precision_score(y_true=y_test,y_pred=fair_pred['gender'])
 
-    effnet_recall_score = recall_score(y_true=y_test,y_pred=fair_pred['gender'])
+    mobnet_recall_score = recall_score(y_true=y_test,y_pred=fair_pred['gender'])
 
-    with open('./reports/postprocessing_models/aif360/effnet_gender_recognition_report.txt','w') as f:
-        f.write('EfficientNetV2 model\n')
-        f.write(f"Accuracy: {round(effnet_accuracy,3)}\n")
-        f.write(f"F1 score: {round(effnet_f1_score,3)}\n")
-        f.write(f"Precision: {round(effnet_precision_score,3)}\n")
-        f.write(f"Recall: {round(effnet_recall_score,3)}\n")
+    with open('./reports/postprocessing_models/aif360/mobnet_gender_recognition_report.txt','w') as f:
+        f.write('MobileNetV2 model\n')
+        f.write(f"Accuracy: {round(mobnet_accuracy,3)}\n")
+        f.write(f"F1 score: {round(mobnet_f1_score,3)}\n")
+        f.write(f"Precision: {round(mobnet_precision_score,3)}\n")
+        f.write(f"Recall: {round(mobnet_recall_score,3)}\n")
 
 def test_fairness(dataset,pred):
     ## funzione che calcola alcune metriche di fairness e cerca di mitigare eventuali discriminazioni presenti nel dataset
@@ -207,11 +207,11 @@ def print_metrics(message,metric,first_message=False):
     else:
         open_type = 'a'
 
-    with open('./reports/fairness_reports/postprocessing/aif360/effnet_gender_report.txt',open_type) as f:
+    with open('./reports/fairness_reports/postprocessing/aif360/mobnet_gender_report.txt',open_type) as f:
         f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
-    with open('./reports/time_reports/gender/aif360/effnet_postprocessing_report.txt','w') as f:
+    with open('./reports/time_reports/gender/aif360/mobnet_postprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()

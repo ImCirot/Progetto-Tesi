@@ -1,0 +1,5 @@
+MobileNetV2 Model
+Accuracy: 0.677
+F1-Score: [0.7532056 0.5311278]
+Precision: 0.677
+Recalll: 0.677

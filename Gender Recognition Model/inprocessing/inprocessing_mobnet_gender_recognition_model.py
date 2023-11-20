@@ -111,17 +111,17 @@ def training_and_testing_model(df):
         class_mode='categorical',
     )
 
-    json_file = open('./output_models/std_models/effnet_model/effnet_gender_recognition_model.json', 'r')
+    json_file = open('./output_models/std_models/mobnet_model/mobnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     model = tf.keras.models.model_from_json(loaded_model_json)
-    model.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
+    model.load_weights('./output_models/std_models/mobnet_model/mobnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     model.compile(loss='categorical_crossentropy',metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
     
     # addestriamo il modello EfficientNet
-    effnet_history = model.fit(
+    mobnet_history = model.fit(
         train_generator, 
         steps_per_epoch=train_generator.samples//batch_size, 
         epochs=epochs, 
@@ -130,48 +130,48 @@ def training_and_testing_model(df):
     )
 
     plt.figure(figsize=(20,8))
-    plt.plot(effnet_history.history['f1_score'])
+    plt.plot(mobnet_history.history['f1_score'])
     plt.title('model f1 Score')
     plt.ylabel('f1')
     plt.xlabel('epoch')
-    plt.savefig('./figs/aif360/inprocessing_effnet_f1.png')
+    plt.savefig('./figs/aif360/inprocessing_mobnet_f1.png')
 
     plt.figure(figsize=(20,8))
-    plt.plot(effnet_history.history['accuracy'])
+    plt.plot(mobnet_history.history['accuracy'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
-    plt.savefig('./figs/aif360/inprocessing_effnet_accuracy.png')
+    plt.savefig('./figs/aif360/inprocessing_mobnet_accuracy.png')
 
     plt.figure(figsize=(20,8))
-    plt.plot(effnet_history.history['precision'])
+    plt.plot(mobnet_history.history['precision'])
     plt.title('model precision')
     plt.ylabel('precision')
     plt.xlabel('epoch')
-    plt.savefig('./figs/aif360/inprocessing_effnet_precision.png')
+    plt.savefig('./figs/aif360/inprocessing_mobnet_precision.png')
 
     plt.figure(figsize=(20,8))
-    plt.plot(effnet_history.history['recall'])
+    plt.plot(mobnet_history.history['recall'])
     plt.title('model recall')
     plt.ylabel('recall')
     plt.xlabel('epoch')
-    plt.savefig('./figs/aif360/inprocessing_effnet_recall.png')
+    plt.savefig('./figs/aif360/inprocessing_mobnet_recall.png')
 
-    effnet_loss, effnet_accuracy, effnet_f1, effnet_precision, effnet_recall = model.evaluate(validation_generator)
+    mobnet_loss, mobnet_accuracy, mobnet_f1, mobnet_precision, mobnet_recall = model.evaluate(validation_generator)
 
 
-    with open('./reports/inprocessing_models/aif360/effnet_gender_recognition_report.txt','w') as f:
-        f.write('EfficentNet Model\n')
-        f.write(f"Accuracy: {round(effnet_accuracy,3)}\n")
-        f.write(f'F1 Score: {effnet_f1}\n')
-        f.write(f'Precision: {round(effnet_precision,3)}\n')
-        f.write(f'Recall: {round(effnet_recall)}\n')
+    with open('./reports/inprocessing_models/aif360/mobnet_gender_recognition_report.txt','w') as f:
+        f.write('MobileNetV2 Model\n')
+        f.write(f"Accuracy: {round(mobnet_accuracy,3)}\n")
+        f.write(f'F1 Score: {mobnet_f1}\n')
+        f.write(f'Precision: {round(mobnet_precision,3)}\n')
+        f.write(f'Recall: {round(mobnet_recall)}\n')
 
     m_json = model.to_json()
-    with open('./output_models/inprocessing_models/effnet_model/effnet_gender_recognition_model.json','w') as f:
+    with open('./output_models/inprocessing_models/mobnet_model/mobnet_gender_recognition_model.json','w') as f:
         f.write(m_json)
 
-    model.save_weights('./output_models/inprocessing_models/effnet_model/effnet_std_weights.h5')
+    model.save_weights('./output_models/inprocessing_models/mobnet_model/mobnet_std_weights.h5')
 
 
     features = df.columns.tolist()
@@ -186,11 +186,11 @@ def training_and_testing_model(df):
     X_test = df_test[features]
     y_test = df_test['gender'].astype(int)
 
-    json_file = open('./output_models/std_models/effnet_model/effnet_gender_recognition_model.json', 'r')
+    json_file = open('./output_models/std_models/mobnet_model/mobnet_gender_recognition_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     model_std = tf.keras.models.model_from_json(loaded_model_json)
-    model_std.load_weights('./output_models/std_models/effnet_model/effnet_std_weights.h5')
+    model_std.load_weights('./output_models/std_models/mobnet_model/mobnet_std_weights.h5')
 
     # indichiamo ai modello di stabilire il proprio comportamento su accuracy e categorical_crossentropy
     model_std.compile(loss='categorical_crossentropy', metrics=['accuracy',tfa.metrics.F1Score(num_classes=2),tf.keras.metrics.Precision(),tf.keras.metrics.Recall()])
@@ -285,11 +285,11 @@ def print_metrics(message,metric,first_message=False):
     else:
         open_type = 'a'
 
-    with open('./reports/fairness_reports/inprocessing/aif360/effnet_gender_report.txt',open_type) as f:
+    with open('./reports/fairness_reports/inprocessing/aif360/mobnet_gender_report.txt',open_type) as f:
         f.write(f'{message}: {round(metric,3)}\n')
 
 def print_time(time):
-    with open('./reports/time_reports/gender/aif360/effnet_inprocessing_report.txt','w') as f:
+    with open('./reports/time_reports/gender/aif360/mobnet_inprocessing_report.txt','w') as f:
         f.write(f'Elapsed time: {time} seconds.\n')
 
 start = datetime.now()
