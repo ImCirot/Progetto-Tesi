@@ -142,7 +142,7 @@ def postop_model(df):
 
     effnet_recall_score = recall_score(y_true=y_test,y_pred=fair_pred['gender'])
 
-    with open('./reports/postprocessing_models/effnet_gender_recognition_report.txt','w') as f:
+    with open('./reports/postprocessing_models/aif360/effnet_gender_recognition_report.txt','w') as f:
         f.write('EfficientNetV2 model\n')
         f.write(f"Accuracy: {round(effnet_accuracy,3)}\n")
         f.write(f"F1 score: {round(effnet_f1_score,3)}\n")

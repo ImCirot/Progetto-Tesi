@@ -166,10 +166,10 @@ def training_and_testing_model(df):
         f.write(f'Recall: {round(resnet_recall)}\n')
     
     m_json = model.to_json()
-    with open('./output_models/inprocess_models/resnet_model/aif360/resnet_gender_recognition_model.json','w') as f:
+    with open('./output_models/inprocessing_models/resnet_model/resnet_gender_recognition_model.json','w') as f:
         f.write(m_json)
 
-    model.save_weights('./output_models/inprocess_models/resnet_model/aif360/resnet_std_weights.h5')
+    model.save_weights('./output_models/inprocessing_models/resnet_model/resnet_std_weights.h5')
 
     features = df.columns.tolist()
     features.remove('gender') 

@@ -1,0 +1,5 @@
+ResnetV2 model
+Accuracy: 0.503
+F1 score: 0.469
+Precision: 0.477
+Recall: 0.461

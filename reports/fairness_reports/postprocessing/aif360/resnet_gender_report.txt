@@ -1,0 +1,6 @@
+mean_difference before: -0.047
+DI before: 0.912
+Eq. odds diff before: 0.02
+mean_difference after: 0.551
+DI after: inf
+Eq. odds diff after: 0.558

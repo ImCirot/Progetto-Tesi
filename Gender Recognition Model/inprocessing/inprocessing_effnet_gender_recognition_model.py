@@ -168,10 +168,10 @@ def training_and_testing_model(df):
         f.write(f'Recall: {round(effnet_recall)}\n')
 
     m_json = model.to_json()
-    with open('./output_models/inprocess_models/effnet_model/aif360/effnet_gender_recognition_model.json','w') as f:
+    with open('./output_models/inprocessing_models/effnet_model/effnet_gender_recognition_model.json','w') as f:
         f.write(m_json)
 
-    model.save_weights('./output_models/inprocess_models/effnet_model/aif360/effnet_std_weights.h5')
+    model.save_weights('./output_models/inprocessing_models/effnet_model/effnet_std_weights.h5')
 
 
     features = df.columns.tolist()
