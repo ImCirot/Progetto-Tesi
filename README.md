@@ -27,20 +27,24 @@ pip install numpy pandas seaborn matplotlib scikit-learn aif360 codecarbon fairl
 ```
 Per l'installazione di TensorFlow, riferirsi alla guida ufficiale [qui](https://www.tensorflow.org/install).
 
+Inoltre, le reti neurali utilizzate per i modelli di DL sono disponibili qui:
+-  [ResNet50](https://www.kaggle.com/models/tensorflow/resnet-50)
+-  [MobileNetV2](https://www.kaggle.com/models/tensorflow/mobilenet-v2)
+
 <h1>Organizzazione e struttura del progetto</h1>
 Il progetto è organizzato in diverse directory. Di seguito la struttura del progetto:
 
 - **Adult Dataset**: contiene l'Adult dataset originale e le sue versioni modificate per poter usufruire degli strumenti di fairness. Il dataset originale è disponibile [qui](https://archive.ics.uci.edu/dataset/2/adult).
 - **German Credit Dataset**: contiene il "German Credit" dataset originale e le sue versioni modificate per poter usufruire degli strumenti di fairness. Il dataset originale è disponibile [qui](https://archive.ics.uci.edu/dataset/144/statlog+german+credit+data).
-- **Bank Marketing Dataset**: contiene il "Bank Marketing" dataset originale e le sue versioni modificate per poter usufruire degli strumenti di fairness. Il dataset originale è disponibile [qui](https://archive.ics.uci.edu/dataset/222/bank+marketing).
-- **Student Dataset**: contiene lo "Student dropout and accademic success" dataset originale e le sue versioni modificate per poter usufruire degli strumenti di fairness. Il dataset originale è disponibile [qui](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success).
+- **Heart Disease Dataset**: contiene il dataset originale e le sue versioni modificate per poter usufruire degli strumenti di fairness. Il dataset originale è disponibile [qui](http://archive.ics.uci.edu/dataset/45/heart+disease).
+- **Home Credit Risk Default Dataset**: contiene il dataset originale e le sue versioni modificate per poter usufruire degli strumenti di fairness. Il dataset originale è disponibile [qui](https://www.kaggle.com/competitions/home-credit-default-risk/overview).
 - **UTKFace Dataset**: contiene il dataset **UTKFace** disponibile al seguente [link](https://susanqq.github.io/UTKFace/).<br>
   **IMPORTANTE: cartella non presente nella repository per via delle dimensioni è necessario scaricare il dataset dal link fornito e creare questa cartella con il contenuto del dataset**.
 - **Formatting Data**: contiene script utili per la manipolazione e preparazione dei dataset.
 - **Adult ML Model**: contiene gli script python per realizzare modelli sulla base dell'Adult dataset, sfruttando ognuno una delle librerie di fairness citate.
 - **German Credit ML Model**: contiene script python per realizzare modelli sulla base del German Credit dataset, sfruttando ognuno una delle librerie di fairness citate.
-- **Bank Marketing ML Model**: contiene script python per realizzare modelli sulla base del Bank Marketing dataset, sfruttando ognuno una delle librerie di fairness citate.
-- **Student ML Model**: contiene script python per realizzare modelli sulla base dello Student dropout and accademic success dataset, sfruttando ognuno una delle librerie di fairness citate.
+- **Heart Disease ML Model**: contiene script python per realizzare modelli sulla base del Heart Disease dataset, sfruttando ognuno una delle librerie di fairness citate.
+- **Home Credit ML Model**: contiene script python per realizzare modelli sulla base del Home Credit Default Risk dataset, sfruttando ognuno una delle librerie di fairness citate.
 - **Gender Recognition Model**: contiene script python per realizzare modelli di gender recognition sfruttando il dataset UTKFace.
 - **reports**: contiene tutti i report generati dagli script durante la fase di training e testing.
   - **preprocessing_models**: contiene metriche di valutazione (matrice di confusione/accuracy/f1 score...) per i modelli addestrati su dataset che hanno subito operazioni di fairness.
